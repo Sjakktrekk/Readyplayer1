@@ -1,0 +1,641 @@
+.achievement-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.achievement-category {
+    background-color: #111111;
+    border: 1px solid rgba(0, 255, 0, 0.2);
+    border-radius: 6px;
+    padding: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.achievement-category h3 {
+    color: lime;
+    margin: 0 0 15px 0;
+    font-size: 1.2em;
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    position: relative;
+}
+
+.achievement-category h3::before,
+.achievement-category h3::after {
+    content: 'â†';
+    color: lime;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8em;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+.achievement-category h3::before {
+    left: 10px;
+}
+
+.achievement-category h3::after {
+    right: 10px;
+}
+
+.achievement-item {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+    padding: 6px;
+    border-radius: 5px;
+    background-color: rgba(51, 51, 51, 0.9);
+    transition: transform 0.2s;
+    font-size: 0.9em;
+}
+
+.achievement-icon {
+    width: 100px !important;
+    height: 100px !important;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    background: transparent;
+}
+
+.achievement-icon img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    transition: transform 0.2s ease;
+    background: transparent;
+}
+
+.achievement-icon img:hover {
+    transform: scale(1.1);
+}
+
+.achievement-unlocked {
+    border: 1px solid lime;
+    background-color: #1a331a;
+}
+
+.achievement-locked {
+    border: 1px solid #666;
+    background-color: #222;
+    opacity: 0.7;
+}
+
+.achievement-text {
+    flex-grow: 1;
+}
+
+.achievement-level {
+    font-weight: bold;
+    color: lime;
+    margin-left: 10px;
+}
+
+.achievement-reward {
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+.achievement-locked .achievement-reward {
+    color: #666;
+    font-style: italic;
+}
+
+.achievement-mystery {
+    color: #666;
+    font-style: italic;
+}
+
+.close-button {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    color: lime;
+    font-size: 24px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.close-button:hover {
+    background-color: rgba(0, 255, 0, 0.1);
+}
+
+#achievementsTitle {
+    text-align: center;
+    color: lime;
+    font-size: 1.8em;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    text-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+    position: relative;
+    padding-bottom: 15px;
+}
+
+#achievementsTitle::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(0, 255, 0, 0.5), 
+        lime,
+        rgba(0, 255, 0, 0.5), 
+        transparent
+    );
+}
+
+.level-up-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.level-up-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    animation: expandRing 1s ease-out forwards;
+}
+
+.level-up-text {
+    position: fixed;
+    pointer-events: none;
+    font-size: 20px;
+    color: white;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation: levelUpFade 1s ease-out forwards;
+    z-index: 1000;
+}
+
+.particle {
+    position: absolute;
+    pointer-events: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    opacity: 0;
+    filter: blur(1px);
+}
+
+/* Skill-specific colors */
+.Intelligens .level-up-ring { box-shadow: 0 0 20px #00bfff, inset 0 0 20px #00bfff; border: 2px solid #00bfff; }
+.Teknologi .level-up-ring { box-shadow: 0 0 20px #00ff00, inset 0 0 20px #00ff00; border: 2px solid #00ff00; }
+.Stamina .level-up-ring { box-shadow: 0 0 20px #ff4040, inset 0 0 20px #ff4040; border: 2px solid #ff4040; }
+.Karisma .level-up-ring { box-shadow: 0 0 20px #ffd700, inset 0 0 20px #ffd700; border: 2px solid #ffd700; }
+.Kreativitet .level-up-ring { box-shadow: 0 0 20px #ff1493, inset 0 0 20px #ff1493; border: 2px solid #ff1493; }
+.Flaks .level-up-ring { box-shadow: 0 0 20px #00ffff, inset 0 0 20px #00ffff; border: 2px solid #00ffff; }
+
+.Intelligens .particle { background: #00bfff; box-shadow: 0 0 10px #00bfff; }
+.Teknologi .particle { background: #00ff00; box-shadow: 0 0 10px #00ff00; }
+.Stamina .particle { background: #ff4040; box-shadow: 0 0 10px #ff4040; }
+.Karisma .particle { background: #ffd700; box-shadow: 0 0 10px #ffd700; }
+.Kreativitet .particle { background: #ff1493; box-shadow: 0 0 10px #ff1493; }
+.Flaks .particle { background: #00ffff; box-shadow: 0 0 10px #00ffff; }
+
+.trophy-icon {
+    font-size: 24px;
+    color: gold;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.star-icon {
+    font-size: 20px;
+    color: gold;
+    margin-top: 5px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 25px;
+    padding: 20px;
+    margin: 0 auto;
+    max-width: 1500px;
+}
+
+.skill-section {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 15px;
+    border-radius: 8px;
+    min-width: 350px;
+    border: 1px solid;
+    transition: all 0.3s ease;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Skill section colors */
+.skill-section[data-skill="Intelligens"] {
+    border-color: #00bfff;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                linear-gradient(45deg, #00bfff22, transparent);
+}
+
+.skill-section[data-skill="Teknologi"] {
+    border-color: #2ecc71;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                linear-gradient(45deg, #2ecc7122, transparent);
+}
+
+.skill-section[data-skill="Stamina"] {
+    border-color: #ff4d4d;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                linear-gradient(45deg, #ff4d4d22, transparent);
+}
+
+.skill-section[data-skill="Karisma"] {
+    border-color: #ffd700;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                linear-gradient(45deg, #ffd70022, transparent);
+}
+
+.skill-section[data-skill="Kreativitet"] {
+    border-color: #ff1493;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                linear-gradient(45deg, #ff149322, transparent);
+}
+
+.skill-section[data-skill="Flaks"] {
+    border-color: #00ffff;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                linear-gradient(45deg, #00ffff22, transparent);
+}
+
+.skill-section h2 {
+    color: #fff;
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.achievement {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    margin-bottom: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.achievement-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.achievement-reward {
+    flex-basis: 200px;
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid rgba(0, 255, 0, 0.2);
+    border-radius: 4px;
+    padding: 8px;
+    color: lime;
+    font-family: 'Courier New', monospace;
+    min-height: 60px;
+    white-space: pre-wrap;
+    margin-left: auto;
+    width: 100%;
+    max-width: 1500px;
+}
+
+.achievement.locked .achievement-reward {
+    opacity: 0.5;
+}
+
+.achievement-box {
+    padding: 25px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(0, 255, 0, 0.2);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 160px;
+}
+
+.achievement-box > div {
+    background: transparent;
+}
+
+.achievement-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 10px;
+}
+
+.achievement-info h4 {
+    font-size: 1.5em;
+    margin-bottom: 12px;
+}
+
+.achievement-info p {
+    font-size: 1.2em;
+    line-height: 1.4;
+}
+
+.achievement-reward {
+    margin-top: 15px;
+    padding: 12px;
+}
+
+.skills-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.skill-tab {
+    flex: 1;
+    margin: 0 5px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 255, 0, 0.2);
+    text-align: center;
+}
+
+.skill-tab:hover {
+    background: rgba(0, 255, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.skill-tab.active {
+    background: rgba(0, 255, 0, 0.2);
+    border-color: rgba(0, 255, 0, 0.5);
+}
+
+.skill-tab h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+    color: lime;
+}
+
+.skill-tab .level {
+    font-size: 1.2em;
+    color: #00ff00;
+    margin-bottom: 5px;
+}
+
+.skill-tab .progress-bar {
+    height: 4px;
+    background: rgba(0, 255, 0, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.skill-tab .progress-fill {
+    height: 100%;
+    background: lime;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.achievements-container {
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.achievements-section {
+    display: none;
+}
+
+.achievements-section.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.achievement.unlocked {
+    background: rgba(30, 30, 30, 0.9);
+    border: 1px solid;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.achievement.locked {
+    opacity: 0.6;
+}
+
+.achievement.locked .achievement-icon {
+    opacity: 0.5;
+}
+
+.achievement.unlocked .achievement-icon {
+    opacity: 1;
+    text-shadow: 0 0 10px currentColor;
+    background: transparent;
+}
+
+.achievement-info h4 {
+    margin: 0 0 4px 0;
+    color: #888;
+    font-size: 1.4em;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.achievement.unlocked .achievement-info h4 {
+    color: inherit;
+    text-shadow: 0 0 5px currentColor;
+}
+
+.achievement-info p {
+    margin: 0;
+    color: #666;
+    font-size: 1.2em;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.achievement.locked .achievement-reward {
+    color: transparent;
+    text-shadow: none;
+    background: rgba(128, 128, 128, 0.1);
+    border-color: rgba(128, 128, 128, 0.2);
+}
+
+.achievement.locked .achievement-reward::after {
+    content: '???';
+    color: #666;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-style: italic;
+}
+
+.achievement-info-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 300px;
+    max-width: 40%;
+}
+
+/* Skill styles */
+.skill-tab[data-skill="Intelligens"] h3,
+.skill-tab[data-skill="Intelligens"] .level {
+    color: #00bfff;
+    text-shadow: 0 0 10px rgba(0, 191, 255, 0.3);
+}
+
+.skill-tab[data-skill="Intelligens"] .progress-fill {
+    background: linear-gradient(to right, #007bff, #00bfff);
+}
+
+.skill-tab[data-skill="Teknologi"] h3,
+.skill-tab[data-skill="Teknologi"] .level {
+    color: #00ff00;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.skill-tab[data-skill="Teknologi"] .progress-fill {
+    background: linear-gradient(to right, #00cc00, #00ff00);
+}
+
+.skill-tab[data-skill="Stamina"] h3,
+.skill-tab[data-skill="Stamina"] .level {
+    color: #ff4040;
+    text-shadow: 0 0 10px rgba(255, 64, 64, 0.3);
+}
+
+.skill-tab[data-skill="Stamina"] .progress-fill {
+    background: linear-gradient(to right, #cc0000, #ff4040);
+}
+
+.skill-tab[data-skill="Karisma"] h3,
+.skill-tab[data-skill="Karisma"] .level {
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.skill-tab[data-skill="Karisma"] .progress-fill {
+    background: linear-gradient(to right, #ccac00, #ffd700);
+}
+
+.skill-tab[data-skill="Kreativitet"] h3,
+.skill-tab[data-skill="Kreativitet"] .level {
+    color: #ff1493;
+    text-shadow: 0 0 10px rgba(255, 20, 147, 0.3);
+}
+
+.skill-tab[data-skill="Kreativitet"] .progress-fill {
+    background: linear-gradient(to right, #cc0066, #ff1493);
+}
+
+.skill-tab[data-skill="Flaks"] h3,
+.skill-tab[data-skill="Flaks"] .level {
+    color: #00ffff;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.skill-tab[data-skill="Flaks"] .progress-fill {
+    background: linear-gradient(to right, #00cccc, #00ffff);
+}
+
+/* Active states */
+.skill-tab[data-skill="Intelligens"].active {
+    background: rgba(0, 191, 255, 0.2);
+    border-color: rgba(0, 191, 255, 0.5);
+}
+
+.skill-tab[data-skill="Teknologi"].active {
+    background: rgba(0, 255, 0, 0.2);
+    border-color: rgba(0, 255, 0, 0.5);
+}
+
+.skill-tab[data-skill="Stamina"].active {
+    background: rgba(255, 64, 64, 0.2);
+    border-color: rgba(255, 64, 64, 0.5);
+}
+
+.skill-tab[data-skill="Karisma"].active {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: rgba(255, 215, 0, 0.5);
+}
+
+.skill-tab[data-skill="Kreativitet"].active {
+    background: rgba(255, 20, 147, 0.2);
+    border-color: rgba(255, 20, 147, 0.5);
+}
+
+.skill-tab[data-skill="Flaks"].active {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: rgba(0, 255, 255, 0.5);
+}
+
+/* Hover states */
+.skill-tab[data-skill="Intelligens"]:hover {
+    background: rgba(0, 191, 255, 0.1);
+}
+
+.skill-tab[data-skill="Teknologi"]:hover {
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.skill-tab[data-skill="Stamina"]:hover {
+    background: rgba(255, 64, 64, 0.1);
+}
+
+.skill-tab[data-skill="Karisma"]:hover {
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.skill-tab[data-skill="Kreativitet"]:hover {
+    background: rgba(255, 20, 147, 0.1);
+}
+
+.skill-tab[data-skill="Flaks"]:hover {
+    background: rgba(0, 255, 255, 0.1);
+} 

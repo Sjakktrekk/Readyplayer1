@@ -1,0 +1,670 @@
+body {
+    background-image: url('../bakgrunn.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    font-family: 'Courier New', monospace;
+    color: lime;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    background-blend-mode: overlay;
+}
+
+.container {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 3px solid lime;
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    backdrop-filter: blur(5px);
+    margin-top: 20px;
+    animation: flicker 8s infinite;
+}
+
+h1 {
+    text-align: center;
+    color: #00ff00;
+    font-size: 48px;
+    margin: 20px 0;
+    text-shadow: 
+        0 0 10px rgba(0, 255, 0, 0.3),
+        0 0 20px rgba(0, 255, 0, 0.2),
+        0 0 30px rgba(0, 255, 0, 0.1);
+    letter-spacing: 2px;
+    background: linear-gradient(180deg, 
+        rgba(16, 24, 48, 0.95) 0%,
+        rgba(24, 36, 72, 0.95) 100%
+    );
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid rgba(0, 255, 0, 0.2);
+    box-shadow: 
+        0 0 20px rgba(0, 255, 0, 0.1),
+        inset 0 0 30px rgba(0, 255, 0, 0.05);
+}
+
+h1 img {
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
+    transition: transform 0.3s ease;
+}
+
+h1 img:hover {
+    transform: scale(1.1);
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    height: 3px;
+    width: 150px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(0, 255, 0, 0.5), 
+        lime,
+        rgba(0, 255, 0, 0.5), 
+        transparent
+    );
+    bottom: -10px;
+}
+
+table {
+    max-width: 100%;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+    margin-top: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 255, 255, 0.1);
+}
+
+table::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        0deg,
+        transparent 0%,
+        rgba(0, 255, 255, 0.03) 10%,
+        rgba(0, 255, 255, 0.03) 90%,
+        transparent 100%
+    );
+    animation: scanline 8s linear infinite;
+    pointer-events: none;
+}
+
+th {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 8px;
+    border: 2px solid rgba(0, 255, 0, 0.4);
+    text-align: left;
+    background: linear-gradient(
+        180deg,
+        rgba(16, 24, 48, 0.95) 0%,
+        rgba(24, 36, 72, 0.95) 100%
+    );
+    color: #a0f0ff;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+    position: relative;
+}
+
+th::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 255, 255, 0.2),
+        rgba(0, 255, 255, 0.4),
+        rgba(0, 255, 255, 0.2),
+        transparent
+    );
+}
+
+th[data-skill="Intelligens"] {
+    color: #00bfff;
+    text-shadow: 0 0 10px rgba(0, 191, 255, 0.3);
+}
+
+th[data-skill="Teknologi"] {
+    color: #00ff00;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+th[data-skill="Stamina"] {
+    color: #ff4040;
+    text-shadow: 0 0 10px rgba(255, 64, 64, 0.3);
+}
+
+th[data-skill="Karisma"] {
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+th[data-skill="Kreativitet"] {
+    color: #ff1493;
+    text-shadow: 0 0 10px rgba(255, 20, 147, 0.3);
+}
+
+th[data-skill="Flaks"] {
+    color: #00ffff;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+th.exp-header {
+    color: #ff80ff;
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+th.exp-header button {
+    background: linear-gradient(180deg, #ff80ff 0%, #ff40ff 100%);
+    border: none;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    text-shadow: none;
+    transition: all 0.3s ease;
+}
+
+th.exp-header button:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05);
+}
+
+td {
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    padding: 4px 8px;
+    text-align: left;
+    color: #00ff00;
+    background-color: rgba(40, 44, 48, 0.95);
+    transition: all 0.3s ease;
+    height: 35px;
+}
+
+td.skill-cell {
+    min-width: 200px;
+    max-width: 200px;
+    position: relative;
+}
+
+td.player-cell {
+    min-width: 160px;
+    position: relative;
+    padding-right: 65px; /* Redusert padding */
+}
+
+td.exp-cell {
+    padding: 4px 8px;
+    position: relative;
+}
+
+td.exp-cell .button-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+td.exp-cell .exp-value {
+    font-size: 16px;
+    min-width: 30px;
+    height: 25px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 128, 255, 0.4);
+    background-color: rgba(32, 35, 38, 0.95);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    padding: 0 4px;
+    text-shadow: 0 0 10px rgba(255, 128, 255, 0.3);
+    color: #ff80ff;
+}
+
+td.exp-cell .small-button {
+    width: 25px;
+    height: 25px;
+    background: rgba(56, 16, 56, 0.95);
+    border: 1px solid rgba(255, 0, 255, 0.4);
+    color: #ff80ff;
+}
+
+td.exp-cell .small-button:hover {
+    background: rgba(72, 24, 72, 0.95);
+    border-color: #ff40ff;
+    color: #ffc0ff;
+    box-shadow: 0 0 8px rgba(255, 0, 255, 0.4);
+}
+
+td.exp-cell:hover {
+    background: rgba(56, 20, 56, 0.95);
+}
+
+tr:hover td {
+    background-color: rgba(50, 55, 60, 0.95);
+    border-color: lime;
+    transform: scale(1.02);
+}
+
+.progress-bar {         
+    width: 100px;
+    height: 15px;
+    flex-shrink: 0;
+    background-color: rgba(32, 35, 38, 0.95);
+    border: 1px solid rgba(0, 255, 0, 0.4);
+    border-radius: 3px;
+    overflow: hidden;
+    padding: 2px;
+}
+
+.container table .progress-bar {        /* Progressbarene i hovedvinduet */
+    width: 100px;
+    height: 15px;
+    flex-shrink: 0;
+    background-color: rgba(32, 35, 38, 0.95);
+    border: 1px solid rgba(0, 255, 0, 0.4);
+    border-radius: 3px;
+    overflow: hidden;
+    padding: 2px;
+}
+
+.skill-tab .progress-bar {
+    width: 100% !important;
+    height: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Progress bar colors for each skill */
+td[data-skill="Intelligens"] .progress-fill {
+    background: linear-gradient(to right, rgba(0, 191, 255, 0.7), rgba(0, 191, 255, 0.9));
+    box-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+}
+
+td[data-skill="Teknologi"] .progress-fill {
+    background: linear-gradient(to right, rgba(0, 255, 0, 0.7), rgba(0, 255, 0, 0.9));
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+td[data-skill="Stamina"] .progress-fill {
+    background: linear-gradient(to right, rgba(255, 64, 64, 0.7), rgba(255, 64, 64, 0.9));
+    box-shadow: 0 0 10px rgba(255, 64, 64, 0.5);
+}
+
+td[data-skill="Karisma"] .progress-fill {
+    background: linear-gradient(to right, rgba(255, 215, 0, 0.7), rgba(255, 215, 0, 0.9));
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+td[data-skill="Kreativitet"] .progress-fill {
+    background: linear-gradient(to right, rgba(255, 20, 147, 0.7), rgba(255, 20, 147, 0.9));
+    box-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
+}
+
+td[data-skill="Flaks"] .progress-fill {
+    background: linear-gradient(to right, rgba(0, 255, 255, 0.7), rgba(0, 255, 255, 0.9));
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.skill-value {
+    font-size: 16px;
+    min-width: 25px;
+    height: 25px;
+    flex-shrink: 0;
+    border: 1px solid rgba(0, 255, 0, 0.4);
+    background-color: rgba(32, 35, 38, 0.95);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    padding: 0 4px;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    color: #00ff00;
+}
+
+.exp-value {
+    min-width: 45px !important;
+    text-align: center;
+    padding: 0 4px;
+}
+
+.button-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.small-button {
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    border: 1px solid rgba(0, 255, 0, 0.4);
+    background-color: rgba(32, 35, 38, 0.95);
+    color: #00ff00;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.small-button:hover {
+    background-color: rgba(0, 64, 0, 0.95);
+    border-color: #00ff00;
+    transform: scale(1.1);
+}
+
+.exp-value {
+    min-width: 35px;
+    background: linear-gradient(45deg, 
+        rgba(0, 0, 0, 0.7),
+        rgba(0, 51, 0, 0.7)
+    );
+}
+
+a {
+    color: cyan;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+a:hover {
+    color: #00ffff;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+a::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background: linear-gradient(90deg, 
+        transparent,
+        cyan,
+        transparent
+    );
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+a:hover::after {
+    transform: scaleX(1);
+}
+
+/* Skill-specific button borders */
+td[data-skill="Intelligens"] .small-button,
+td[data-skill="Intelligens"] .skill-value {
+    border-color: rgba(0, 191, 255, 0.4);
+    color: #00bfff;
+}
+
+td[data-skill="Teknologi"] .small-button,
+td[data-skill="Teknologi"] .skill-value {
+    border-color: rgba(0, 255, 0, 0.4);
+    color: #00ff00;
+}
+
+td[data-skill="Stamina"] .small-button,
+td[data-skill="Stamina"] .skill-value {
+    border-color: rgba(255, 64, 64, 0.4);
+    color: #ff4040;
+}
+
+td[data-skill="Karisma"] .small-button,
+td[data-skill="Karisma"] .skill-value {
+    border-color: rgba(255, 215, 0, 0.4);
+    color: #ffd700;
+}
+
+td[data-skill="Kreativitet"] .small-button,
+td[data-skill="Kreativitet"] .skill-value {
+    border-color: rgba(255, 20, 147, 0.4);
+    color: #ff1493;
+}
+
+td[data-skill="Flaks"] .small-button,
+td[data-skill="Flaks"] .skill-value {
+    border-color: rgba(0, 255, 255, 0.4);
+    color: #00ffff;
+}
+
+/* Level display styles */
+.level-display {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    border-radius: 4px;
+    padding: 2px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+}
+
+.level-label {
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.level-number {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.player-name {
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid lime;
+    border-radius: 8px;
+    padding: 15px;
+    font-size: 14px;
+    color: white;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+    min-width: 200px;
+    backdrop-filter: blur(5px);
+}
+
+.player-tooltip.show {
+    opacity: 1;
+}
+
+.tooltip-stat {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.tooltip-stat:last-child {
+    border-bottom: none;
+}
+
+.tooltip-title {
+    color: lime;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+    border-bottom: 2px solid lime;
+    padding-bottom: 5px;
+}
+
+/* Styling for table headers with sort buttons */
+th {
+    position: relative;
+    padding-right: 30px; /* Make room for the button */
+}
+
+.sort-button {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 1px solid rgba(0, 255, 0, 0.4);
+    background: rgba(0, 255, 0, 0.1);
+    color: lime;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.sort-button:hover {
+    background: rgba(0, 255, 0, 0.2);
+}
+
+.skill-cell {
+    padding: 4px 8px;
+    position: relative;
+}
+
+.skill-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-start;
+}
+
+.button-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 85px;
+}
+
+.progress-bar {
+    width: 100px;
+    height: 15px;
+    flex-shrink: 0;
+    background-color: rgba(32, 35, 38, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    position: relative;
+    overflow: hidden;
+    border-radius: 3px;
+    padding: 2px;
+}
+
+.skill-value {
+    font-size: 16px;
+    min-width: 25px;
+    height: 25px;
+    flex-shrink: 0;
+    border: 1px solid rgba(0, 255, 0, 0.4);
+    background-color: rgba(32, 35, 38, 0.95);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    padding: 0 4px;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    color: #00ff00;
+}
+
+/* Styling for close buttons */
+.close, .close-button {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    font-size: 20px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close:hover, .close-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ff4444;
+}
+
+/* Buttons for export/import/add students */
+.action-button {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
+    border: 1px solid #3498db; 
+    color: #3498db; 
+    padding: 10px 20px; 
+    border-radius: 5px; 
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+    box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.action-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);
+}
+
+#lockButton {
+    background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+} 

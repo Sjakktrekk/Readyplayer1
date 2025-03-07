@@ -1,0 +1,93 @@
+/* NPC Modal Styles */
+#npcModal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    width: 80%;
+    max-width: 800px;
+    max-height: 80vh;
+    background: linear-gradient(135deg, rgba(16, 24, 48, 0.95) 0%, rgba(24, 36, 72, 0.95) 100%);
+    border: 2px solid #3498db;
+    border-radius: 15px;
+    padding: 20px;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    overflow-y: auto;
+}
+
+#npcModal.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+#npcModal select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #3498db;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+}
+
+#npcContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+#questContainer {
+    margin-top: 20px;
+}
+
+/* NPC Card Hover Effects */
+.npc-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.8);
+}
+
+/* Quest Card Hover Effects */
+.quest-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #npcModal {
+        width: 95%;
+        padding: 15px;
+    }
+    
+    #npcContainer {
+        grid-template-columns: 1fr;
+    }
+} 

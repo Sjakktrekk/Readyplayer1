@@ -1,0 +1,18 @@
+# OS-genererte filer
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Midlertidige filer
+*.tmp
+*.log
+*.bak
+
+# IDE-spesifikke filer
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Personlige konfigurasjonsfiler
+config.local.js

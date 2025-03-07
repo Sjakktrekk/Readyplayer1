@@ -1,0 +1,505 @@
+@keyframes levelUpGlow {
+    0% {
+        box-shadow: 0 0 5px gold;
+        transform: scale(1);
+        border-color: gold;
+    }
+    50% {
+        box-shadow: 0 0 30px gold;
+        transform: scale(1.1);
+        border-color: gold;
+        background: rgba(50, 45, 30, 0.95);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.4);
+        transform: scale(1);
+        border-color: rgba(255, 215, 0, 0.4);
+        background: rgba(32, 35, 38, 0.95);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes popIn {
+    0% {
+        transform: translate(-50%, -40%) scale(0.8);
+        opacity: 0;
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translate(-50%, 0) scale(0.8);
+        opacity: 0;
+    }
+    20% {
+        transform: translate(-50%, -20px) scale(1.2);
+        opacity: 1;
+    }
+    80% {
+        transform: translate(-50%, -40px) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -60px) scale(0.8);
+        opacity: 0;
+    }
+}
+
+@keyframes expandRing {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+@keyframes scanline {
+    0% {
+        transform: translateY(-100%);
+    }
+    100% {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes flicker {
+    0% { opacity: 0.97; }
+    5% { opacity: 0.95; }
+    10% { opacity: 0.9; }
+    15% { opacity: 0.95; }
+    20% { opacity: 0.98; }
+    25% { opacity: 0.95; }
+    30% { opacity: 0.9; }
+    35% { opacity: 0.95; }
+    40% { opacity: 0.98; }
+    45% { opacity: 0.95; }
+    50% { opacity: 0.9; }
+    55% { opacity: 0.95; }
+    60% { opacity: 0.98; }
+    65% { opacity: 0.95; }
+    70% { opacity: 0.9; }
+    75% { opacity: 0.95; }
+    80% { opacity: 0.98; }
+    85% { opacity: 0.95; }
+    90% { opacity: 0.9; }
+    95% { opacity: 0.95; }
+    100% { opacity: 0.98; }
+}
+
+/* Animasjon for OASIS modal bakgrunn */
+@keyframes moveBackground {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 100px 100px;
+    }
+}
+
+/* Pulserende animasjon for info-ikonet */
+@keyframes infoPulse {
+    0% {
+        transform: translateY(-50%) scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: translateY(-50%) scale(1.2);
+        opacity: 1;
+        text-shadow: 0 0 10px rgba(52, 152, 219, 0.8);
+    }
+    100% {
+        transform: translateY(-50%) scale(1);
+        opacity: 0.8;
+    }
+}
+
+/* Pulserende ramme for OASIS-modalen */
+@keyframes borderPulse {
+    0% { border-color: #3498db; box-shadow: 0 0 30px rgba(52, 152, 219, 0.8), 0 0 15px rgba(52, 152, 219, 0.5) inset; }
+    50% { border-color: #2980b9; box-shadow: 0 0 40px rgba(52, 152, 219, 0.9), 0 0 20px rgba(52, 152, 219, 0.6) inset; }
+    100% { border-color: #3498db; box-shadow: 0 0 30px rgba(52, 152, 219, 0.8), 0 0 15px rgba(52, 152, 219, 0.5) inset; }
+}
+
+.level-up-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.level-up-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    animation: expandRing 1s ease-out forwards;
+}
+
+.level-up-text {
+    position: fixed;
+    pointer-events: none;
+    font-size: 28px;
+    color: white;
+    text-shadow: 0 0 10px gold, 0 0 20px gold, 0 0 30px rgba(255, 215, 0, 0.7);
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation: levelUpFade 2s ease-out forwards;
+    z-index: 1000;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 2px solid gold;
+}
+
+@keyframes levelUpFade {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9) translateY(-20px);
+    }
+}
+
+.particle {
+    position: absolute;
+    pointer-events: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    opacity: 0;
+    filter: blur(1px);
+}
+
+@keyframes particleAnimation {
+    0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Skill-specific colors */
+.Intelligens .level-up-ring { box-shadow: 0 0 20px #00bfff, inset 0 0 20px #00bfff; border: 2px solid #00bfff; }
+.Teknologi .level-up-ring { box-shadow: 0 0 20px #00ff00, inset 0 0 20px #00ff00; border: 2px solid #00ff00; }
+.Stamina .level-up-ring { box-shadow: 0 0 20px #ff4040, inset 0 0 20px #ff4040; border: 2px solid #ff4040; }
+.Karisma .level-up-ring { box-shadow: 0 0 20px #ffd700, inset 0 0 20px #ffd700; border: 2px solid #ffd700; }
+.Kreativitet .level-up-ring { box-shadow: 0 0 20px #ff1493, inset 0 0 20px #ff1493; border: 2px solid #ff1493; }
+.Flaks .level-up-ring { box-shadow: 0 0 20px #00ffff, inset 0 0 20px #00ffff; border: 2px solid #00ffff; }
+
+.Intelligens .particle { background: #00bfff; box-shadow: 0 0 10px #00bfff; }
+.Teknologi .particle { background: #00ff00; box-shadow: 0 0 10px #00ff00; }
+.Stamina .particle { background: #ff4040; box-shadow: 0 0 10px #ff4040; }
+.Karisma .particle { background: #ffd700; box-shadow: 0 0 10px #ffd700; }
+.Kreativitet .particle { background: #ff1493; box-shadow: 0 0 10px #ff1493; }
+.Flaks .particle { background: #00ffff; box-shadow: 0 0 10px #00ffff; }
+
+/* Achievement notification */
+@keyframes achievementAppear {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8) rotate(-5deg);
+        opacity: 0;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    20% {
+        transform: translate(-50%, -50%) scale(1.1) rotate(2deg);
+        opacity: 1;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    80% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 1;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0.9) rotate(3deg);
+        opacity: 0;
+        clip-path: polygon(50% 0, 50% 0, 50% 100%, 50% 100%);
+    }
+}
+
+#achievementNotification {
+    position: fixed;
+    z-index: 9999;
+    background: rgba(30, 30, 30, 0.85);
+    border-radius: 15px;
+    padding: 20px;
+    width: 280px;
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+    transition: all 0.3s ease-out;
+    z-index: 9999;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+#achievementNotification::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, 
+        transparent 0%, 
+        rgba(0, 255, 255, 0.1) 45%, 
+        rgba(0, 255, 255, 0.2) 50%, 
+        rgba(0, 255, 255, 0.1) 55%, 
+        transparent 100%);
+    animation: shine 2s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-200%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(200%) rotate(45deg);
+    }
+}
+
+#achievementNotification h3 {
+    color: #0ff;
+    font-size: 24px;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+#achievementNotification .achievement-name {
+    font-size: 18px;
+    margin: 10px 0 5px 0;
+    color: white;
+    font-weight: 500;
+}
+
+#achievementNotification .achievement-description {
+    font-size: 14px;
+    margin: 5px 0;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.4;
+}
+
+/* Achievement Popup Styles */
+.achievement-popup {
+    position: fixed;
+    z-index: 9999;
+    padding: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+    pointer-events: none;
+    opacity: 0;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    min-width: 600px;
+    min-height: 300px;
+    margin: 0 auto;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+}
+
+.achievement-popup.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    animation: achievementPulse 5s ease-in-out;
+}
+
+@keyframes achievementPulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    5% { transform: translate(-50%, -50%) scale(1.02); }
+    10% { transform: translate(-50%, -50%) scale(1); }
+    15% { transform: translate(-50%, -50%) scale(1.01); }
+    20% { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.achievement-popup .icon {
+    font-size: 72px;
+    text-shadow: 0 0 40px currentColor;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); text-shadow: 0 0 40px currentColor; }
+    50% { transform: scale(1.2); text-shadow: 0 0 60px currentColor; }
+    100% { transform: scale(1); text-shadow: 0 0 40px currentColor; }
+}
+
+.achievement-popup .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+
+.achievement-popup .skill-name {
+    font-size: 32px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin: 0;
+    -webkit-text-stroke: 1px currentColor;
+}
+
+.achievement-popup h3 {
+    font-size: 2.4em;
+    margin: 0;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    line-height: 1.2;
+    -webkit-text-stroke: 1px currentColor;
+}
+
+.achievement-popup p {
+    font-size: 1.6em;
+    margin: 0;
+    font-weight: 700;
+    -webkit-text-stroke: 0.5px currentColor;
+}
+
+/* Skill-specific colors */
+.achievement-popup[data-skill="Intelligens"] .icon,
+.achievement-popup[data-skill="Intelligens"] .skill-name {
+    color: #00bfff;
+    text-shadow: 0 0 40px #00bfff;
+}
+.achievement-popup[data-skill="Intelligens"] h3 {
+    background: linear-gradient(to bottom, #00bfff, #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px #00bfff;
+}
+
+.achievement-popup[data-skill="Teknologi"] .icon,
+.achievement-popup[data-skill="Teknologi"] .skill-name {
+    color: #2ecc71;
+    text-shadow: 0 0 40px #2ecc71;
+}
+.achievement-popup[data-skill="Teknologi"] h3 {
+    background: linear-gradient(to bottom, #2ecc71, #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px #2ecc71;
+}
+
+.achievement-popup[data-skill="Stamina"] .icon,
+.achievement-popup[data-skill="Stamina"] .skill-name {
+    color: #ff4d4d;
+    text-shadow: 0 0 40px #ff4d4d;
+}
+.achievement-popup[data-skill="Stamina"] h3 {
+    background: linear-gradient(to bottom, #ff4d4d, #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px #ff4d4d;
+}
+
+.achievement-popup[data-skill="Karisma"] .icon,
+.achievement-popup[data-skill="Karisma"] .skill-name {
+    color: #ffd700;
+    text-shadow: 0 0 40px #ffd700;
+}
+.achievement-popup[data-skill="Karisma"] h3 {
+    background: linear-gradient(to bottom, #ffd700, #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px #ffd700;
+}
+
+.achievement-popup[data-skill="Kreativitet"] .icon,
+.achievement-popup[data-skill="Kreativitet"] .skill-name {
+    color: #ff1493;
+    text-shadow: 0 0 40px #ff1493;
+}
+.achievement-popup[data-skill="Kreativitet"] h3 {
+    background: linear-gradient(to bottom, #ff1493, #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px #ff1493;
+}
+
+.achievement-popup[data-skill="Flaks"] .icon,
+.achievement-popup[data-skill="Flaks"] .skill-name {
+    color: #00ffff;
+    text-shadow: 0 0 40px #00ffff;
+}
+.achievement-popup[data-skill="Flaks"] h3 {
+    background: linear-gradient(to bottom, #00ffff, #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px #00ffff;
+}
+
+.trophy-icon {
+    font-size: 24px;
+    color: gold;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.star-icon {
+    font-size: 20px;
+    color: gold;
+    margin-top: 5px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.info-pulse {
+    animation: infoPulse 2s infinite ease-in-out;
+}
+
+.border-pulse {
+    animation: borderPulse 2s infinite ease-in-out;
+} 

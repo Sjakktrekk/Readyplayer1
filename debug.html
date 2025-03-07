@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Ready Player One</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: #111;
+            color: lime;
+            padding: 20px;
+        }
+        #log {
+            background-color: #222;
+            border: 1px solid lime;
+            padding: 10px;
+            margin-top: 20px;
+            min-height: 200px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug - Ready Player One</h1>
+    <p>Denne siden laster inn alle JavaScript-filene og viser eventuelle feil i konsollen.</p>
+    <button id="testBtn">Test addDailyQuestsInline()</button>
+    <div id="log"></div>
+
+    <script>
+        // Enkel logger
+        const logElement = document.getElementById('log');
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        
+        console.log = function() {
+            originalConsoleLog.apply(console, arguments);
+            const args = Array.from(arguments).map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+            );
+            logElement.textContent += 'LOG: ' + args.join(' ') + '\n';
+        };
+        
+        console.error = function() {
+            originalConsoleError.apply(console, arguments);
+            const args = Array.from(arguments).map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg
+            );
+            logElement.textContent += 'ERROR: ' + args.join(' ') + '\n';
+        };
+        
+        // Fang opp globale feil
+        window.onerror = function(message, source, lineno, colno, error) {
+            logElement.textContent += `ERROR: ${message} (${source}:${lineno}:${colno})\n`;
+            return false;
+        };
+        
+        // Test-knapp
+        document.getElementById('testBtn').addEventListener('click', function() {
+            try {
+                console.log('Kaller addDailyQuestsInline()...');
+                addDailyQuestsInline();
+                console.log('addDailyQuestsInline() ble kalt uten feil');
+            } catch (error) {
+                console.error('Feil ved kall til addDailyQuestsInline():', error);
+            }
+        });
+        
+        // Logg når filene er lastet
+        console.log('Debug-side lastet');
+    </script>
+    
+    <!-- JavaScript-filer -->
+    <script src="js/achievements.js"></script>
+    <script src="js/students.js"></script>
+    <script src="js/items.js"></script>
+    <script src="js/quests.js"></script>
+    <script src="js/main.js"></script>
+    
+    <script>
+        console.log('Alle JavaScript-filer er lastet');
+    </script>
+</body>
+</html> 
