@@ -188,6 +188,180 @@ const items = [
         description: "Gir 2000 XP - Du kan ikke se det, men det gir deg XP. Ikke mist det!", 
         icon: "⚫", 
         rarity: "legendary"
+    },
+    
+    // NYE EQUIPMENT ITEMS - HODE
+    { 
+        id: 38, 
+        name: "Cyberpunk Hjelm", 
+        description: "Øker Intelligens med +2 når utstyrt", 
+        icon: "🪖", 
+        rarity: "rare",
+        slot: "head",
+        stats: { Intelligens: 2 }
+    },
+    { 
+        id: 39, 
+        name: "Neon Hodetelefoner", 
+        description: "Øker Teknologi med +2 når utstyrt", 
+        icon: "🎧", 
+        rarity: "epic",
+        slot: "head",
+        stats: { Teknologi: 2 }
+    },
+    { 
+        id: 40, 
+        name: "Virtuell Virkelighets Briller", 
+        description: "Øker Kreativitet med +3 når utstyrt", 
+        icon: "🥽", 
+        rarity: "legendary",
+        slot: "head",
+        stats: { Kreativitet: 3 }
+    },
+    
+    // NYE EQUIPMENT ITEMS - BRYST
+    { 
+        id: 41, 
+        name: "Kevlar Vest", 
+        description: "Øker Stamina med +2 når utstyrt", 
+        icon: "🦺", 
+        rarity: "rare",
+        slot: "chest",
+        stats: { Stamina: 2 }
+    },
+    { 
+        id: 42, 
+        name: "Holografisk Rustning", 
+        description: "Øker Teknologi med +2 og Stamina med +1 når utstyrt", 
+        icon: "🛡️", 
+        rarity: "epic",
+        slot: "chest",
+        stats: { Teknologi: 2, Stamina: 1 }
+    },
+    { 
+        id: 43, 
+        name: "Quantum Brystplate", 
+        description: "Øker alle stats med +1 når utstyrt", 
+        icon: "⚡", 
+        rarity: "legendary",
+        slot: "chest",
+        stats: { Intelligens: 1, Teknologi: 1, Stamina: 1, Karisma: 1, Kreativitet: 1, Flaks: 1 }
+    },
+    
+    // NYE EQUIPMENT ITEMS - HENDER
+    { 
+        id: 44, 
+        name: "Taktiske Hansker", 
+        description: "Øker Stamina med +2 når utstyrt", 
+        icon: "🧤", 
+        rarity: "rare",
+        slot: "hands",
+        stats: { Stamina: 2 }
+    },
+    { 
+        id: 45, 
+        name: "Hackerhansker", 
+        description: "Øker Teknologi med +3 når utstyrt", 
+        icon: "🧠", 
+        rarity: "epic",
+        slot: "hands",
+        stats: { Teknologi: 3 }
+    },
+    { 
+        id: 46, 
+        name: "Magiske Hansker", 
+        description: "Øker Flaks med +3 og Kreativitet med +1 når utstyrt", 
+        icon: "✨", 
+        rarity: "legendary",
+        slot: "hands",
+        stats: { Flaks: 3, Kreativitet: 1 }
+    },
+    
+    // NYE EQUIPMENT ITEMS - BEIN
+    { 
+        id: 47, 
+        name: "Taktiske Bukser", 
+        description: "Øker Stamina med +2 når utstyrt", 
+        icon: "👖", 
+        rarity: "rare",
+        slot: "legs",
+        stats: { Stamina: 2 }
+    },
+    { 
+        id: 48, 
+        name: "Neon Leggings", 
+        description: "Øker Karisma med +3 når utstyrt", 
+        icon: "🦿", 
+        rarity: "epic",
+        slot: "legs",
+        stats: { Karisma: 3 }
+    },
+    { 
+        id: 49, 
+        name: "Gravitasjons Bukser", 
+        description: "Øker Stamina med +2 og Flaks med +2 når utstyrt", 
+        icon: "🌌", 
+        rarity: "legendary",
+        slot: "legs",
+        stats: { Stamina: 2, Flaks: 2 }
+    },
+    
+    // NYE EQUIPMENT ITEMS - FØTTER
+    { 
+        id: 50, 
+        name: "Løpesko", 
+        description: "Øker Stamina med +2 når utstyrt", 
+        icon: "👟", 
+        rarity: "rare",
+        slot: "feet",
+        stats: { Stamina: 2 }
+    },
+    { 
+        id: 51, 
+        name: "Jetboots", 
+        description: "Øker Teknologi med +2 og Stamina med +1 når utstyrt", 
+        icon: "🚀", 
+        rarity: "epic",
+        slot: "feet",
+        stats: { Teknologi: 2, Stamina: 1 }
+    },
+    { 
+        id: 52, 
+        name: "Kvantestøvler", 
+        description: "Øker Flaks med +3 og Stamina med +1 når utstyrt", 
+        icon: "⚡", 
+        rarity: "legendary",
+        slot: "feet",
+        stats: { Flaks: 3, Stamina: 1 }
+    },
+    
+    // NYE EQUIPMENT ITEMS - TILBEHØR
+    { 
+        id: 53, 
+        name: "Lykkeamulett", 
+        description: "Øker Flaks med +2 når utstyrt", 
+        icon: "🍀", 
+        rarity: "rare",
+        slot: "accessory",
+        stats: { Flaks: 2 }
+    },
+    { 
+        id: 54, 
+        name: "Holografisk Armbånd", 
+        description: "Øker Karisma med +2 og Teknologi med +1 når utstyrt", 
+        icon: "💫", 
+        rarity: "epic",
+        slot: "accessory",
+        stats: { Karisma: 2, Teknologi: 1 }
+    },
+    { 
+        id: 55, 
+        name: "Tidskrystall", 
+        description: "Øker Intelligens med +2 og Kreativitet med +2 når utstyrt", 
+        icon: "💎", 
+        rarity: "legendary",
+        slot: "accessory",
+        stats: { Intelligens: 2, Kreativitet: 2 }
     }
 ];
 
@@ -290,6 +464,9 @@ function openItemBagModal(studentIndex) {
         // Oppdater visningen av gjenstander
         updateItemsDisplay(studentIndex);
     }, 100);
+    
+    // Oppdater equipment slots
+    updateEquipmentDisplay(studentIndex);
 }
 
 // Funksjon for å lukke itembag-modalen
@@ -406,6 +583,7 @@ function updateItemsDisplay(studentIndex) {
             const itemElement = document.createElement('div');
             itemElement.className = 'item-card';
             itemElement.setAttribute('data-rarity', item.rarity);
+            itemElement.setAttribute('data-item-id', item.id);
             
             // Legg til spesielle effekter for legendariske gjenstander
             const legendaryEffect = item.rarity === 'legendary' ? 
@@ -477,12 +655,40 @@ function updateItemsDisplay(studentIndex) {
             rarityBadge.textContent = rarityName;
             contentDiv.appendChild(rarityBadge);
             
+            // Legg til slot-merke hvis gjenstanden kan equippes
+            if (item.slot) {
+                const slotNames = {
+                    head: 'Hode',
+                    chest: 'Bryst',
+                    hands: 'Hender',
+                    legs: 'Bein',
+                    feet: 'Føtter',
+                    accessory: 'Tilbehør'
+                };
+                
+                const slotBadge = document.createElement('div');
+                slotBadge.style.cssText = `
+                    position: absolute;
+                    top: -5px;
+                    left: -5px;
+                    background: rgba(0, 255, 255, 0.7);
+                    color: #000;
+                    font-size: 10px;
+                    padding: 3px 6px;
+                    border-radius: 3px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+                `;
+                slotBadge.textContent = slotNames[item.slot];
+                contentDiv.appendChild(slotBadge);
+            }
+            
             // Legg til ikon
             const iconDiv = document.createElement('div');
-            iconDiv.className = 'item-icon';
             iconDiv.style.cssText = `
-                color: ${rarityColor};
-                font-size: 36px;
+                font-size: 48px;
                 margin: 10px 0;
                 text-shadow: 0 0 10px ${rarityGlow};
             `;
@@ -491,121 +697,118 @@ function updateItemsDisplay(studentIndex) {
             
             // Legg til navn
             const nameDiv = document.createElement('div');
-            nameDiv.className = 'item-name';
             nameDiv.style.cssText = `
-                color: ${rarityColor};
-                font-weight: bold;
                 font-size: 16px;
-                margin-bottom: 8px;
+                font-weight: bold;
+                margin-bottom: 5px;
+                color: ${rarityColor};
                 text-shadow: 0 0 5px ${rarityGlow};
-                font-family: 'Courier New', monospace;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
             `;
             nameDiv.textContent = item.name;
             contentDiv.appendChild(nameDiv);
             
             // Legg til beskrivelse
             const descDiv = document.createElement('div');
-            descDiv.className = 'item-description';
             descDiv.style.cssText = `
+                font-size: 12px;
                 color: rgba(255, 255, 255, 0.7);
-                font-size: 13px;
                 margin-bottom: 10px;
                 flex-grow: 1;
             `;
             descDiv.textContent = item.description;
             contentDiv.appendChild(descDiv);
             
-            // Legg til fjern-knapp
-            const removeButton = document.createElement('button');
-            removeButton.className = 'remove-item-button';
-            removeButton.style.cssText = `
-                background: rgba(0, 128, 255, 0.2);
-                color: #00aaff;
-                border: 1px solid #00aaff;
-                border-radius: 4px;
-                padding: 5px 10px;
-                font-size: 12px;
-                cursor: pointer;
-                margin-top: 5px;
-                transition: all 0.3s ease;
-                font-family: 'Courier New', monospace;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
+            // Legg til knapper
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.style.cssText = `
+                display: flex;
+                justify-content: space-between;
                 width: 100%;
-                opacity: 0.7;
+                margin-top: auto;
             `;
-            removeButton.innerHTML = '<i class="fas fa-magic" style="margin-right: 5px;"></i> Bruk';
-            removeButton.onclick = function(e) {
-                e.stopPropagation(); // Hindre at klikket bobler opp
-                removeItemFromBackpack(studentIndex, itemId);
+            
+            // Bruk-knapp
+            const useButton = document.createElement('button');
+            useButton.style.cssText = `
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid ${rarityColor};
+                color: ${rarityColor};
+                padding: 5px 10px;
+                border-radius: 3px;
+                cursor: pointer;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+                transition: all 0.3s ease;
+                flex: 1;
+                margin-right: 5px;
+                text-shadow: 0 0 5px ${rarityGlow};
+            `;
+            useButton.textContent = item.slot ? 'UTSTYR' : 'BRUK';
+            useButton.onmouseover = function() {
+                this.style.background = `rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.2)`;
+                this.style.transform = 'scale(1.05)';
+            };
+            useButton.onmouseout = function() {
+                this.style.background = 'rgba(0, 0, 0, 0.5)';
+                this.style.transform = 'scale(1)';
             };
             
-            // Legg til hover-effekter for fjern-knappen
-            removeButton.addEventListener('mouseover', function() {
-                this.style.background = 'rgba(0, 128, 255, 0.4)';
-                this.style.color = '#33bbff';
-                this.style.opacity = '1';
-                this.style.boxShadow = '0 0 8px rgba(0, 128, 255, 0.5)';
-            });
+            // Legg til klikk-hendelse for bruk-knappen
+            useButton.onclick = function(event) {
+                event.stopPropagation(); // Hindre at item-kortet også reagerer på klikket
+                
+                if (item.slot) {
+                    // Hvis gjenstanden kan equippes, prøv å equipe den
+                    equipItem(studentIndex, item.id, item.slot);
+                } else {
+                    // Ellers, bruk den vanlige removeItemFromBackpack-funksjonen
+                    removeItemFromBackpack(studentIndex, item.id);
+                }
+            };
             
-            removeButton.addEventListener('mouseout', function() {
-                this.style.background = 'rgba(0, 128, 255, 0.2)';
-                this.style.color = '#00aaff';
-                this.style.opacity = '0.7';
-                this.style.boxShadow = 'none';
-            });
+            buttonsDiv.appendChild(useButton);
             
-            // Legg til selg-knapp
+            // Selg-knapp
             const sellButton = document.createElement('button');
-            sellButton.className = 'sell-item-button';
             sellButton.style.cssText = `
-                background: rgba(0, 255, 0, 0.2);
-                color: #00ff00;
-                border: 1px solid #00ff00;
-                border-radius: 4px;
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid #e74c3c;
+                color: #e74c3c;
                 padding: 5px 10px;
-                font-size: 12px;
+                border-radius: 3px;
                 cursor: pointer;
-                margin-top: 5px;
-                transition: all 0.3s ease;
                 font-family: 'Courier New', monospace;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                width: 100%;
-                opacity: 0.7;
+                font-size: 12px;
+                transition: all 0.3s ease;
+                flex: 1;
+                margin-left: 5px;
+                text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
             `;
-            sellButton.innerHTML = '<i class="fas fa-exchange-alt" style="margin-right: 5px;"></i> Selg';
-            sellButton.onclick = function(e) {
-                e.stopPropagation(); // Hindre at klikket bobler opp
-                showSellItemDialog(studentIndex, itemId, item);
+            sellButton.textContent = 'SELG';
+            sellButton.onmouseover = function() {
+                this.style.background = 'rgba(231, 76, 60, 0.2)';
+                this.style.transform = 'scale(1.05)';
+            };
+            sellButton.onmouseout = function() {
+                this.style.background = 'rgba(0, 0, 0, 0.5)';
+                this.style.transform = 'scale(1)';
             };
             
-            // Legg til hover-effekter for selg-knappen
-            sellButton.addEventListener('mouseover', function() {
-                this.style.background = 'rgba(0, 255, 0, 0.4)';
-                this.style.color = '#33ff33';
-                this.style.opacity = '1';
-                this.style.boxShadow = '0 0 8px rgba(0, 255, 0, 0.5)';
-            });
+            // Legg til klikk-hendelse for selg-knappen
+            sellButton.onclick = function(event) {
+                event.stopPropagation(); // Hindre at item-kortet også reagerer på klikket
+                showSellItemDialog(studentIndex, item.id, item);
+            };
             
-            sellButton.addEventListener('mouseout', function() {
-                this.style.background = 'rgba(0, 255, 0, 0.2)';
-                this.style.color = '#00ff00';
-                this.style.opacity = '0.7';
-                this.style.boxShadow = 'none';
-            });
-            
-            contentDiv.appendChild(removeButton);
-            contentDiv.appendChild(sellButton);
+            buttonsDiv.appendChild(sellButton);
+            contentDiv.appendChild(buttonsDiv);
             
             itemElement.appendChild(contentDiv);
             
-            // Legg til hover-effekter
+            // Legg til hover-effekt
             itemElement.onmouseover = function() {
                 this.style.transform = 'translateY(-5px) scale(1.03)';
-                this.style.boxShadow = `0 5px 15px ${rarityGlow}`;
+                this.style.boxShadow = `0 10px 20px ${rarityGlow}`;
                 this.style.zIndex = '10';
             };
             
@@ -1299,4 +1502,415 @@ function showItemSoldMessage(itemName) {
             }
         }, 300);
     }, 3000);
-} 
+}
+
+// Funksjon for å equipe en gjenstand i en equipment slot
+function equipItem(studentIndex, itemId, slotType) {
+    const student = students[studentIndex];
+    
+    // Sjekk om studenten har equipment-objektet, hvis ikke, opprett det
+    if (!student.equipment) {
+        student.equipment = {
+            head: null,
+            chest: null,
+            hands: null,
+            legs: null,
+            feet: null,
+            accessory: null
+        };
+    }
+    
+    // Finn gjenstanden
+    const item = items.find(i => i.id === itemId);
+    if (!item) return false;
+    
+    // Sjekk om gjenstanden kan equippes i denne sloten
+    if (item.slot !== slotType) {
+        showItemUsedMessage(`${item.name} kan ikke utstyres i ${slotType}-sloten!`);
+        return false;
+    }
+    
+    // Sjekk om det allerede er en gjenstand i sloten
+    const currentEquippedItemId = student.equipment[slotType];
+    if (currentEquippedItemId) {
+        // Unequip den nåværende gjenstanden først
+        unequipItem(studentIndex, slotType);
+    }
+    
+    // Equip den nye gjenstanden
+    student.equipment[slotType] = itemId;
+    
+    // Fjern gjenstanden fra ryggsekken
+    const itemIndex = student.items.indexOf(itemId);
+    if (itemIndex !== -1) {
+        student.items.splice(itemIndex, 1);
+    }
+    
+    // Oppdater studentens stats basert på gjenstandens bonuser
+    if (item.stats) {
+        for (const [stat, value] of Object.entries(item.stats)) {
+            if (!student.equipmentBonuses) {
+                student.equipmentBonuses = {};
+            }
+            if (!student.equipmentBonuses[stat]) {
+                student.equipmentBonuses[stat] = 0;
+            }
+            student.equipmentBonuses[stat] += value;
+        }
+    }
+    
+    // Lagre endringene
+    saveData();
+    
+    // Oppdater visningen
+    updateItemsDisplay(studentIndex);
+    updateEquipmentDisplay(studentIndex);
+    
+    // Vis melding
+    showItemUsedMessage(`${item.name} er nå utstyrt i ${slotType}-sloten!`);
+    
+    return true;
+}
+
+// Funksjon for å unequipe en gjenstand fra en equipment slot
+function unequipItem(studentIndex, slotType) {
+    const student = students[studentIndex];
+    
+    // Sjekk om studenten har equipment-objektet
+    if (!student.equipment || !student.equipment[slotType]) {
+        return false;
+    }
+    
+    // Finn gjenstanden som er utstyrt
+    const itemId = student.equipment[slotType];
+    const item = items.find(i => i.id === itemId);
+    if (!item) return false;
+    
+    // Fjern bonuser fra studentens stats
+    if (item.stats) {
+        for (const [stat, value] of Object.entries(item.stats)) {
+            if (student.equipmentBonuses && student.equipmentBonuses[stat]) {
+                student.equipmentBonuses[stat] -= value;
+                
+                // Fjern stat-bonusen hvis den er 0
+                if (student.equipmentBonuses[stat] === 0) {
+                    delete student.equipmentBonuses[stat];
+                }
+            }
+        }
+        
+        // Fjern equipmentBonuses-objektet hvis det er tomt
+        if (student.equipmentBonuses && Object.keys(student.equipmentBonuses).length === 0) {
+            delete student.equipmentBonuses;
+        }
+    }
+    
+    // Fjern gjenstanden fra equipment
+    student.equipment[slotType] = null;
+    
+    // Legg gjenstanden tilbake i ryggsekken
+    if (!student.items) {
+        student.items = [];
+    }
+    student.items.push(itemId);
+    
+    // Lagre endringene
+    saveData();
+    
+    // Oppdater visningen
+    updateItemsDisplay(studentIndex);
+    updateEquipmentDisplay(studentIndex);
+    
+    // Vis melding
+    showItemUsedMessage(`${item.name} er nå fjernet fra ${slotType}-sloten!`);
+    
+    return true;
+}
+
+// Funksjon for å oppdatere visningen av equipment slots
+function updateEquipmentDisplay(studentIndex) {
+    const student = students[studentIndex];
+    
+    // Sjekk om studenten har equipment-objektet
+    if (!student.equipment) {
+        student.equipment = {
+            head: null,
+            chest: null,
+            hands: null,
+            legs: null,
+            feet: null,
+            accessory: null
+        };
+    }
+    
+    // Oppdater hver equipment slot
+    const slotTypes = ['head', 'chest', 'hands', 'legs', 'feet', 'accessory'];
+    slotTypes.forEach(slotType => {
+        const slotElement = document.querySelector(`.equipment-slot[data-slot="${slotType}"]`);
+        if (!slotElement) return;
+        
+        const itemId = student.equipment[slotType];
+        if (itemId) {
+            // Finn gjenstanden
+            const item = items.find(i => i.id === itemId);
+            if (item) {
+                // Bestem farge basert på sjeldenhetsgrad
+                let rarityColor, rarityGlow;
+                switch(item.rarity) {
+                    case 'rare':
+                        rarityColor = '#3498db';
+                        rarityGlow = 'rgba(52, 152, 219, 0.5)';
+                        break;
+                    case 'epic':
+                        rarityColor = '#9b59b6';
+                        rarityGlow = 'rgba(155, 89, 182, 0.5)';
+                        break;
+                    case 'legendary':
+                        rarityColor = '#f1c40f';
+                        rarityGlow = 'rgba(241, 196, 15, 0.5)';
+                        break;
+                    default:
+                        rarityColor = '#ffffff';
+                        rarityGlow = 'rgba(255, 255, 255, 0.5)';
+                }
+                
+                // Oppdater slotens utseende
+                slotElement.innerHTML = `
+                    <div style="font-size: 32px; margin-bottom: 5px;">${item.icon}</div>
+                    <div style="font-size: 12px; color: ${rarityColor}; text-shadow: 0 0 5px ${rarityGlow};">${item.name}</div>
+                `;
+                slotElement.style.border = `2px solid ${rarityColor}`;
+                slotElement.style.boxShadow = `0 0 10px ${rarityGlow}`;
+                slotElement.style.background = 'rgba(0, 0, 0, 0.5)';
+                slotElement.style.position = 'relative';
+                
+                // Legg til tooltip
+                slotElement.onmouseover = function() {
+                    // Fjern eksisterende tooltip hvis det finnes
+                    const existingTooltip = document.getElementById('equipment-tooltip');
+                    if (existingTooltip) {
+                        existingTooltip.remove();
+                    }
+                    
+                    // Opprett tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.id = 'equipment-tooltip';
+                    
+                    // Bestem sjeldenhetsgrad-tekst
+                    let rarityName;
+                    switch(item.rarity) {
+                        case 'rare':
+                            rarityName = 'SJELDEN';
+                            break;
+                        case 'epic':
+                            rarityName = 'EPISK';
+                            break;
+                        case 'legendary':
+                            rarityName = 'LEGENDARISK';
+                            break;
+                        default:
+                            rarityName = 'UKJENT';
+                    }
+                    
+                    // Generer stats-tekst
+                    let statsText = '';
+                    if (item.stats) {
+                        for (const [stat, value] of Object.entries(item.stats)) {
+                            statsText += `<div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                <span>${stat}:</span>
+                                <span style="color: #0f0;">+${value}</span>
+                            </div>`;
+                        }
+                    }
+                    
+                    // Sett tooltip-innhold
+                    tooltip.innerHTML = `
+                        <div style="
+                            position: absolute;
+                            z-index: 1000;
+                            width: 250px;
+                            background: rgba(0, 0, 0, 0.9);
+                            border: 2px solid ${rarityColor};
+                            border-radius: 8px;
+                            padding: 15px;
+                            color: white;
+                            font-family: 'Courier New', monospace;
+                            box-shadow: 0 0 15px ${rarityGlow};
+                            pointer-events: none;
+                            left: 100%;
+                            top: 0;
+                            margin-left: 10px;
+                        ">
+                            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                                <div style="font-size: 32px; margin-right: 10px;">${item.icon}</div>
+                                <div>
+                                    <div style="font-size: 16px; font-weight: bold; color: ${rarityColor}; text-shadow: 0 0 5px ${rarityGlow};">${item.name}</div>
+                                    <div style="font-size: 12px; color: ${rarityColor}; margin-top: 2px;">${rarityName}</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 14px; margin-bottom: 15px; color: rgba(255, 255, 255, 0.8);">${item.description}</div>
+                            <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 5px; padding: 10px;">
+                                <div style="font-size: 14px; color: #0ff; margin-bottom: 8px; text-align: center;">BONUSER</div>
+                                ${statsText}
+                            </div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-top: 10px; text-align: center;">Klikk for å fjerne</div>
+                        </div>
+                    `;
+                    
+                    // Legg til tooltip i DOM
+                    slotElement.appendChild(tooltip);
+                };
+                
+                slotElement.onmouseout = function() {
+                    // Fjern tooltip
+                    const tooltip = document.getElementById('equipment-tooltip');
+                    if (tooltip) {
+                        tooltip.remove();
+                    }
+                };
+                
+                // Legg til klikk-hendelse for å unequipe
+                slotElement.onclick = function() {
+                    unequipItem(studentIndex, slotType);
+                };
+            }
+        } else {
+            // Tilbakestill slotens utseende
+            const slotIcons = {
+                head: '🪖',
+                chest: '🛡️',
+                hands: '🧤',
+                legs: '👖',
+                feet: '👟',
+                accessory: '💍'
+            };
+            
+            const slotNames = {
+                head: 'Hode',
+                chest: 'Bryst',
+                hands: 'Hender',
+                legs: 'Bein',
+                feet: 'Føtter',
+                accessory: 'Tilbehør'
+            };
+            
+            slotElement.innerHTML = `
+                <div style="font-size: 24px; color: rgba(255, 255, 255, 0.3); margin-bottom: 5px;">${slotIcons[slotType]}</div>
+                <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5);">${slotNames[slotType]}</div>
+            `;
+            slotElement.style.border = '1px dashed rgba(0, 255, 255, 0.3)';
+            slotElement.style.boxShadow = 'none';
+            slotElement.style.background = 'rgba(0, 0, 0, 0.3)';
+            
+            // Fjern hendelser
+            slotElement.onmouseover = null;
+            slotElement.onmouseout = null;
+            slotElement.onclick = null;
+        }
+    });
+    
+    // Oppdater equipment bonuses
+    updateEquipmentBonusesDisplay(studentIndex);
+}
+
+// Funksjon for å oppdatere visningen av equipment bonuses
+function updateEquipmentBonusesDisplay(studentIndex) {
+    const student = students[studentIndex];
+    const bonusesElement = document.getElementById('equipmentBonuses');
+    if (!bonusesElement) return;
+    
+    // Tøm containeren
+    bonusesElement.innerHTML = '';
+    
+    // Opprett standard stats-visning
+    const stats = ['Intelligens', 'Teknologi', 'Stamina', 'Karisma', 'Kreativitet', 'Flaks'];
+    stats.forEach(stat => {
+        const bonus = student.equipmentBonuses && student.equipmentBonuses[stat] ? student.equipmentBonuses[stat] : 0;
+        const color = bonus > 0 ? '#0f0' : (bonus < 0 ? '#f00' : '#fff');
+        
+        const statElement = document.createElement('div');
+        statElement.style.cssText = 'display: flex; justify-content: space-between; margin-bottom: 3px;';
+        statElement.innerHTML = `
+            <span>${stat}:</span>
+            <span style="color: ${color};">${bonus > 0 ? '+' : ''}${bonus}</span>
+        `;
+        
+        bonusesElement.appendChild(statElement);
+    });
+}
+
+// Oppdater updateItemsDisplay-funksjonen for å legge til drag-and-drop funksjonalitet
+const originalUpdateItemsDisplay = updateItemsDisplay;
+updateItemsDisplay = function(studentIndex) {
+    // Kall den originale funksjonen først
+    originalUpdateItemsDisplay(studentIndex);
+    
+    // Legg til drag-and-drop funksjonalitet for gjenstander
+    const itemElements = document.querySelectorAll('.item-card');
+    itemElements.forEach(itemElement => {
+        const itemId = parseInt(itemElement.getAttribute('data-item-id'));
+        const item = items.find(i => i.id === itemId);
+        
+        // Legg til draggable-attributt hvis gjenstanden kan equippes
+        if (item && item.slot) {
+            itemElement.setAttribute('draggable', 'true');
+            
+            // Legg til dragstart-hendelse
+            itemElement.ondragstart = function(event) {
+                event.dataTransfer.setData('text/plain', JSON.stringify({
+                    studentIndex: studentIndex,
+                    itemId: itemId,
+                    slot: item.slot
+                }));
+            };
+        };
+    });
+    
+    // Legg til drop-hendelser for equipment slots
+    const slotElements = document.querySelectorAll('.equipment-slot');
+    slotElements.forEach(slotElement => {
+        const slotType = slotElement.getAttribute('data-slot');
+        
+        // Legg til dragover-hendelse
+        slotElement.ondragover = function(event) {
+            event.preventDefault();
+            
+            // Endre utseende for å indikere at sloten kan ta imot gjenstanden
+            slotElement.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.8)';
+        };
+        
+        // Legg til dragleave-hendelse
+        slotElement.ondragleave = function(event) {
+            // Tilbakestill utseende
+            slotElement.style.boxShadow = 'none';
+        };
+        
+        // Legg til drop-hendelse
+        slotElement.ondrop = function(event) {
+            event.preventDefault();
+            
+            // Tilbakestill utseende
+            slotElement.style.boxShadow = 'none';
+            
+            // Hent data fra drag-hendelsen
+            const data = JSON.parse(event.dataTransfer.getData('text/plain'));
+            
+            // Sjekk om gjenstanden kan equippes i denne sloten
+            if (data.slot === slotType) {
+                equipItem(data.studentIndex, data.itemId, slotType);
+            } else {
+                showItemUsedMessage(`Denne gjenstanden kan ikke utstyres i ${slotType}-sloten!`);
+            }
+        };
+    });
+};
+
+// Oppdater openItemBagModal-funksjonen for å også oppdatere equipment slots
+const originalOpenItemBagModal = openItemBagModal;
+openItemBagModal = function(studentIndex) {
+    // Kall den originale funksjonen først
+    originalOpenItemBagModal(studentIndex);
+    
+    // Oppdater equipment slots
+    updateEquipmentDisplay(studentIndex);
+}; 

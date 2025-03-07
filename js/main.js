@@ -472,6 +472,8 @@ function closeAddPlayersModal() {
 
 // Funksjon for å legge til flere spillere samtidig
 function addMultiplePlayers() {
+    // Fjern sjekken for pinVerifiedForAddingPlayers siden vi nå håndterer dette på en annen måte
+    
     const namesInput = document.getElementById('playerNamesInput').value.trim();
     
     if (!namesInput) {
@@ -661,6 +663,9 @@ const originalFunctions = {
     addPredefinedStudents: addPredefinedStudents,
     removeAllPlayers: removeAllPlayers
 };
+
+// Variabel for å holde styr på om PIN-koden er verifisert for å legge til spillere
+let pinVerifiedForAddingPlayers = false;
 
 // Funksjon for å vise stilisert PIN-dialog og utføre handling
 function showPinDialog(actionName) {
@@ -1036,10 +1041,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false; // Forhindre standard handling
             };
         } else if (buttonText.includes('Legg til spillere')) {
-            button.onclick = function() {
-                showPinDialog("addPredefinedStudents");
-                return false; // Forhindre standard handling
-            };
+            // Sjekk om knappen er inne i addPlayersModal
+            const isInAddPlayersModal = button.closest('#addPlayersModal') !== null;
+            
+            if (isInAddPlayersModal) {
+                // Hvis knappen er inne i addPlayersModal, ikke vis PIN-dialogen
+                button.onclick = function() {
+                    addMultiplePlayers();
+                    return false; // Forhindre standard handling
+                };
+            } else {
+                // Hvis knappen er i hovedgrensesnittet, kall addPredefinedStudents direkte uten PIN-kode
+                button.onclick = function() {
+                    addPredefinedStudents();
+                    return false; // Forhindre standard handling
+                };
+            }
         } else if (buttonText.includes('Fjern alle spillere')) {
             button.onclick = function() {
                 showPinDialog("removeAllPlayers");

@@ -25,6 +25,14 @@ const shopItems = [
         effect: 'double_xp_chance'
     },
     {
+        id: 'try_your_luck',
+        name: 'Prøv lykken',
+        description: 'Du får en tilfeldig gjenstand fra butikkens lager',
+        icon: '🎁',
+        price: 3000,
+        effect: 'random_item'
+    },
+    {
         id: 'rebirth',
         name: 'Rebirth',
         description: 'Du får fordele nivåpoengene dine på nytt',
@@ -454,8 +462,36 @@ function buyShopItem(studentIndex, item) {
         // Trekk fra EXP
         student.exp -= item.price;
         
-        // Legg til gjenstanden i ryggsekken
-        student.items.push(item.id);
+        // Sjekk om dette er "Prøv lykken"-itemet
+        if (item.id === 'try_your_luck') {
+            // Bestem sjeldenhetsgrad basert på tilfeldighet
+            const rarityRoll = Math.random() * 100;
+            let rarity;
+            if (rarityRoll < 60) rarity = 'rare';
+            else if (rarityRoll < 90) rarity = 'epic';
+            else rarity = 'legendary';
+            
+            // Filtrer items basert på sjeldenhetsgrad
+            const possibleItems = items.filter(item => item.rarity === rarity);
+            
+            // Velg tilfeldig gjenstand fra filtrert liste
+            const randomItem = possibleItems[Math.floor(Math.random() * possibleItems.length)];
+            
+            // Legg til i studentens gjenstander
+            if (!student.items) {
+                student.items = [];
+            }
+            student.items.push(randomItem.id);
+            
+            // Vis melding med animasjon
+            showLuckyItemAnimation(randomItem);
+        } else {
+            // Legg til gjenstanden i ryggsekken
+            student.items.push(item.id);
+            
+            // Vis bekreftelsesmelding
+            showItemAcquiredAnimation(item);
+        }
         
         // Lagre endringene
         saveData();
@@ -464,9 +500,6 @@ function buyShopItem(studentIndex, item) {
         updateTable();
         updateStudentDropdown();
         document.getElementById('studentExpDisplay').textContent = `Tilgjengelig EXP: ${student.exp}`;
-        
-        // Vis bekreftelsesmelding
-        showItemAcquiredAnimation(item);
         
         // Fjern dialogen
         dialog.remove();
@@ -486,4 +519,109 @@ function buyShopItem(studentIndex, item) {
         }
     };
     document.addEventListener('keydown', escapeListener);
+}
+
+// Funksjon for å vise en spesiell animasjon for "Prøv lykken"-itemet
+function showLuckyItemAnimation(randomItem) {
+    // Opprett container for animasjonen
+    const animationContainer = document.createElement('div');
+    animationContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+    `;
+    
+    // Opprett animasjonsinnhold
+    const animationContent = document.createElement('div');
+    animationContent.style.cssText = `
+        text-align: center;
+        color: white;
+        font-family: 'Courier New', monospace;
+    `;
+    
+    // Opprett tittel
+    const title = document.createElement('h2');
+    title.style.cssText = `
+        font-size: 28px;
+        margin-bottom: 20px;
+        color: #f1c40f;
+        text-shadow: 0 0 10px rgba(241, 196, 15, 0.7);
+    `;
+    title.textContent = 'Du prøvde lykken!';
+    animationContent.appendChild(title);
+    
+    // Opprett gjenstandsikon
+    const itemIcon = document.createElement('div');
+    itemIcon.style.cssText = `
+        font-size: 80px;
+        margin: 20px 0;
+        animation: pulse 1s infinite alternate;
+    `;
+    itemIcon.textContent = randomItem.icon;
+    animationContent.appendChild(itemIcon);
+    
+    // Opprett gjenstandsnavn
+    const itemName = document.createElement('h3');
+    itemName.style.cssText = `
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: ${randomItem.rarity === 'legendary' ? '#ff9900' : randomItem.rarity === 'epic' ? '#a335ee' : '#0070dd'};
+    `;
+    itemName.textContent = randomItem.name;
+    animationContent.appendChild(itemName);
+    
+    // Opprett gjenstandsbeskrivelse
+    const itemDesc = document.createElement('p');
+    itemDesc.style.cssText = `
+        font-size: 16px;
+        margin-bottom: 20px;
+        color: #cccccc;
+    `;
+    itemDesc.textContent = randomItem.description;
+    animationContent.appendChild(itemDesc);
+    
+    // Opprett lukkeknapp
+    const closeButton = document.createElement('button');
+    closeButton.style.cssText = `
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9));
+        border: 2px solid #f1c40f;
+        color: #f1c40f;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    `;
+    closeButton.textContent = 'Lukk';
+    closeButton.onclick = function() {
+        animationContainer.remove();
+    };
+    animationContent.appendChild(closeButton);
+    
+    // Legg til CSS for animasjoner
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Legg til innhold i container
+    animationContainer.appendChild(animationContent);
+    
+    // Legg til container i DOM
+    document.body.appendChild(animationContainer);
+    
+    // Spill av lyd
+    playItemFoundSound();
 } 

@@ -386,76 +386,238 @@
                     </div>
                 </div>
                 
-                <div id="itemsContainer" class="items-container" style="
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                    gap: 15px;
-                    max-height: 400px;
-                    overflow-y: auto;
-                    padding: 15px;
-                    background: rgba(0, 0, 0, 0.5);
-                    border: 1px solid rgba(0, 255, 255, 0.3);
-                    border-radius: 10px;
-                    margin-bottom: 20px;
-                    scrollbar-width: thin;
-                    scrollbar-color: #0ff rgba(0, 0, 0, 0.5);
-                ">
-                    <!-- Items vil bli lagt til her dynamisk -->
-                </div>
-                
-                <div class="item-actions" style="
-                    display: flex;
-                    justify-content: center;
-                    gap: 15px;
-                    margin-top: 20px;
-                ">
-                    <button class="action-button" style="
-                        background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
-                        border: 2px solid #0ff; 
-                        color: #0ff; 
-                        padding: 12px 25px; 
-                        border-radius: 8px; 
-                        font-family: 'Courier New', monospace;
-                        text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
-                        box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
-                        transition: all 0.3s ease;
-                        font-size: 16px;
-                        text-transform: uppercase;
-                        letter-spacing: 1px;
-                        position: relative;
-                        overflow: hidden;"
-                        onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(0, 255, 255, 0.4)';"
-                        onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(0, 255, 255, 0.2)';"
-                        onclick="buyItem()">
-                        <i class="fas fa-dice" style="margin-right: 8px;"></i> Trekk tilfeldig gjenstand
-                        <span style="
-                            position: absolute;
-                            top: 0;
-                            left: -100%;
-                            width: 100%;
-                            height: 100%;
-                            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
-                            animation: shineEffect 2s infinite;
-                        "></span>
-                    </button>
-                    <button class="action-button" style="
-                        background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
-                        border: 2px solid #ff3366; 
-                        color: #ff3366; 
-                        padding: 12px 25px; 
-                        border-radius: 8px; 
-                        font-family: 'Courier New', monospace;
-                        text-shadow: 0 0 5px rgba(255, 51, 102, 0.5);
-                        box-shadow: 0 0 10px rgba(255, 51, 102, 0.2);
-                        transition: all 0.3s ease;
-                        font-size: 16px;
-                        text-transform: uppercase;
-                        letter-spacing: 1px;"
-                        onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(255, 51, 102, 0.4)';"
-                        onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(255, 51, 102, 0.2)';"
-                        onclick="clearAllItems()">
-                        <i class="fas fa-trash-alt" style="margin-right: 8px;"></i> Tøm ryggsekk
-                    </button>
+                <!-- Ny layout med equipment slots og inventory -->
+                <div style="display: flex; gap: 20px;">
+                    <!-- Equipment slots panel -->
+                    <div id="equipmentPanel" style="
+                        width: 220px;
+                        background: rgba(0, 0, 0, 0.5);
+                        border: 1px solid rgba(0, 255, 255, 0.3);
+                        border-radius: 10px;
+                        padding: 15px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 15px;
+                    ">
+                        <div style="text-align: center; margin-bottom: 10px;">
+                            <div style="color: #0ff; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">
+                                <i class="fas fa-user-astronaut" style="margin-right: 5px;"></i> Utstyr
+                            </div>
+                            <div style="color: rgba(255, 255, 255, 0.7); font-size: 12px;">
+                                Dra gjenstander hit for å utstyre dem
+                            </div>
+                        </div>
+                        
+                        <!-- Equipment slots -->
+                        <div class="equipment-slot" data-slot="head" style="
+                            height: 80px;
+                            background: rgba(0, 0, 0, 0.3);
+                            border: 1px dashed rgba(0, 255, 255, 0.3);
+                            border-radius: 8px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        ">
+                            <div style="font-size: 24px; color: rgba(255, 255, 255, 0.3); margin-bottom: 5px;">🪖</div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5);">Hode</div>
+                        </div>
+                        
+                        <div class="equipment-slot" data-slot="chest" style="
+                            height: 80px;
+                            background: rgba(0, 0, 0, 0.3);
+                            border: 1px dashed rgba(0, 255, 255, 0.3);
+                            border-radius: 8px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        ">
+                            <div style="font-size: 24px; color: rgba(255, 255, 255, 0.3); margin-bottom: 5px;">🛡️</div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5);">Bryst</div>
+                        </div>
+                        
+                        <div class="equipment-slot" data-slot="hands" style="
+                            height: 80px;
+                            background: rgba(0, 0, 0, 0.3);
+                            border: 1px dashed rgba(0, 255, 255, 0.3);
+                            border-radius: 8px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        ">
+                            <div style="font-size: 24px; color: rgba(255, 255, 255, 0.3); margin-bottom: 5px;">🧤</div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5);">Hender</div>
+                        </div>
+                        
+                        <div class="equipment-slot" data-slot="legs" style="
+                            height: 80px;
+                            background: rgba(0, 0, 0, 0.3);
+                            border: 1px dashed rgba(0, 255, 255, 0.3);
+                            border-radius: 8px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        ">
+                            <div style="font-size: 24px; color: rgba(255, 255, 255, 0.3); margin-bottom: 5px;">👖</div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5);">Bein</div>
+                        </div>
+                        
+                        <div class="equipment-slot" data-slot="feet" style="
+                            height: 80px;
+                            background: rgba(0, 0, 0, 0.3);
+                            border: 1px dashed rgba(0, 255, 255, 0.3);
+                            border-radius: 8px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        ">
+                            <div style="font-size: 24px; color: rgba(255, 255, 255, 0.3); margin-bottom: 5px;">👟</div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5);">Føtter</div>
+                        </div>
+                        
+                        <div class="equipment-slot" data-slot="accessory" style="
+                            height: 80px;
+                            background: rgba(0, 0, 0, 0.3);
+                            border: 1px dashed rgba(0, 255, 255, 0.3);
+                            border-radius: 8px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        ">
+                            <div style="font-size: 24px; color: rgba(255, 255, 255, 0.3); margin-bottom: 5px;">💍</div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5);">Tilbehør</div>
+                        </div>
+                        
+                        <!-- Equipment stats -->
+                        <div style="
+                            margin-top: 10px;
+                            padding: 10px;
+                            background: rgba(0, 0, 0, 0.3);
+                            border: 1px solid rgba(0, 255, 255, 0.3);
+                            border-radius: 8px;
+                        ">
+                            <div style="color: #0ff; font-size: 14px; margin-bottom: 8px; text-align: center;">UTSTYRSBONUSER</div>
+                            <div id="equipmentBonuses" style="font-size: 12px; color: white;">
+                                <!-- Bonuser vil bli lagt til her dynamisk -->
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                    <span>Intelligens:</span>
+                                    <span style="color: #0f0;">+0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                    <span>Teknologi:</span>
+                                    <span style="color: #0f0;">+0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                    <span>Stamina:</span>
+                                    <span style="color: #0f0;">+0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                    <span>Karisma:</span>
+                                    <span style="color: #0f0;">+0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                                    <span>Kreativitet:</span>
+                                    <span style="color: #0f0;">+0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Flaks:</span>
+                                    <span style="color: #0f0;">+0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Inventory panel -->
+                    <div style="flex: 1;">
+                        <div id="itemsContainer" class="items-container" style="
+                            display: grid;
+                            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                            gap: 15px;
+                            max-height: 400px;
+                            overflow-y: auto;
+                            padding: 15px;
+                            background: rgba(0, 0, 0, 0.5);
+                            border: 1px solid rgba(0, 255, 255, 0.3);
+                            border-radius: 10px;
+                            margin-bottom: 20px;
+                            scrollbar-width: thin;
+                            scrollbar-color: #0ff rgba(0, 0, 0, 0.5);
+                        ">
+                            <!-- Items vil bli lagt til her dynamisk -->
+                        </div>
+                        
+                        <div class="item-actions" style="
+                            display: flex;
+                            justify-content: center;
+                            gap: 15px;
+                            margin-top: 20px;
+                        ">
+                            <button class="action-button" style="
+                                background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
+                                border: 2px solid #0ff; 
+                                color: #0ff; 
+                                padding: 12px 25px; 
+                                border-radius: 8px; 
+                                font-family: 'Courier New', monospace;
+                                text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+                                box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+                                transition: all 0.3s ease;
+                                font-size: 16px;
+                                text-transform: uppercase;
+                                letter-spacing: 1px;
+                                position: relative;
+                                overflow: hidden;"
+                                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(0, 255, 255, 0.4)';"
+                                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(0, 255, 255, 0.2)';"
+                                onclick="buyItem()">
+                                <i class="fas fa-dice" style="margin-right: 8px;"></i> Trekk tilfeldig gjenstand
+                                <span style="
+                                    position: absolute;
+                                    top: 0;
+                                    left: -100%;
+                                    width: 100%;
+                                    height: 100%;
+                                    background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
+                                    animation: shineEffect 2s infinite;
+                                "></span>
+                            </button>
+                            <button class="action-button" style="
+                                background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
+                                border: 2px solid #ff3366; 
+                                color: #ff3366; 
+                                padding: 12px 25px; 
+                                border-radius: 8px; 
+                                font-family: 'Courier New', monospace;
+                                text-shadow: 0 0 5px rgba(255, 51, 102, 0.5);
+                                box-shadow: 0 0 10px rgba(255, 51, 102, 0.2);
+                                transition: all 0.3s ease;
+                                font-size: 16px;
+                                text-transform: uppercase;
+                                letter-spacing: 1px;"
+                                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(255, 51, 102, 0.4)';"
+                                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(255, 51, 102, 0.2)';"
+                                onclick="clearAllItems()">
+                                <i class="fas fa-trash-alt" style="margin-right: 8px;"></i> Tøm ryggsekk
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Informasjonspanel nederst -->
@@ -470,7 +632,7 @@
                     text-align: center;
                 ">
                     <i class="fas fa-info-circle" style="color: #0ff; margin-right: 5px;"></i>
-                    Gjenstander kan brukes til å forbedre ferdighetene dine eller byttes med andre spillere i OASIS.
+                    Gjenstander kan brukes til å forbedre ferdighetene dine eller utstyres for permanente bonuser.
                 </div>
             </div>
         </div>
