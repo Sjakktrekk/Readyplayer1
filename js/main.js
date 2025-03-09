@@ -30,6 +30,34 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // Legg til event listener for å vise tooltips for skills med bonuser
+        document.addEventListener('mouseover', function(e) {
+            if (e.target.classList.contains('skill-value') && e.target.classList.contains('has-bonus')) {
+                const title = e.target.getAttribute('title');
+                if (title) {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'skill-tooltip';
+                    tooltip.textContent = title;
+                    tooltip.style.position = 'absolute';
+                    tooltip.style.left = (e.pageX + 10) + 'px';
+                    tooltip.style.top = (e.pageY + 10) + 'px';
+                    tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                    tooltip.style.color = 'white';
+                    tooltip.style.padding = '5px 10px';
+                    tooltip.style.borderRadius = '5px';
+                    tooltip.style.zIndex = '1000';
+                    tooltip.style.pointerEvents = 'none';
+                    document.body.appendChild(tooltip);
+                    
+                    e.target.addEventListener('mouseout', function() {
+                        if (document.body.contains(tooltip)) {
+                            document.body.removeChild(tooltip);
+                        }
+                    }, { once: true });
+                }
+            }
+        });
+        
         // Oppdater utseendet på slettebeskyttelsesknappen ved oppstart
         const deleteProtectionButton = document.getElementById('deleteProtectionButton');
         if (deleteProtectionButton) {
@@ -223,16 +251,31 @@ function generateTableRow(index) {
     `;
 }
 
+// Funksjon for å hente skill-verdi med bonuser fra equipment
+function getSkillWithBonus(student, skill) {
+    const baseValue = student[skill] || 0;
+    const bonus = student.equipmentBonuses && student.equipmentBonuses[skill] ? student.equipmentBonuses[skill] : 0;
+    
+    // Returner baseValue + bonus, men aldri mindre enn bonus (hvis bonus er positiv)
+    return Math.max(baseValue + bonus, bonus > 0 ? bonus : 0);
+}
+
 // Funksjon for å generere skill-celle
 function generateSkillCell(index, skill) {
-    const value = students[index][skill];
-    const progress = (value / MAX_SKILL_LEVEL) * 100;
+    const student = students[index];
+    const baseValue = student[skill];
+    const totalValue = getSkillWithBonus(student, skill);
+    const hasBonus = baseValue !== totalValue;
+    const progress = (totalValue / MAX_SKILL_LEVEL) * 100;
+    
     return `
         <td class="skill-cell" data-skill="${skill}">
             <div class="skill-content">
                 <div class="button-container">
                     <button class="small-button" onclick="changeSkill(${index}, '${skill}', -1)">-</button>
-                    <span class="skill-value">${value}</span>
+                    <span class="skill-value ${hasBonus ? 'has-bonus' : ''}" title="${hasBonus ? `Base: ${baseValue}, Bonus: ${totalValue - baseValue}` : ''}">
+                        ${totalValue}${hasBonus ? '*' : ''}
+                    </span>
                     <button class="small-button" onclick="changeSkill(${index}, '${skill}', 1)">+</button>
                 </div>
                 <div class="progress-bar">
@@ -260,7 +303,7 @@ function generateExpCell(index) {
 // Funksjon for å beregne nivå
 function calculateLevel(student) {
     const skills = ['Intelligens', 'Teknologi', 'Stamina', 'Karisma', 'Kreativitet', 'Flaks'];
-    return skills.reduce((sum, skill) => sum + student[skill], 0);
+    return skills.reduce((sum, skill) => sum + getSkillWithBonus(student, skill), 0);
 }
 
 // Funksjon for å endre exp
@@ -1153,37 +1196,42 @@ function playItemFoundSound() {
 
 // Funksjon for å endre ferdighet
 function changeSkill(index, skill, amount) {
+    const student = students[index];
+    const baseValue = student[skill];
+    const totalValue = getSkillWithBonus(student, skill);
+    
     // Først sjekk om vi kan gjøre endringen
     if (amount > 0) {
-        if (students[index].exp < 1000) {
+        if (student.exp < 1000) {
             console.log('Ikke nok EXP');
             return;
         }
-        if (students[index][skill] >= MAX_SKILL_LEVEL) {
+        if (baseValue >= MAX_SKILL_LEVEL) {
             console.log('Allerede på maksimalt nivå');
             return;
         }
-    } else if (students[index][skill] <= 0) {
+    } else if (baseValue <= 0) {
         console.log('Allerede på minimalt nivå');
         return;
     }
     
-    const oldValue = students[index][skill];
-    const oldLevel = calculateLevel(students[index]);
+    const oldBaseValue = baseValue;
+    const oldTotalValue = totalValue;
+    const oldLevel = calculateLevel(student);
     
     // Oppdater ferdighetsverdien innenfor grensene
-    const newValue = Math.min(Math.max(0, oldValue + amount), MAX_SKILL_LEVEL);
+    const newBaseValue = Math.min(Math.max(0, oldBaseValue + amount), MAX_SKILL_LEVEL);
     
     // Fortsett bare hvis verdien faktisk endret seg
-    if (newValue !== oldValue) {
+    if (newBaseValue !== oldBaseValue) {
         // Oppdater ferdigheten først
-        students[index][skill] = newValue;
+        student[skill] = newBaseValue;
         
         // Deretter håndter EXP-endringer
         if (amount > 0) {
-            students[index].exp -= 1000;
+            student.exp -= 1000;
         } else {
-            students[index].exp += 1000;
+            student.exp += 1000;
         }
         
         // Oppdater visningen
@@ -1197,14 +1245,14 @@ function changeSkill(index, skill, amount) {
                 playLevelUpSound();
             }
             // Sjekk for nye prestasjoner
-            checkAchievements(students[index], index, cell);
+            checkAchievements(student, index, cell);
         } else {
             // Sjekk om noen prestasjoner bør fjernes
-            checkAchievementRequirements(students[index], skill);
+            checkAchievementRequirements(student, skill);
         }
         
         // Vis level up-animasjon hvis totalt nivå økte
-        const newLevel = calculateLevel(students[index]);
+        const newLevel = calculateLevel(student);
         if (newLevel > oldLevel) {
             const levelDisplay = document.querySelector(`tr:nth-child(${index + 1}) .level-display`);
             if (levelDisplay) {
@@ -1221,7 +1269,7 @@ function changeSkill(index, skill, amount) {
 }
 
 function checkAchievementRequirements(student, skill) {
-    const skillValue = student[skill];
+    const skillValue = getSkillWithBonus(student, skill);
     const achievementsToRemove = [];
     const skillAchievements = achievements.filter(a => a.skill === skill);
     
@@ -1249,11 +1297,20 @@ function checkAchievements(student, index, cell) {
     const skill = cell.closest('td').getAttribute('data-skill');
     if (!skill) return;
 
+    // Lag en kopi av student-objektet med oppdaterte skill-verdier som inkluderer bonuser
+    const studentWithBonuses = {...student};
+    
+    // Oppdater alle skills med bonuser
+    ['Intelligens', 'Teknologi', 'Stamina', 'Karisma', 'Kreativitet', 'Flaks'].forEach(skillName => {
+        studentWithBonuses[skillName] = getSkillWithBonus(student, skillName);
+    });
+
     achievements
         .filter(a => a.skill === skill)
         .forEach(achievement => {
             const hasAchievement = student.achievements?.includes(achievement.name);
-            const meetsRequirement = achievement.check(student);
+            // Bruk studentWithBonuses for å sjekke om achievement er oppnådd
+            const meetsRequirement = achievement.check(studentWithBonuses);
             
             if (!hasAchievement && meetsRequirement) {
                 // Legg til prestasjon til student

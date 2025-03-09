@@ -1,8 +1,4 @@
 body {
-    background-image: url('../bakgrunn.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
     font-family: 'Courier New', monospace;
     color: lime;
     text-align: center;
@@ -10,7 +6,44 @@ body {
     padding: 20px;
     min-height: 100vh;
     background-color: rgba(0, 0, 0, 0.8);
+    background-image: url('../bakgrunn.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
     background-blend-mode: overlay;
+}
+
+/* Stiliserte scrollbars for hele dokumentet */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #0ff, #0088ff);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #00ffff, #00aaff);
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.7);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #0ff rgba(0, 0, 0, 0.5);
 }
 
 .container {
@@ -667,4 +700,11 @@ th {
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
+}
+
+/* Stil for skills med bonuser */
+.skill-value.has-bonus {
+    color: #4CAF50;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 } 

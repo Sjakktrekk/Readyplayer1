@@ -523,6 +523,23 @@ function buyShopItem(studentIndex, item) {
 
 // Funksjon for å vise en spesiell animasjon for "Prøv lykken"-itemet
 function showLuckyItemAnimation(randomItem) {
+    // Bestem bakgrunnsfarge basert på sjeldenhetsgrad
+    let rarityColor, rarityGradient;
+    switch(randomItem.rarity) {
+        case 'rare':
+            rarityColor = '#0070dd';
+            rarityGradient = 'linear-gradient(135deg, rgba(0, 30, 60, 0.85), rgba(0, 70, 140, 0.9))';
+            break;
+        case 'epic':
+            rarityColor = '#a335ee';
+            rarityGradient = 'linear-gradient(135deg, rgba(40, 0, 60, 0.85), rgba(100, 20, 150, 0.9))';
+            break;
+        case 'legendary':
+            rarityColor = '#ff8000';
+            rarityGradient = 'linear-gradient(135deg, rgba(60, 30, 0, 0.85), rgba(150, 75, 0, 0.9))';
+            break;
+    }
+    
     // Opprett container for animasjonen
     const animationContainer = document.createElement('div');
     animationContainer.style.cssText = `
@@ -534,8 +551,9 @@ function showLuckyItemAnimation(randomItem) {
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: rgba(0, 0, 0, 0.8);
+        background-color: rgba(0, 0, 0, 0.7);
         z-index: 9999;
+        backdrop-filter: blur(3px);
     `;
     
     // Opprett animasjonsinnhold
@@ -544,15 +562,44 @@ function showLuckyItemAnimation(randomItem) {
         text-align: center;
         color: white;
         font-family: 'Courier New', monospace;
+        background: ${rarityGradient};
+        border: 2px solid ${rarityColor};
+        border-radius: 15px;
+        box-shadow: 0 0 30px ${rarityColor}80;
+        padding: 40px;
+        min-width: 400px;
+        max-width: 600px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
     `;
+    
+    // Legg til CSS for animasjoner
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0% { transform: scale(1); text-shadow: 0 0 40px currentColor; }
+            50% { transform: scale(1.2); text-shadow: 0 0 60px currentColor; }
+            100% { transform: scale(1); text-shadow: 0 0 40px currentColor; }
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
     
     // Opprett tittel
     const title = document.createElement('h2');
     title.style.cssText = `
         font-size: 28px;
-        margin-bottom: 20px;
-        color: #f1c40f;
-        text-shadow: 0 0 10px rgba(241, 196, 15, 0.7);
+        margin: 0;
+        color: ${rarityColor};
+        text-shadow: 0 0 10px ${rarityColor};
+        text-transform: uppercase;
+        letter-spacing: 2px;
     `;
     title.textContent = 'Du prøvde lykken!';
     animationContent.appendChild(title);
@@ -562,7 +609,9 @@ function showLuckyItemAnimation(randomItem) {
     itemIcon.style.cssText = `
         font-size: 80px;
         margin: 20px 0;
-        animation: pulse 1s infinite alternate;
+        animation: pulse 2s infinite alternate;
+        color: ${rarityColor};
+        text-shadow: 0 0 20px ${rarityColor};
     `;
     itemIcon.textContent = randomItem.icon;
     animationContent.appendChild(itemIcon);
@@ -571,18 +620,37 @@ function showLuckyItemAnimation(randomItem) {
     const itemName = document.createElement('h3');
     itemName.style.cssText = `
         font-size: 24px;
-        margin-bottom: 10px;
-        color: ${randomItem.rarity === 'legendary' ? '#ff9900' : randomItem.rarity === 'epic' ? '#a335ee' : '#0070dd'};
+        margin: 0;
+        color: white;
+        text-shadow: 0 0 10px ${rarityColor};
+        text-transform: uppercase;
+        letter-spacing: 1px;
     `;
     itemName.textContent = randomItem.name;
     animationContent.appendChild(itemName);
+    
+    // Opprett sjeldenhetsgrad
+    const rarityText = document.createElement('div');
+    rarityText.style.cssText = `
+        font-size: 18px;
+        margin: 5px 0 15px;
+        color: ${rarityColor};
+        text-shadow: 0 0 5px ${rarityColor};
+        font-weight: bold;
+    `;
+    rarityText.textContent = randomItem.rarity === 'rare' ? 'SJELDEN' : 
+                            randomItem.rarity === 'epic' ? 'EPISK' : 
+                            'LEGENDARISK';
+    animationContent.appendChild(rarityText);
     
     // Opprett gjenstandsbeskrivelse
     const itemDesc = document.createElement('p');
     itemDesc.style.cssText = `
         font-size: 16px;
-        margin-bottom: 20px;
-        color: #cccccc;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        line-height: 1.4;
     `;
     itemDesc.textContent = randomItem.description;
     animationContent.appendChild(itemDesc);
@@ -590,31 +658,33 @@ function showLuckyItemAnimation(randomItem) {
     // Opprett lukkeknapp
     const closeButton = document.createElement('button');
     closeButton.style.cssText = `
-        background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9));
-        border: 2px solid #f1c40f;
-        color: #f1c40f;
-        padding: 10px 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid ${rarityColor};
+        color: white;
+        padding: 8px 20px;
         border-radius: 5px;
+        margin-top: 20px;
+        cursor: pointer;
         font-family: 'Courier New', monospace;
         font-size: 16px;
-        cursor: pointer;
         transition: all 0.3s ease;
     `;
-    closeButton.textContent = 'Lukk';
+    closeButton.textContent = 'LUKK';
+    closeButton.onmouseover = function() {
+        this.style.background = 'rgba(255, 255, 255, 0.2)';
+        this.style.boxShadow = `0 0 15px rgba(255, 255, 255, 0.3)`;
+        this.style.transform = 'translateY(-2px)';
+    };
+    closeButton.onmouseout = function() {
+        this.style.background = 'rgba(255, 255, 255, 0.1)';
+        this.style.boxShadow = 'none';
+        this.style.transform = 'translateY(0)';
+    };
     closeButton.onclick = function() {
         animationContainer.remove();
+        style.remove();
     };
     animationContent.appendChild(closeButton);
-    
-    // Legg til CSS for animasjoner
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.1); }
-        }
-    `;
-    document.head.appendChild(style);
     
     // Legg til innhold i container
     animationContainer.appendChild(animationContent);
@@ -624,4 +694,22 @@ function showLuckyItemAnimation(randomItem) {
     
     // Spill av lyd
     playItemFoundSound();
+    
+    // Legg til event listener for å lukke ved klikk på bakgrunn
+    animationContainer.addEventListener('click', function(event) {
+        if (event.target === animationContainer) {
+            animationContainer.remove();
+            style.remove();
+        }
+    });
+    
+    // Legg til event listener for å lukke ved Escape-tasten
+    const escapeListener = function(event) {
+        if (event.key === 'Escape') {
+            animationContainer.remove();
+            style.remove();
+            document.removeEventListener('keydown', escapeListener);
+        }
+    };
+    document.addEventListener('keydown', escapeListener);
 } 

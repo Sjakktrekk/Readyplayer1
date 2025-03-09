@@ -868,22 +868,80 @@ function showItemAcquiredAnimation(item, isLevelUpReward = false) {
     // Bestem tittel basert på om det er en level-up belønning
     const titleText = isLevelUpReward ? 'LEVEL UP BELØNNING' : 'NY GJENSTAND';
     
+    // Bestem bakgrunnsfarge basert på sjeldenhetsgrad
+    let rarityColor, rarityGradient;
+    switch(item.rarity) {
+        case 'rare':
+            rarityColor = '#0070dd';
+            rarityGradient = 'linear-gradient(135deg, rgba(0, 30, 60, 0.85), rgba(0, 70, 140, 0.9))';
+            break;
+        case 'epic':
+            rarityColor = '#a335ee';
+            rarityGradient = 'linear-gradient(135deg, rgba(40, 0, 60, 0.85), rgba(100, 20, 150, 0.9))';
+            break;
+        case 'legendary':
+            rarityColor = '#ff8000';
+            rarityGradient = 'linear-gradient(135deg, rgba(60, 30, 0, 0.85), rgba(150, 75, 0, 0.9))';
+            break;
+    }
+    
+    // Legg til bakgrunnsstil
+    animationElement.style.cssText = `
+        background: ${rarityGradient};
+        border: 2px solid ${rarityColor};
+        border-radius: 15px;
+        box-shadow: 0 0 30px ${rarityColor}80;
+        backdrop-filter: blur(5px);
+        padding: 40px;
+        pointer-events: auto;
+    `;
+    
     // Sett innhold
     animationElement.innerHTML = `
-        <div class="icon" style="font-size: 72px;">${item.icon}</div>
+        <div class="icon" style="font-size: 72px; color: ${rarityColor}; text-shadow: 0 0 20px ${rarityColor};">${item.icon}</div>
         <div class="content">
-            <div class="skill-name">${
+            <div class="skill-name" style="color: ${rarityColor}; text-shadow: 0 0 10px ${rarityColor};">${
                 item.rarity === 'rare' ? 'SJELDEN' : 
                 item.rarity === 'epic' ? 'EPISK' : 
                 'LEGENDARISK'
             } ${titleText}</div>
-            <h3>${item.name}</h3>
-            <p>${item.description}</p>
+            <h3 style="color: white; text-shadow: 0 0 10px ${rarityColor};">${item.name}</h3>
+            <p style="color: rgba(255, 255, 255, 0.9); text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);">${item.description}</p>
         </div>
+        <button class="close-popup-btn" style="
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid ${rarityColor};
+            color: white;
+            padding: 8px 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+        ">LUKK</button>
     `;
     
     // Legg til i DOM
     document.body.appendChild(animationElement);
+    
+    // Legg til klikk-hendelse for lukkeknappen
+    const closeButton = animationElement.querySelector('.close-popup-btn');
+    closeButton.addEventListener('click', () => {
+        animationElement.classList.remove('show');
+        setTimeout(() => {
+            animationElement.remove();
+        }, 600);
+    });
+    
+    // Legg til klikk-hendelse for å lukke ved klikk på popup
+    animationElement.addEventListener('click', (event) => {
+        if (event.target === animationElement) {
+            animationElement.classList.remove('show');
+            setTimeout(() => {
+                animationElement.remove();
+            }, 600);
+        }
+    });
     
     // Vis animasjon
     setTimeout(() => {
@@ -896,13 +954,17 @@ function showItemAcquiredAnimation(item, isLevelUpReward = false) {
         playAchievementSound();
     }
     
-    // Fjern etter animasjon
+    // Fjern etter animasjon (hvis brukeren ikke har lukket den manuelt)
     setTimeout(() => {
-        animationElement.classList.remove('show');
-        setTimeout(() => {
-            animationElement.remove();
-        }, 600);
-    }, 3000);
+        if (document.body.contains(animationElement)) {
+            animationElement.classList.remove('show');
+            setTimeout(() => {
+                if (document.body.contains(animationElement)) {
+                    animationElement.remove();
+                }
+            }, 600);
+        }
+    }, 5000);
 }
 
 // Funksjon for å fjerne en gjenstand fra ryggsekken
@@ -1816,26 +1878,28 @@ function updateEquipmentDisplay(studentIndex) {
 // Funksjon for å oppdatere visningen av equipment bonuses
 function updateEquipmentBonusesDisplay(studentIndex) {
     const student = students[studentIndex];
-    const bonusesElement = document.getElementById('equipmentBonuses');
-    if (!bonusesElement) return;
     
-    // Tøm containeren
-    bonusesElement.innerHTML = '';
+    // Oppdater bonuser i statistikk-panelet
+    const statMap = {
+        'Intelligens': 'intBonus',
+        'Teknologi': 'tekBonus',
+        'Stamina': 'staBonus',
+        'Karisma': 'karBonus',
+        'Kreativitet': 'kreBonus',
+        'Flaks': 'flaBonus'
+    };
     
     // Opprett standard stats-visning
     const stats = ['Intelligens', 'Teknologi', 'Stamina', 'Karisma', 'Kreativitet', 'Flaks'];
     stats.forEach(stat => {
         const bonus = student.equipmentBonuses && student.equipmentBonuses[stat] ? student.equipmentBonuses[stat] : 0;
         const color = bonus > 0 ? '#0f0' : (bonus < 0 ? '#f00' : '#fff');
+        const bonusElement = document.getElementById(statMap[stat]);
         
-        const statElement = document.createElement('div');
-        statElement.style.cssText = 'display: flex; justify-content: space-between; margin-bottom: 3px;';
-        statElement.innerHTML = `
-            <span>${stat}:</span>
-            <span style="color: ${color};">${bonus > 0 ? '+' : ''}${bonus}</span>
-        `;
-        
-        bonusesElement.appendChild(statElement);
+        if (bonusElement) {
+            bonusElement.textContent = `${bonus > 0 ? '+' : ''}${bonus}`;
+            bonusElement.style.color = color;
+        }
     });
 }
 

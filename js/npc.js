@@ -724,64 +724,88 @@ function completeQuest(studentIndex, quest) {
 
 // Ny funksjon for å vise popup-melding
 function showQuestRewardPopup(quest, item) {
+    // Bestem bakgrunnsfarge basert på sjeldenhetsgrad
+    let rarityColor, rarityGradient;
+    switch(item.rarity) {
+        case 'rare':
+            rarityColor = '#0070dd';
+            rarityGradient = 'linear-gradient(135deg, rgba(0, 30, 60, 0.85), rgba(0, 70, 140, 0.9))';
+            break;
+        case 'epic':
+            rarityColor = '#a335ee';
+            rarityGradient = 'linear-gradient(135deg, rgba(40, 0, 60, 0.85), rgba(100, 20, 150, 0.9))';
+            break;
+        case 'legendary':
+            rarityColor = '#ff8000';
+            rarityGradient = 'linear-gradient(135deg, rgba(60, 30, 0, 0.85), rgba(150, 75, 0, 0.9))';
+            break;
+    }
+    
     // Opprett popup-container
     const popup = document.createElement('div');
     popup.style.cssText = `
         position: fixed;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
-        background: linear-gradient(135deg, rgba(16, 24, 48, 0.95), rgba(24, 36, 72, 0.95));
-        border: 2px solid #3498db;
+        transform: translate(-50%, -50%) scale(0);
+        background: ${rarityGradient};
+        border: 2px solid ${rarityColor};
         border-radius: 15px;
-        padding: 30px;
+        padding: 40px;
         color: white;
         text-align: center;
-        box-shadow: 0 0 30px rgba(52, 152, 219, 0.5);
+        box-shadow: 0 0 30px ${rarityColor}80;
         z-index: 9999;
         min-width: 400px;
-        animation: popupIn 0.5s ease-out;
+        max-width: 600px;
+        font-family: 'Courier New', monospace;
+        backdrop-filter: blur(5px);
+        animation: popupIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
     `;
     
-    // Bestem farge basert på sjeldenhetsgrad
-    let rarityColor;
-    switch(item.rarity) {
-        case 'rare':
-            rarityColor = '#3498db';
-            break;
-        case 'epic':
-            rarityColor = '#9b59b6';
-            break;
-        case 'legendary':
-            rarityColor = '#f1c40f';
-            break;
-    }
+    // Legg til CSS for animasjoner
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes popupIn {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); text-shadow: 0 0 40px currentColor; }
+            50% { transform: scale(1.2); text-shadow: 0 0 60px currentColor; }
+            100% { transform: scale(1); text-shadow: 0 0 40px currentColor; }
+        }
+    `;
+    document.head.appendChild(style);
     
     // Opprett innhold
     popup.innerHTML = `
-        <div style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #3498db;">
+        <div style="font-size: 28px; font-weight: bold; margin-bottom: 20px; color: #3498db; text-shadow: 0 0 10px #3498db;">
             <i class="fas fa-trophy"></i> Oppdrag fullført!
         </div>
-        <div style="font-size: 20px; margin-bottom: 15px;">
+        <div style="font-size: 20px; margin-bottom: 15px; color: white; text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);">
             ${quest.title}
         </div>
         <div style="font-size: 28px; color: #f1c40f; margin: 20px 0; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);">
             +${quest.reward} XP
         </div>
-        <div style="font-size: 18px; color: ${rarityColor}; margin: 20px 0;">
+        <div style="font-size: 18px; color: ${rarityColor}; margin: 20px 0; text-shadow: 0 0 5px ${rarityColor};">
             <i class="fas fa-gift"></i> Du fikk:
         </div>
-        <div style="font-size: 24px; margin: 10px 0;">
-            ${item.icon} ${item.name}
+        <div style="font-size: 72px; margin: 10px 0; color: ${rarityColor}; text-shadow: 0 0 20px ${rarityColor}; animation: pulse 2s infinite alternate;">
+            ${item.icon}
         </div>
-        <div style="font-size: 14px; color: rgba(255, 255, 255, 0.7); margin-top: 10px;">
+        <div style="font-size: 24px; margin: 10px 0; color: white; text-shadow: 0 0 10px ${rarityColor}; text-transform: uppercase; letter-spacing: 1px;">
+            ${item.name}
+        </div>
+        <div style="font-size: 16px; color: rgba(255, 255, 255, 0.9); margin-top: 10px; text-shadow: 0 0 5px rgba(0, 0, 0, 0.5); line-height: 1.4;">
             ${item.description}
         </div>
-        <button style="
-            background: linear-gradient(135deg, rgba(52, 152, 219, 0.3), rgba(52, 152, 219, 0.1));
-            border: 1px solid #3498db;
-            color: #3498db;
-            padding: 10px 20px;
+        <button id="closeQuestPopup" style="
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid ${rarityColor};
+            color: white;
+            padding: 8px 20px;
             border-radius: 5px;
             margin-top: 20px;
             cursor: pointer;
@@ -789,30 +813,49 @@ function showQuestRewardPopup(quest, item) {
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: all 0.3s ease;
-        " onclick="this.parentElement.remove()">
+        ">
             Lukk
         </button>
     `;
     
+    // Legg til popup i DOM
+    document.body.appendChild(popup);
+    
     // Legg til hover-effekt på lukk-knappen
-    const closeButton = popup.querySelector('button');
+    const closeButton = popup.querySelector('#closeQuestPopup');
     closeButton.addEventListener('mouseover', function() {
-        this.style.background = 'linear-gradient(135deg, rgba(52, 152, 219, 0.5), rgba(52, 152, 219, 0.2))';
-        this.style.boxShadow = '0 0 15px rgba(52, 152, 219, 0.3)';
+        this.style.background = 'rgba(255, 255, 255, 0.2)';
+        this.style.boxShadow = `0 0 15px rgba(255, 255, 255, 0.3)`;
+        this.style.transform = 'translateY(-2px)';
     });
     
     closeButton.addEventListener('mouseout', function() {
-        this.style.background = 'linear-gradient(135deg, rgba(52, 152, 219, 0.3), rgba(52, 152, 219, 0.1))';
+        this.style.background = 'rgba(255, 255, 255, 0.1)';
         this.style.boxShadow = 'none';
+        this.style.transform = 'translateY(0)';
     });
     
-    // Legg til popup i DOM
-    document.body.appendChild(popup);
+    // Legg til klikk-hendelse for lukkeknappen
+    closeButton.addEventListener('click', function() {
+        popup.style.animation = 'none';
+        popup.style.opacity = '0';
+        popup.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        setTimeout(() => {
+            popup.remove();
+            style.remove();
+        }, 300);
+    });
     
     // Legg til event listener for å lukke ved klikk på Escape-tasten
     const escapeListener = function(event) {
         if (event.key === 'Escape') {
-            popup.remove();
+            popup.style.animation = 'none';
+            popup.style.opacity = '0';
+            popup.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            setTimeout(() => {
+                popup.remove();
+                style.remove();
+            }, 300);
             document.removeEventListener('keydown', escapeListener);
         }
     };

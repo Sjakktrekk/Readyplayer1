@@ -19,6 +19,10 @@
     overflow-y: auto;
     opacity: 0;
     transition: opacity 0.3s ease, transform 0.3s ease;
+    
+    /* Stiliserte scrollbars for modaler */
+    scrollbar-width: thin;
+    scrollbar-color: #2ecc71 rgba(0, 0, 0, 0.5);
 }
 
 /* Ny klasse for mørkt filter over bakgrunnen */
