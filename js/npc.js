@@ -164,6 +164,9 @@ const npcs = [
     }
 ];
 
+// Legg til global variabel for å holde på den valgte studentindeksen
+let selectedStudentIndex = null;
+
 // Funksjon for å åpne NPC-panelet
 function openNPCPanel() {
     const modal = document.getElementById('npcModal');
@@ -203,8 +206,12 @@ function openNPCPanel() {
         closeNPCPanel();
     });
     
-    // Vis alle NPCer
-    displayNPCs();
+    // Skjul questContainer og vis npcContainer
+    document.getElementById('questContainer').style.display = 'none';
+    document.getElementById('npcContainer').style.display = 'grid';
+    
+    // Vis alle NPCer med den valgte studentindeksen
+    displayNPCs(selectedStudentIndex);
 }
 
 // Funksjon for å lukke NPC-panelet
@@ -246,11 +253,24 @@ function updateNPCStudentDropdown() {
         select.appendChild(option);
     });
     
+    // Sett valgt elev hvis det finnes en lagret verdi
+    if (selectedStudentIndex !== null) {
+        select.value = selectedStudentIndex;
+    }
+    
     // Legg til change event listener
     select.addEventListener('change', function() {
         const studentIndex = parseInt(this.value);
-        if (studentIndex >= 0) {
-            displayNPCs(studentIndex);
+        if (!isNaN(studentIndex) && studentIndex >= 0) {
+            // Lagre den valgte studentindeksen i den globale variabelen
+            selectedStudentIndex = studentIndex;
+            console.log('Valgt studentindeks:', selectedStudentIndex);
+            displayNPCs(selectedStudentIndex);
+        } else {
+            // Hvis ingen elev er valgt, sett selectedStudentIndex til null
+            selectedStudentIndex = null;
+            console.log('Ingen elev valgt');
+            displayNPCs(null);
         }
     });
 }
@@ -344,8 +364,7 @@ function createNPCElement(npc, studentIndex) {
             background: rgba(52, 152, 219, 0.1);
             border-radius: 50%;
         `;
-        fallbackDiv.textContent = npc.icon;
-        imageDiv.innerHTML = '';
+        fallbackDiv.textContent = npc.icon || '👤';
         imageDiv.appendChild(fallbackDiv);
     };
     
@@ -391,26 +410,166 @@ function createNPCElement(npc, studentIndex) {
 
 // Funksjon for å vise oppdrag
 function displayQuests(npc, studentIndex) {
+    // Bruk den globale variabelen hvis studentIndex er null
+    if (studentIndex === null && selectedStudentIndex !== null) {
+        console.log('Bruker global studentindeks i displayQuests:', selectedStudentIndex);
+        studentIndex = selectedStudentIndex;
+    }
+    
     const container = document.getElementById('questContainer');
     container.innerHTML = '';
+    
+    // Vis questContainer
+    container.style.display = 'block';
+    
+    // Opprett header-container for NPC-info
+    const headerContainer = document.createElement('div');
+    headerContainer.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        border: 1px solid rgba(52, 152, 219, 0.3);
+    `;
+    
+    // Legg til NPC-bilde
+    const imageDiv = document.createElement('div');
+    imageDiv.style.cssText = `
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid #3498db;
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
+        flex-shrink: 0;
+    `;
+    
+    const image = document.createElement('img');
+    image.style.cssText = `
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    `;
+    
+    // Legg til feilsøking for bildevisningen
+    image.onerror = function() {
+        console.error('Kunne ikke laste bilde:', npc.image);
+        // Fallback til emoji hvis bilde ikke lastes
+        const fallbackDiv = document.createElement('div');
+        fallbackDiv.style.cssText = `
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 50%;
+        `;
+        fallbackDiv.textContent = npc.icon || '👤';
+        imageDiv.appendChild(fallbackDiv);
+    };
+    
+    image.src = npc.image;
+    image.alt = npc.name;
+    imageDiv.appendChild(image);
+    headerContainer.appendChild(imageDiv);
+    
+    // Legg til NPC-info
+    const infoDiv = document.createElement('div');
+    infoDiv.style.cssText = `
+        flex: 1;
+    `;
     
     // Legg til tittel
     const titleDiv = document.createElement('div');
     titleDiv.style.cssText = `
         color: #3498db;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+    `;
+    titleDiv.textContent = npc.name;
+    infoDiv.appendChild(titleDiv);
+    
+    // Legg til beskrivelse
+    const descDiv = document.createElement('div');
+    descDiv.style.cssText = `
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 16px;
+        line-height: 1.4;
+    `;
+    descDiv.textContent = npc.description;
+    infoDiv.appendChild(descDiv);
+    
+    headerContainer.appendChild(infoDiv);
+    container.appendChild(headerContainer);
+    
+    // Legg til tilbakeknapp
+    const backButton = document.createElement('button');
+    backButton.style.cssText = `
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
+        border: 2px solid #3498db; 
+        color: #3498db; 
+        padding: 8px 15px; 
+        border-radius: 5px; 
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+        margin-bottom: 15px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    `;
+    backButton.innerHTML = '<i class="fas fa-arrow-left"></i> Tilbake til NPCer';
+    backButton.addEventListener('click', function() {
+        container.style.display = 'none';
+        document.getElementById('npcContainer').style.display = 'grid';
+    });
+    container.appendChild(backButton);
+    
+    // Legg til oppdragstittel
+    const questsTitleDiv = document.createElement('div');
+    questsTitleDiv.style.cssText = `
+        color: #3498db;
         font-size: 20px;
         font-weight: bold;
         margin-bottom: 15px;
+        margin-top: 20px;
         text-align: center;
+        border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+        padding-bottom: 10px;
     `;
-    titleDiv.textContent = `${npc.name}s oppdrag`;
-    container.appendChild(titleDiv);
+    questsTitleDiv.textContent = 'Tilgjengelige oppdrag';
+    container.appendChild(questsTitleDiv);
     
     // Vis oppdrag
-    npc.quests.forEach(quest => {
-        const questElement = createQuestElement(quest, studentIndex);
-        container.appendChild(questElement);
-    });
+    if (npc.quests && npc.quests.length > 0) {
+        npc.quests.forEach(quest => {
+            const questElement = createQuestElement(quest, studentIndex);
+            container.appendChild(questElement);
+        });
+    } else {
+        // Vis melding hvis det ikke er noen oppdrag
+        const noQuestsDiv = document.createElement('div');
+        noQuestsDiv.style.cssText = `
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            text-align: center;
+            margin-top: 20px;
+            font-style: italic;
+        `;
+        noQuestsDiv.textContent = 'Ingen tilgjengelige oppdrag for øyeblikket.';
+        container.appendChild(noQuestsDiv);
+    }
     
     // Legg til advarsel hvis ingen elev er valgt
     if (studentIndex === null) {
@@ -428,12 +587,23 @@ function displayQuests(npc, studentIndex) {
         warningDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Velg en elev for å kunne fullføre oppdrag og motta belønninger!';
         container.appendChild(warningDiv);
     }
+    
+    // Skjul NPC-containeren
+    document.getElementById('npcContainer').style.display = 'none';
 }
 
 // Funksjon for å lage et oppdrag-element
 function createQuestElement(quest, studentIndex) {
+    // Bruk den globale variabelen hvis studentIndex er null
+    if (studentIndex === null && selectedStudentIndex !== null) {
+        console.log('Bruker global studentindeks:', selectedStudentIndex);
+        studentIndex = selectedStudentIndex;
+    }
+    
     const questElement = document.createElement('div');
     questElement.className = 'quest-card';
+    // Legg til data-attributt for quest-id
+    questElement.setAttribute('data-quest-id', quest.id);
     
     // Stil for oppdragskortet
     questElement.style.cssText = `
@@ -516,6 +686,8 @@ function createQuestElement(quest, studentIndex) {
     
     // Opprett belønningsboks
     const rewardBox = document.createElement('div');
+    rewardBox.className = 'reward-box'; // Legg til klasse for å finne den senere
+    rewardBox.setAttribute('data-quest-id', quest.id); // Legg til data-attributt for quest-id
     rewardBox.style.cssText = `
         background: linear-gradient(135deg, rgba(241, 196, 15, 0.1), rgba(241, 196, 15, 0.05));
         border: 1px solid #f1c40f;
@@ -568,8 +740,10 @@ function createQuestElement(quest, studentIndex) {
             transform: rotate(15deg);
             box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
             z-index: 1;
+            white-space: nowrap;
+            text-align: center;
         `;
-        completedBanner.innerHTML = '<i class="fas fa-check-circle"></i> Fullført';
+        completedBanner.textContent = 'Fullført';
         rewardBox.appendChild(completedBanner);
         
         // Deaktiver hover-effekter og klikk
@@ -588,8 +762,13 @@ function createQuestElement(quest, studentIndex) {
         
         // Legg til klikk-hendelse
         rewardBox.addEventListener('click', function() {
+            console.log('Oppdragsknapp klikket for oppdrag:', quest.id);
+            console.log('Student index:', studentIndex);
             if (studentIndex !== null) {
+                console.log('Kaller completeQuest med studentIndex:', studentIndex, 'og quest:', quest);
                 completeQuest(studentIndex, quest);
+            } else {
+                console.log('Ingen elev valgt, kan ikke fullføre oppdrag');
             }
         });
     }
@@ -661,65 +840,226 @@ function updateQuestProgress(studentIndex, questType, amount = 1) {
 
 // Funksjon for å sjekke om et oppdrag er fullført
 function isQuestCompleted(studentIndex, questId) {
+    console.log('isQuestCompleted kalt med studentIndex:', studentIndex, 'og questId:', questId);
     const student = students[studentIndex];
+    console.log('Student funnet:', student);
     if (!student.completedQuests) {
+        console.log('Ingen fullførte oppdrag funnet, oppretter tom liste');
         student.completedQuests = [];
     }
-    return student.completedQuests.includes(questId);
+    const isCompleted = student.completedQuests.includes(questId);
+    console.log('Er oppdraget fullført?', isCompleted);
+    return isCompleted;
 }
 
 // Funksjon for å legge til en gjenstand i ryggsekken
 function addItemToBackpack(studentIndex, itemId) {
-    const student = students[studentIndex];
-    if (!student.items) {
-        student.items = [];
+    console.log('addItemToBackpack kalt med studentIndex:', studentIndex, 'og itemId:', itemId);
+    
+    // Sjekk om studentIndex er gyldig
+    if (studentIndex === null || studentIndex === undefined || !students[studentIndex]) {
+        console.error('Ugyldig studentIndex:', studentIndex);
+        return;
     }
-    student.items.push(itemId);
-    saveData();
-    updateItemsDisplay(studentIndex);
+    
+    // Sjekk om itemId er gyldig
+    if (itemId === null || itemId === undefined) {
+        console.error('Ugyldig itemId:', itemId);
+        return;
+    }
+    
+    try {
+        const student = students[studentIndex];
+        if (!student.items) {
+            student.items = [];
+        }
+        student.items.push(itemId);
+        console.log('Gjenstand lagt til i ryggsekken:', itemId);
+        console.log('Oppdatert ryggsekk:', student.items);
+        
+        // Lagre data
+        saveData();
+        
+        // Oppdater visningen
+        if (typeof updateItemsDisplay === 'function') {
+            updateItemsDisplay(studentIndex);
+        } else {
+            console.error('updateItemsDisplay-funksjonen er ikke tilgjengelig');
+        }
+    } catch (error) {
+        console.error('Feil ved tillegging av gjenstand i ryggsekk:', error);
+    }
 }
 
 // Funksjon for å fullføre et oppdrag
 function completeQuest(studentIndex, quest) {
+    console.log('completeQuest kalt med studentIndex:', studentIndex, 'og quest:', quest);
+    
+    // Bruk den globale variabelen hvis studentIndex er null
+    if (studentIndex === null && selectedStudentIndex !== null) {
+        console.log('Bruker global studentindeks i completeQuest:', selectedStudentIndex);
+        studentIndex = selectedStudentIndex;
+    }
+    
+    // Sjekk om studentIndex er gyldig
+    if (studentIndex === null || studentIndex === undefined || !students[studentIndex]) {
+        console.error('Ugyldig studentIndex:', studentIndex);
+        return;
+    }
+    
     const student = students[studentIndex];
+    console.log('Student funnet:', student);
     
     // Sjekk om oppdraget allerede er fullført
-    if (isQuestCompleted(studentIndex, quest.id)) {
+    const isCompleted = isQuestCompleted(studentIndex, quest.id);
+    console.log('Er oppdraget allerede fullført?', isCompleted);
+    
+    if (isCompleted) {
+        console.log('Oppdraget er allerede fullført, viser animasjon');
         showQuestCompletedAnimation(quest, true); // true indikerer at oppdraget allerede er fullført
         return;
     }
     
+    console.log('Gir belønning:', quest.reward, 'XP');
     // Gi belønning
     student.exp += quest.reward;
     
-    // Velg en tilfeldig gjenstand fra de tre beste kategoriene
-    const highRarityItems = items.filter(item => 
-        item.rarity === 'rare' || item.rarity === 'epic' || item.rarity === 'legendary'
-    );
-    const randomItem = highRarityItems[Math.floor(Math.random() * highRarityItems.length)];
-    addItemToBackpack(studentIndex, randomItem.id);
+    // Sjekk om items-variabelen er tilgjengelig
+    console.log('Sjekker items-variabelen:', typeof items, items ? items.length : 'undefined');
     
-    // Marker oppdraget som fullført
-    if (!student.completedQuests) {
-        student.completedQuests = [];
+    try {
+        if (typeof items === 'undefined' || !items || !items.length) {
+            console.error('items-variabelen er ikke tilgjengelig eller tom');
+            // Bruk en fallback-løsning
+            console.log('Bruker fallback-løsning: Legger til standardgjenstand (ID 1)');
+            addItemToBackpack(studentIndex, 1); // Legg til en standard gjenstand (ID 1)
+        } else {
+            // Velg en tilfeldig gjenstand fra de tre beste kategoriene
+            const highRarityItems = items.filter(item => 
+                item.rarity === 'rare' || item.rarity === 'epic' || item.rarity === 'legendary'
+            );
+            
+            console.log('Antall gjenstander med høy sjeldenhetsgrad:', highRarityItems.length);
+            
+            if (highRarityItems.length === 0) {
+                console.error('Ingen gjenstander med høy sjeldenhetsgrad funnet');
+                // Bruk en fallback-løsning
+                console.log('Bruker fallback-løsning: Legger til standardgjenstand (ID 1)');
+                addItemToBackpack(studentIndex, 1); // Legg til en standard gjenstand (ID 1)
+            } else {
+                const randomItem = highRarityItems[Math.floor(Math.random() * highRarityItems.length)];
+                console.log('Tilfeldig gjenstand valgt:', randomItem);
+                
+                try {
+                    addItemToBackpack(studentIndex, randomItem.id);
+                    console.log('Gjenstand lagt til i ryggsekken:', randomItem.id);
+                    
+                    // Vis popup-melding
+                    showQuestRewardPopup(quest, randomItem);
+                } catch (error) {
+                    console.error('Feil ved tillegging av gjenstand i ryggsekk:', error);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Feil ved håndtering av gjenstander:', error);
     }
-    student.completedQuests.push(quest.id);
     
-    // Lagre endringene
-    saveData();
-    
-    // Oppdater visningen
-    updateTable();
-    displayNPCs(studentIndex);
-    
-    // Oppdater ryggsekken hvis den er åpen
-    const itemBagModal = document.getElementById('itemBagModal');
-    if (itemBagModal && itemBagModal.getAttribute('data-student-index') === studentIndex.toString()) {
-        updateItemsDisplay(studentIndex);
+    try {
+        // Marker oppdraget som fullført
+        if (!student.completedQuests) {
+            student.completedQuests = [];
+        }
+        student.completedQuests.push(quest.id);
+        console.log('Oppdraget markert som fullført:', quest.id);
+        console.log('Oppdaterte fullførte oppdrag:', student.completedQuests);
+        
+        // Lagre endringene
+        saveData();
+        
+        // Oppdater visningen
+        updateTable();
+        
+        // Gjenopprett boksene under tabellen
+        if (typeof addDailyQuestsInline === 'function') {
+            addDailyQuestsInline();
+        } else {
+            console.error('addDailyQuestsInline-funksjonen er ikke tilgjengelig');
+        }
+        
+        // Oppdater oppdragsknappen umiddelbart
+        const clickedRewardBox = document.querySelector(`.quest-card[data-quest-id="${quest.id}"] .reward-box`);
+        if (clickedRewardBox) {
+            console.log('Oppdaterer oppdragsknapp for oppdrag:', quest.id);
+            
+            // Endre stil for fullført oppdrag
+            clickedRewardBox.style.cssText = `
+                background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(46, 204, 113, 0.05));
+                border: 1px solid #2ecc71;
+                border-radius: 6px;
+                padding: 10px 15px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+                width: fit-content;
+                flex-shrink: 0;
+                cursor: not-allowed;
+                position: relative;
+                opacity: 0.8;
+            `;
+            
+            // Legg til fullført-banner
+            const completedBanner = document.createElement('div');
+            completedBanner.style.cssText = `
+                position: absolute;
+                top: -10px;
+                right: -10px;
+                background: #2ecc71;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: bold;
+                transform: rotate(15deg);
+                box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+                z-index: 1;
+                white-space: nowrap;
+                text-align: center;
+            `;
+            completedBanner.textContent = 'Fullført';
+            clickedRewardBox.appendChild(completedBanner);
+            
+            // Deaktiver hover-effekter og klikk
+            clickedRewardBox.style.pointerEvents = 'none';
+            
+            // Oppdater XP-belønning farge
+            const xpReward = clickedRewardBox.querySelector('div:first-child');
+            if (xpReward) {
+                xpReward.style.color = '#2ecc71';
+                xpReward.style.textShadow = '0 0 10px rgba(46, 204, 113, 0.5)';
+            }
+            
+            // Oppdater item-belønning tekst
+            const itemReward = clickedRewardBox.querySelector('div:last-child');
+            if (itemReward) {
+                itemReward.innerHTML = '<i class="fas fa-check-circle"></i> Belønning mottatt';
+                itemReward.style.color = '#2ecc71';
+            }
+        } else {
+            console.log('Fant ikke oppdragsknapp for oppdrag:', quest.id);
+            // Hvis vi ikke finner oppdragsknappen, oppdater hele NPC-visningen
+            displayNPCs(studentIndex);
+        }
+        
+        // Oppdater ryggsekken hvis den er åpen
+        const itemBagModal = document.getElementById('itemBagModal');
+        if (itemBagModal && itemBagModal.style.display === 'block' && itemBagModal.getAttribute('data-student-index') === studentIndex.toString()) {
+            updateItemsDisplay(studentIndex);
+        }
+    } catch (error) {
+        console.error('Feil ved oppdatering av data eller visning:', error);
     }
-    
-    // Vis popup-melding
-    showQuestRewardPopup(quest, randomItem);
 }
 
 // Ny funksjon for å vise popup-melding
