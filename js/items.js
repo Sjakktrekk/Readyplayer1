@@ -886,6 +886,25 @@ function buyItem() {
 
 // Funksjon for å vise animasjon når en gjenstand er anskaffet
 function showItemAcquiredAnimation(item, isLevelUpReward = false) {
+    console.log("Viser popup for item:", item); // Legg til logging
+    
+    // Opprett backdrop for å mørklegge bakgrunnen
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+        z-index: 9998;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+    document.body.appendChild(backdrop);
+    
     // Opprett animasjonselement
     const animationElement = document.createElement('div');
     animationElement.className = 'achievement-popup';
@@ -893,88 +912,207 @@ function showItemAcquiredAnimation(item, isLevelUpReward = false) {
     // Bestem tittel basert på om det er en level-up belønning
     const titleText = isLevelUpReward ? 'LEVEL UP BELØNNING' : 'NY GJENSTAND';
     
-    // Bestem bakgrunnsfarge basert på sjeldenhetsgrad
-    let rarityColor, rarityGradient;
+    // Bestem cyberpunk-farger basert på sjeldenhetsgrad
+    let rarityColor, rarityGradient, borderGlow, textGlow;
     switch(item.rarity) {
         case 'rare':
-            rarityColor = '#0070dd';
-            rarityGradient = 'linear-gradient(135deg, rgba(0, 30, 60, 0.85), rgba(0, 70, 140, 0.9))';
+            rarityColor = '#00ffff'; // Cyan
+            rarityGradient = 'linear-gradient(135deg, rgba(0, 20, 40, 0.95), rgba(0, 40, 80, 0.95))';
+            borderGlow = '0 0 15px #00ffff, 0 0 30px rgba(0, 255, 255, 0.5)';
+            textGlow = '0 0 10px #00ffff, 0 0 20px rgba(0, 255, 255, 0.5)';
             break;
         case 'epic':
-            rarityColor = '#a335ee';
-            rarityGradient = 'linear-gradient(135deg, rgba(40, 0, 60, 0.85), rgba(100, 20, 150, 0.9))';
+            rarityColor = '#ff00ff'; // Magenta
+            rarityGradient = 'linear-gradient(135deg, rgba(40, 0, 40, 0.95), rgba(80, 0, 80, 0.95))';
+            borderGlow = '0 0 15px #ff00ff, 0 0 30px rgba(255, 0, 255, 0.5)';
+            textGlow = '0 0 10px #ff00ff, 0 0 20px rgba(255, 0, 255, 0.5)';
             break;
         case 'legendary':
-            rarityColor = '#ff8000';
-            rarityGradient = 'linear-gradient(135deg, rgba(60, 30, 0, 0.85), rgba(150, 75, 0, 0.9))';
+            rarityColor = '#ffff00'; // Gul
+            rarityGradient = 'linear-gradient(135deg, rgba(60, 30, 0, 0.95), rgba(100, 50, 0, 0.95))';
+            borderGlow = '0 0 15px #ffff00, 0 0 30px rgba(255, 255, 0, 0.5)';
+            textGlow = '0 0 10px #ffff00, 0 0 20px rgba(255, 255, 0, 0.5)';
             break;
+        default:
+            rarityColor = '#00ff00'; // Grønn
+            rarityGradient = 'linear-gradient(135deg, rgba(0, 30, 0, 0.95), rgba(0, 50, 0, 0.95))';
+            borderGlow = '0 0 15px #00ff00, 0 0 30px rgba(0, 255, 0, 0.5)';
+            textGlow = '0 0 10px #00ff00, 0 0 20px rgba(0, 255, 0, 0.5)';
     }
     
-    // Legg til bakgrunnsstil
+    // Legg til cyberpunk-stil
     animationElement.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
         background: ${rarityGradient};
         border: 2px solid ${rarityColor};
-        border-radius: 15px;
-        box-shadow: 0 0 30px ${rarityColor}80;
-        backdrop-filter: blur(5px);
+        box-shadow: ${borderGlow};
+        border-radius: 5px;
         padding: 40px;
         pointer-events: auto;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 20px;
+        min-width: 400px;
+        max-width: 600px;
+        min-height: 200px;
+        opacity: 0;
+        transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        overflow: hidden;
+    `;
+    
+    // Legg til glitch-effekt
+    const glitchOverlay = document.createElement('div');
+    glitchOverlay.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, transparent 65%, rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(hex => parseInt(hex, 16)).join(', ')}, 0.1) 70%, transparent 75%);
+        background-size: 200% 200%;
+        animation: glitch 3s infinite linear;
+        pointer-events: none;
+        z-index: 1;
+    `;
+    
+    // Legg til CSS for glitch-animasjon
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes glitch {
+            0% { background-position: 0% 0%; }
+            25% { background-position: 100% 100%; }
+            50% { background-position: 100% 0%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        
+        @keyframes achievementPulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            5% { transform: translate(-50%, -50%) scale(1.02); }
+            10% { transform: translate(-50%, -50%) scale(1); }
+            15% { transform: translate(-50%, -50%) scale(1.01); }
+            20% { transform: translate(-50%, -50%) scale(1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Legg til scanline-effekt
+    const scanline = document.createElement('div');
+    scanline.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(hex => parseInt(hex, 16)).join(', ')}, 0.3);
+        animation: scanline 2s linear infinite;
+        pointer-events: none;
+        z-index: 2;
     `;
     
     // Sett innhold
     animationElement.innerHTML = `
-        <div class="icon" style="font-size: 72px; color: ${rarityColor}; text-shadow: 0 0 20px ${rarityColor};">${item.icon}</div>
-        <div class="content">
-            <div class="skill-name" style="color: ${rarityColor}; text-shadow: 0 0 10px ${rarityColor};">${
+        <div class="icon" style="font-size: 72px; color: ${rarityColor}; text-shadow: ${textGlow}; animation: pulse 2s infinite; position: relative; z-index: 3;">${item.icon}</div>
+        <div class="content" style="position: relative; z-index: 3;">
+            <div class="skill-name" style="color: ${rarityColor}; text-shadow: ${textGlow}; font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; margin-bottom: 10px;">${
                 item.rarity === 'rare' ? 'SJELDEN' : 
                 item.rarity === 'epic' ? 'EPISK' : 
                 'LEGENDARISK'
             } ${titleText}</div>
-            <h3 style="color: white; text-shadow: 0 0 10px ${rarityColor};">${item.name}</h3>
-            <p style="color: rgba(255, 255, 255, 0.9); text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);">${item.description}</p>
+            <h3 style="color: white; text-shadow: ${textGlow}; font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0;">${item.name}</h3>
+            <p style="color: rgba(255, 255, 255, 0.9); font-family: 'Courier New', monospace; margin: 10px 0; line-height: 1.4;">${item.description}</p>
         </div>
         <button class="close-popup-btn" style="
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.5);
             border: 1px solid ${rarityColor};
-            color: white;
+            color: ${rarityColor};
+            text-shadow: ${textGlow};
             padding: 8px 20px;
-            border-radius: 5px;
+            border-radius: 3px;
             margin-top: 20px;
             cursor: pointer;
             font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 3;
+            box-shadow: 0 0 10px rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(hex => parseInt(hex, 16)).join(', ')}, 0.3);
         ">LUKK</button>
     `;
+    
+    // Legg til glitch og scanline
+    animationElement.appendChild(glitchOverlay);
+    animationElement.appendChild(scanline);
     
     // Legg til i DOM
     document.body.appendChild(animationElement);
     
-    // Legg til klikk-hendelse for lukkeknappen
+    // Vis backdrop
+    setTimeout(() => {
+        backdrop.style.opacity = '1';
+    }, 10);
+    
+    // Legg til hover-effekt for lukkeknappen
     const closeButton = animationElement.querySelector('.close-popup-btn');
+    closeButton.addEventListener('mouseover', function() {
+        this.style.background = `rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(hex => parseInt(hex, 16)).join(', ')}, 0.2)`;
+        this.style.boxShadow = `0 0 15px rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(hex => parseInt(hex, 16)).join(', ')}, 0.5)`;
+    });
+    
+    closeButton.addEventListener('mouseout', function() {
+        this.style.background = 'rgba(0, 0, 0, 0.5)';
+        this.style.boxShadow = `0 0 10px rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(hex => parseInt(hex, 16)).join(', ')}, 0.3)`;
+    });
+    
+    // Legg til klikk-hendelse for lukkeknappen
     closeButton.addEventListener('click', () => {
         animationElement.classList.remove('show');
+        backdrop.style.opacity = '0';
         setTimeout(() => {
             animationElement.remove();
+            backdrop.remove();
+            style.remove();
         }, 600);
     });
     
-    // Legg til klikk-hendelse for å lukke ved klikk på popup
-    animationElement.addEventListener('click', (event) => {
-        if (event.target === animationElement) {
-            animationElement.classList.remove('show');
-            setTimeout(() => {
-                animationElement.remove();
-            }, 600);
-        }
+    // Legg til klikk-hendelse for å lukke ved klikk på backdrop
+    backdrop.addEventListener('click', () => {
+        animationElement.classList.remove('show');
+        backdrop.style.opacity = '0';
+        setTimeout(() => {
+            animationElement.remove();
+            backdrop.remove();
+            style.remove();
+        }, 600);
     });
     
     // Vis animasjon
     setTimeout(() => {
+        animationElement.style.opacity = '1';
+        animationElement.style.transform = 'translate(-50%, -50%) scale(1)';
         animationElement.classList.add('show');
     }, 100);
     
     // Spill lyd bare hvis det ikke er en level-up belønning
-    // (level-up belønninger spiller allerede en egen lyd i checkRandomItemOnLevelUp-funksjonen)
     if (!isLevelUpReward) {
         playAchievementSound();
     }
@@ -983,14 +1121,43 @@ function showItemAcquiredAnimation(item, isLevelUpReward = false) {
     setTimeout(() => {
         if (document.body.contains(animationElement)) {
             animationElement.classList.remove('show');
+            animationElement.style.opacity = '0';
+            animationElement.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            if (document.body.contains(backdrop)) {
+                backdrop.style.opacity = '0';
+            }
             setTimeout(() => {
                 if (document.body.contains(animationElement)) {
                     animationElement.remove();
+                }
+                if (document.body.contains(backdrop)) {
+                    backdrop.remove();
+                }
+                if (document.head.contains(style)) {
+                    style.remove();
                 }
             }, 600);
         }
     }, 5000);
 }
+
+// Legg til en testfunksjon for å vise popup-en direkte
+function testItemPopup() {
+    // Opprett et test-item
+    const testItem = {
+        id: 999,
+        name: "Test Cyberpunk Item",
+        description: "Dette er en test av den nye cyberpunk-stilen for popup-vinduet!",
+        icon: "🔮",
+        rarity: "legendary"
+    };
+    
+    // Vis popup-en
+    showItemAcquiredAnimation(testItem);
+}
+
+// Legg til en global funksjon for å teste popup-en fra konsollen
+window.testItemPopup = testItemPopup;
 
 // Funksjon for å fjerne en gjenstand fra ryggsekken
 function removeItemFromBackpack(studentIndex, itemId) {
@@ -2003,3 +2170,298 @@ openItemBagModal = function(studentIndex) {
     // Oppdater equipment slots
     updateEquipmentDisplay(studentIndex);
 }; 
+
+// Funksjon for å legge til både achievement- og inventory-knapper i tabellen
+function addButtonsToTable() {
+    // Finn alle rader i tabellen
+    const rows = document.querySelectorAll('table.student-table tbody tr');
+    
+    // Gå gjennom hver rad
+    rows.forEach((row, index) => {
+        // Sjekk om raden allerede har knappene
+        if (!row.querySelector('.action-buttons-cell')) {
+            // Opprett en ny celle for knappene
+            const cell = document.createElement('td');
+            cell.className = 'action-buttons-cell';
+            cell.style.cssText = `
+                padding: 5px;
+                text-align: center;
+                vertical-align: middle;
+                display: flex;
+                gap: 8px;
+                justify-content: center;
+            `;
+            
+            // Opprett ryggsekk-knappen
+            const inventoryButton = document.createElement('button');
+            inventoryButton.className = 'inventory-button';
+            inventoryButton.innerHTML = '🎒';
+            inventoryButton.title = 'Åpne ryggsekk';
+            inventoryButton.style.cssText = `
+                background: linear-gradient(135deg, #1a2a3a, #0d1520);
+                border: 1px solid #00aaff;
+                color: #00aaff;
+                border-radius: 50%;
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            // Legg til hover-effekt for ryggsekk-knappen
+            inventoryButton.onmouseover = function() {
+                this.style.transform = 'scale(1.1)';
+                this.style.boxShadow = '0 0 15px rgba(0, 170, 255, 0.5)';
+            };
+            
+            inventoryButton.onmouseout = function() {
+                this.style.transform = 'scale(1)';
+                this.style.boxShadow = '0 0 10px rgba(0, 170, 255, 0.3)';
+            };
+            
+            // Legg til klikk-hendelse for ryggsekk-knappen
+            inventoryButton.onclick = function(event) {
+                event.stopPropagation(); // Hindre at raden også reagerer på klikket
+                openItemBagModal(index);
+            };
+            
+            // Opprett achievement-knappen
+            const achievementButton = document.createElement('button');
+            achievementButton.className = 'achievement-button';
+            achievementButton.innerHTML = '🏆';
+            achievementButton.title = 'Åpne achievements';
+            achievementButton.style.cssText = `
+                background: linear-gradient(135deg, #3a1a2a, #200d15);
+                border: 1px solid #ff00aa;
+                color: #ff00aa;
+                border-radius: 50%;
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 0 10px rgba(255, 0, 170, 0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            // Legg til hover-effekt for achievement-knappen
+            achievementButton.onmouseover = function() {
+                this.style.transform = 'scale(1.1)';
+                this.style.boxShadow = '0 0 15px rgba(255, 0, 170, 0.5)';
+            };
+            
+            achievementButton.onmouseout = function() {
+                this.style.transform = 'scale(1)';
+                this.style.boxShadow = '0 0 10px rgba(255, 0, 170, 0.3)';
+            };
+            
+            // Legg til klikk-hendelse for achievement-knappen
+            achievementButton.onclick = function(event) {
+                event.stopPropagation(); // Hindre at raden også reagerer på klikket
+                openAchievementsModal(index);
+            };
+            
+            // Legg til knappene i cellen
+            cell.appendChild(inventoryButton);
+            cell.appendChild(achievementButton);
+            
+            // Legg til cellen i raden
+            row.appendChild(cell);
+        }
+    });
+}
+
+// Legg til en dropdown-meny for å velge elev
+function addStudentSelector() {
+    // Sjekk om selector allerede finnes
+    if (document.getElementById('student-selector-container')) {
+        return;
+    }
+    
+    // Opprett container for selector
+    const container = document.createElement('div');
+    container.id = 'student-selector-container';
+    container.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(5, 10, 15, 0.9));
+        border: 2px solid #00aaff;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 0 20px rgba(0, 170, 255, 0.3);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    `;
+    
+    // Opprett tittel
+    const title = document.createElement('div');
+    title.style.cssText = `
+        font-size: 14px;
+        color: #00aaff;
+        text-align: center;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    `;
+    title.textContent = 'Velg elev';
+    container.appendChild(title);
+    
+    // Opprett select-element
+    const select = document.createElement('select');
+    select.id = 'student-selector';
+    select.style.cssText = `
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: 1px solid #00aaff;
+        border-radius: 5px;
+        padding: 8px;
+        width: 200px;
+        font-family: 'Courier New', monospace;
+        cursor: pointer;
+    `;
+    
+    // Legg til options for hver elev
+    students.forEach((student, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = student.name;
+        select.appendChild(option);
+    });
+    
+    container.appendChild(select);
+    
+    // Opprett knapper
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.style.cssText = `
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    `;
+    
+    // Ryggsekk-knapp
+    const inventoryButton = document.createElement('button');
+    inventoryButton.innerHTML = '🎒 Ryggsekk';
+    inventoryButton.style.cssText = `
+        flex: 1;
+        background: linear-gradient(135deg, #1a2a3a, #0d1520);
+        border: 1px solid #00aaff;
+        color: #00aaff;
+        border-radius: 5px;
+        padding: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+    `;
+    
+    inventoryButton.onmouseover = function() {
+        this.style.background = 'linear-gradient(135deg, #2a3a4a, #1a2a3a)';
+        this.style.transform = 'translateY(-2px)';
+    };
+    
+    inventoryButton.onmouseout = function() {
+        this.style.background = 'linear-gradient(135deg, #1a2a3a, #0d1520)';
+        this.style.transform = 'translateY(0)';
+    };
+    
+    inventoryButton.onclick = function() {
+        const selectedIndex = parseInt(select.value);
+        openItemBagModal(selectedIndex);
+    };
+    
+    buttonsContainer.appendChild(inventoryButton);
+    
+    // Achievement-knapp
+    const achievementButton = document.createElement('button');
+    achievementButton.innerHTML = '🏆 Achievements';
+    achievementButton.style.cssText = `
+        flex: 1;
+        background: linear-gradient(135deg, #3a1a2a, #200d15);
+        border: 1px solid #ff00aa;
+        color: #ff00aa;
+        border-radius: 5px;
+        padding: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+    `;
+    
+    achievementButton.onmouseover = function() {
+        this.style.background = 'linear-gradient(135deg, #4a2a3a, #3a1a2a)';
+        this.style.transform = 'translateY(-2px)';
+    };
+    
+    achievementButton.onmouseout = function() {
+        this.style.background = 'linear-gradient(135deg, #3a1a2a, #200d15)';
+        this.style.transform = 'translateY(0)';
+    };
+    
+    achievementButton.onclick = function() {
+        const selectedIndex = parseInt(select.value);
+        openAchievementsModal(selectedIndex);
+    };
+    
+    buttonsContainer.appendChild(achievementButton);
+    container.appendChild(buttonsContainer);
+    
+    // Legg til container i DOM
+    document.body.appendChild(container);
+}
+
+// Oppdater updateTable-funksjonen for å legge til knapper
+// Sjekk om vi allerede har overskrevet updateTable
+if (!window.originalUpdateTable) {
+    window.originalUpdateTable = updateTable;
+    
+    // Overskriver updateTable med vår egen versjon
+    window.updateTable = function() {
+        // Kall den originale funksjonen først
+        window.originalUpdateTable();
+        
+        // Legg til knapper i tabellen
+        addButtonsToTable();
+        
+        // Oppdater student-selector hvis den finnes
+        const selector = document.getElementById('student-selector');
+        if (selector) {
+            // Tøm selector
+            selector.innerHTML = '';
+            
+            // Legg til options for hver elev
+            students.forEach((student, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = student.name;
+                selector.appendChild(option);
+            });
+        }
+    };
+}
+
+// Kjør når siden lastes
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Vent litt for å sikre at tabellen er lastet
+        setTimeout(() => {
+            addButtonsToTable();
+            addStudentSelector();
+        }, 1000);
+    });
+} else {
+    // Dokumentet er allerede lastet
+    setTimeout(() => {
+        addButtonsToTable();
+        addStudentSelector();
+    }, 1000);
+} 

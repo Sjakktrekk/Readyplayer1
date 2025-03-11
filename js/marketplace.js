@@ -63,7 +63,7 @@ function addItemToMarketplace(studentIndex, itemId, price) {
 // Funksjon for å oppdatere student dropdown
 function updateMarketplaceStudentSelect() {
     const select = document.getElementById('marketplaceStudentSelect');
-    const expDisplay = document.getElementById('marketplaceStudentExpDisplay');
+    const creditsDisplay = document.getElementById('marketplaceStudentExpDisplay');
     
     // Tøm eksisterende valg
     select.innerHTML = '<option value="">Velg kjøper...</option>';
@@ -72,20 +72,20 @@ function updateMarketplaceStudentSelect() {
     students.forEach((student, index) => {
         const option = document.createElement('option');
         option.value = index;
-        option.textContent = `${student.name} (${student.exp} XP)`;
+        option.textContent = `${student.name} (${student.credits || 0} kreditter)`;
         select.appendChild(option);
     });
     
-    // Oppdater XP-visning når en student velges
+    // Oppdater kreditt-visning når en student velges
     select.addEventListener('change', function() {
         const studentIndex = parseInt(this.value);
         if (studentIndex >= 0) {
             const student = students[studentIndex];
-            expDisplay.textContent = `Tilgjengelig XP: ${student.exp}`;
-            expDisplay.style.opacity = '1';
+            creditsDisplay.textContent = `Tilgjengelige kreditter: ${student.credits || 0}`;
+            creditsDisplay.style.opacity = '1';
         } else {
-            expDisplay.textContent = '';
-            expDisplay.style.opacity = '0';
+            creditsDisplay.textContent = '';
+            creditsDisplay.style.opacity = '0';
         }
     });
     
@@ -335,13 +335,11 @@ function createMarketplaceItemElement(item, seller, marketplaceItem) {
     
     // Legg til pris
     const priceDiv = document.createElement('div');
-    priceDiv.style.cssText = `
-        color: #00ff00;
-        font-size: 14px;
-        margin-bottom: 10px;
-        text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+    priceDiv.className = 'marketplace-item-price';
+    priceDiv.innerHTML = `
+        <i class="fas fa-coins" style="color: #f1c40f; margin-right: 5px;"></i>
+        <span>${marketplaceItem.price} kreditter</span>
     `;
-    priceDiv.textContent = `${marketplaceItem.price} XP`;
     contentDiv.appendChild(priceDiv);
     
     // Legg til beskrivelse
@@ -416,53 +414,46 @@ function createMarketplaceItemElement(item, seller, marketplaceItem) {
 
 // Funksjon for å kjøpe en gjenstand fra bruktmarkedet
 function buyMarketplaceItem(marketplaceItemId) {
-    const studentSelect = document.getElementById('marketplaceStudentSelect');
-    const buyerIndex = parseInt(studentSelect.value);
-    
-    if (isNaN(buyerIndex)) {
+    const studentIndex = parseInt(document.getElementById('marketplaceStudentSelect').value);
+    if (isNaN(studentIndex) || studentIndex < 0) {
         alert('Vennligst velg en kjøper først!');
         return;
     }
     
-    const buyer = students[buyerIndex];
     const marketplaceItem = marketplaceItems.find(item => item.id === marketplaceItemId);
-    
     if (!marketplaceItem) {
         alert('Gjenstanden ble ikke funnet i bruktmarkedet!');
-        return false;
+        return;
     }
     
-    // Sjekk om kjøperen prøver å kjøpe sin egen gjenstand
-    if (buyerIndex === marketplaceItem.sellerIndex) {
-        alert('Du kan ikke kjøpe din egen gjenstand!');
-        return false;
+    const buyer = students[studentIndex];
+    const seller = students[marketplaceItem.sellerIndex];
+    const item = items.find(i => i.id === marketplaceItem.itemId);
+    
+    if (!buyer || !seller || !item) {
+        alert('Feil ved kjøp: Manglende data!');
+        return;
     }
     
-    // Sjekk om kjøperen har nok XP
-    if (buyer.exp < marketplaceItem.price) {
-        alert('Du har ikke nok XP for å kjøpe denne gjenstanden!');
-        return false;
+    // Sjekk om kjøperen har nok kreditter
+    if ((buyer.credits || 0) < marketplaceItem.price) {
+        alert(`${buyer.name} har ikke nok kreditter til å kjøpe denne gjenstanden!`);
+        return;
     }
     
-    // Sjekk om kjøperen har plass i ryggsekken
+    // Trekk kreditter fra kjøper
+    buyer.credits = (buyer.credits || 0) - marketplaceItem.price;
+    
+    // Legg til kreditter til selger
+    seller.credits = (seller.credits || 0) + marketplaceItem.price;
+    
+    // Legg til gjenstanden i kjøperens ryggsekk
     if (!buyer.items) {
         buyer.items = [];
     }
-    
-    if (buyer.items.length >= 20) {
-        alert('Din ryggsekk er full! Du må fjerne noen gjenstander først.');
-        return false;
-    }
-    
-    // Finn selgeren
-    const seller = students[marketplaceItem.sellerIndex];
-    
-    // Utfør handelen
-    buyer.exp -= marketplaceItem.price;
-    seller.exp += marketplaceItem.price;
     buyer.items.push(marketplaceItem.itemId);
     
-    // Fjern fra bruktmarkedet
+    // Fjern gjenstanden fra markedsplassen
     marketplaceItems = marketplaceItems.filter(item => item.id !== marketplaceItemId);
     
     // Lagre endringer
@@ -471,84 +462,10 @@ function buyMarketplaceItem(marketplaceItemId) {
     
     // Oppdater visningen
     displayMarketplaceItems();
-    updateMarketplaceStudentSelect();
-    
-    // Oppdater tabellen og XP-visningen
-    if (typeof updateTable === 'function') {
-        updateTable();
-    }
-    
-    // Oppdater XP-visningen for den valgte studenten
-    const expDisplay = document.getElementById('marketplaceStudentExpDisplay');
-    if (expDisplay) {
-        expDisplay.textContent = `Tilgjengelig XP: ${buyer.exp}`;
-    }
+    document.getElementById('marketplaceStudentExpDisplay').textContent = `Tilgjengelige kreditter: ${buyer.credits || 0}`;
     
     // Vis bekreftelsesmelding
-    const confirmationModal = document.createElement('div');
-    confirmationModal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-    `;
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
-        background: linear-gradient(180deg, rgba(16, 24, 48, 0.95) 0%, rgba(24, 36, 72, 0.95) 100%);
-        color: lime;
-        border: 2px solid lime;
-        border-radius: 8px;
-        padding: 20px;
-        max-width: 400px;
-        text-align: center;
-        box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
-        animation: modalAppear 0.3s ease;
-    `;
-    
-    modalContent.innerHTML = `
-        <div style="font-size: 48px; margin-bottom: 20px;">
-            <i class="fas fa-check-circle" style="color: lime; text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);"></i>
-        </div>
-        <h3 style="margin: 0 0 10px 0; color: #ffffff; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);">
-            Kjøp Fullført!
-        </h3>
-        <p style="margin-bottom: 20px; line-height: 1.5;">
-            <span style="color: lime;">${marketplaceItem.price} XP</span> er overført<br>
-            fra <span style="color: #00ffff;">${buyer.name}</span><br>
-            til <span style="color: #00ffff;">${seller.name}</span>
-        </p>
-        <button id="closeConfirmationModal" style="
-            background: rgba(0, 0, 0, 0.5);
-            color: lime;
-            border: 1px solid lime;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        ">LUKK</button>
-    `;
-    
-    confirmationModal.appendChild(modalContent);
-    document.body.appendChild(confirmationModal);
-    
-    // Legg til lukk-funksjonalitet
-    document.getElementById('closeConfirmationModal').addEventListener('click', function() {
-        confirmationModal.style.opacity = '0';
-        setTimeout(() => {
-            confirmationModal.remove();
-        }, 300);
-    });
-    
-    return true;
+    alert(`${buyer.name} kjøpte ${item.name} for ${marketplaceItem.price} kreditter!`);
 }
 
 // Eksporter funksjoner

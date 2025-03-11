@@ -122,7 +122,7 @@ function closeCombinedShopModal() {
 // Funksjon for å oppdatere student dropdown
 function updateCombinedStudentDropdown() {
     const select = document.getElementById('combinedStudentSelect');
-    const expDisplay = document.getElementById('combinedStudentExpDisplay');
+    const creditsDisplay = document.getElementById('combinedStudentExpDisplay');
     
     // Tøm eksisterende valg
     select.innerHTML = '<option value="">Velg elev...</option>';
@@ -131,20 +131,20 @@ function updateCombinedStudentDropdown() {
     students.forEach((student, index) => {
         const option = document.createElement('option');
         option.value = index;
-        option.textContent = `${student.name} (${student.exp} XP)`;
+        option.textContent = `${student.name} (${student.credits || 0} kreditter)`;
         select.appendChild(option);
     });
     
-    // Oppdater XP-visning når en student velges
+    // Oppdater kreditt-visning når en student velges
     select.addEventListener('change', function() {
         const studentIndex = parseInt(this.value);
         if (studentIndex >= 0) {
             const student = students[studentIndex];
-            expDisplay.textContent = `Tilgjengelig XP: ${student.exp}`;
-            expDisplay.style.opacity = '1';
+            creditsDisplay.textContent = `Tilgjengelige kreditter: ${student.credits || 0}`;
+            creditsDisplay.style.opacity = '1';
         } else {
-            expDisplay.textContent = '';
-            expDisplay.style.opacity = '0';
+            creditsDisplay.textContent = '';
+            creditsDisplay.style.opacity = '0';
         }
     });
     
@@ -194,22 +194,40 @@ function buyShopItem(studentIndex, item) {
     // Resten av den originale funksjonen...
     const student = students[studentIndex];
     
-    if (student.exp < item.price) {
-        alert(`${student.name} har ikke nok XP til å kjøpe denne gjenstanden!`);
+    if ((student.credits || 0) < item.price) {
+        alert(`${student.name} har ikke nok kreditter til å kjøpe denne gjenstanden!`);
         return;
     }
     
-    // Trekk XP fra studenten
-    student.exp -= item.price;
+    // Sjekk om studenten har plass i ryggsekken
+    if (!student.items) {
+        student.items = [];
+    }
     
-    // Håndter spesielle effekter basert på item.effect
-    handleItemEffect(studentIndex, item);
+    if (student.items.length >= 20) {
+        alert('Din ryggsekk er full! Du må fjerne noen gjenstander først.');
+        return;
+    }
+    
+    // Trekk kreditter fra studenten
+    student.credits = (student.credits || 0) - item.price;
+    
+    // Legg til gjenstanden i ryggsekken
+    student.items.push(item.id);
+    
+    // Vis bekreftelsesmelding
+    try {
+        showItemAcquiredAnimation(item);
+    } catch (error) {
+        console.error("Kunne ikke vise animasjon:", error);
+        alert(`${student.name} kjøpte ${item.name} for ${item.price} kreditter!`);
+    }
     
     // Lagre endringer
     saveData();
     
-    // Oppdater XP-visning
-    document.getElementById('combinedStudentExpDisplay').textContent = `Tilgjengelig XP: ${student.exp}`;
+    // Oppdater kreditt-visning
+    document.getElementById('combinedStudentExpDisplay').textContent = `Tilgjengelige kreditter: ${student.credits || 0}`;
     
     // Oppdater studenttabellen
     updateTable();
@@ -242,17 +260,17 @@ function buyMarketplaceItem(marketplaceItemId) {
         return;
     }
     
-    // Sjekk om kjøperen har nok XP
-    if (buyer.exp < marketplaceItem.price) {
-        alert(`${buyer.name} har ikke nok XP til å kjøpe denne gjenstanden!`);
+    // Sjekk om kjøperen har nok kreditter
+    if ((buyer.credits || 0) < marketplaceItem.price) {
+        alert(`${buyer.name} har ikke nok kreditter til å kjøpe denne gjenstanden!`);
         return;
     }
     
-    // Trekk XP fra kjøperen
-    buyer.exp -= marketplaceItem.price;
+    // Trekk kreditter fra kjøper
+    buyer.credits = (buyer.credits || 0) - marketplaceItem.price;
     
-    // Legg til XP til selgeren
-    seller.exp += marketplaceItem.price;
+    // Legg til kreditter til selger
+    seller.credits = (seller.credits || 0) + marketplaceItem.price;
     
     // Legg til gjenstanden i kjøperens ryggsekk
     if (!buyer.items) {
@@ -260,22 +278,17 @@ function buyMarketplaceItem(marketplaceItemId) {
     }
     buyer.items.push(marketplaceItem.itemId);
     
-    // Fjern gjenstanden fra bruktmarkedet
+    // Fjern gjenstanden fra markedsplassen
     marketplaceItems = marketplaceItems.filter(item => item.id !== marketplaceItemId);
     
     // Lagre endringer
     saveData();
     saveMarketplaceData();
     
-    // Oppdater XP-visning
-    document.getElementById('combinedStudentExpDisplay').textContent = `Tilgjengelig XP: ${buyer.exp}`;
-    
-    // Oppdater studenttabellen
-    updateTable();
-    
-    // Oppdater bruktmarkedet
+    // Oppdater visningen
     displayMarketplaceItems();
+    document.getElementById('combinedStudentExpDisplay').textContent = `Tilgjengelige kreditter: ${buyer.credits || 0}`;
     
     // Vis bekreftelsesmelding
-    alert(`${buyer.name} har kjøpt ${item.name} fra ${seller.name} for ${marketplaceItem.price} XP!`);
+    alert(`${buyer.name} kjøpte ${item.name} for ${marketplaceItem.price} kreditter!`);
 } 

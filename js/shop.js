@@ -146,26 +146,43 @@ function closeShopModal() {
 
 // Funksjon for å oppdatere student dropdown
 function updateStudentDropdown() {
-    const select = document.getElementById('shopStudentSelect');
+    // Sjekk om vi bruker den vanlige eller kombinerte butikken
+    const select = document.getElementById('shopStudentSelect') || document.getElementById('combinedStudentSelect');
+    const creditsDisplay = document.getElementById('shopStudentExpDisplay') || document.getElementById('combinedStudentExpDisplay');
+    
+    if (!select) {
+        console.warn('Kunne ikke finne studentvelgeren!');
+        return;
+    }
+    
+    // Tøm eksisterende valg
     select.innerHTML = '<option value="">Velg elev...</option>';
     
+    // Legg til alle studenter
     students.forEach((student, index) => {
         const option = document.createElement('option');
         option.value = index;
-        option.textContent = `${student.name} (${student.exp} EXP)`;
+        option.textContent = `${student.name} (${student.credits || 0} kreditter)`;
         select.appendChild(option);
     });
     
-    // Legg til change event listener
-    select.addEventListener('change', function() {
-        const studentIndex = parseInt(this.value);
-        if (studentIndex >= 0) {
-            const student = students[studentIndex];
-            document.getElementById('studentExpDisplay').textContent = `Tilgjengelig EXP: ${student.exp}`;
-        } else {
-            document.getElementById('studentExpDisplay').textContent = '';
-        }
-    });
+    // Oppdater kreditt-visning hvis den finnes
+    if (creditsDisplay) {
+        creditsDisplay.textContent = 'Tilgjengelige kreditter: 0';
+        
+        // Oppdater kreditt-visning når en student velges
+        select.addEventListener('change', function() {
+            const studentIndex = parseInt(this.value);
+            if (studentIndex >= 0) {
+                const student = students[studentIndex];
+                creditsDisplay.textContent = `Tilgjengelige kreditter: ${student.credits || 0}`;
+                creditsDisplay.style.opacity = '1';
+            } else {
+                creditsDisplay.textContent = 'Tilgjengelige kreditter: 0';
+                creditsDisplay.style.opacity = '0';
+            }
+        });
+    }
 }
 
 // Funksjon for å vise items i butikken
@@ -212,7 +229,19 @@ function createShopItemElement(item) {
     
     // Legg til klikk-hendelse for å kjøpe
     itemElement.addEventListener('click', function() {
-        const studentIndex = document.getElementById('shopStudentSelect').value;
+        let studentIndex;
+        const shopSelect = document.getElementById('shopStudentSelect');
+        const combinedSelect = document.getElementById('combinedStudentSelect');
+        
+        if (shopSelect) {
+            studentIndex = shopSelect.value;
+        } else if (combinedSelect) {
+            studentIndex = combinedSelect.value;
+        } else {
+            alert('Feil: Kunne ikke finne studentvelgeren!');
+            return;
+        }
+        
         if (studentIndex === '') {
             alert('Vennligst velg en elev først!');
             return;
@@ -256,13 +285,11 @@ function createShopItemElement(item) {
     
     // Legg til pris
     const priceDiv = document.createElement('div');
-    priceDiv.style.cssText = `
-        color: #f1c40f;
-        font-size: 14px;
-        margin-bottom: 10px;
-        text-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
+    priceDiv.className = 'shop-item-price';
+    priceDiv.innerHTML = `
+        <i class="fas fa-coins" style="color: #f1c40f; margin-right: 5px;"></i>
+        <span>${item.price} kreditter</span>
     `;
-    priceDiv.textContent = `${item.price} EXP`;
     contentDiv.appendChild(priceDiv);
     
     // Legg til beskrivelse
@@ -323,9 +350,8 @@ function createShopItemElement(item) {
 function buyShopItem(studentIndex, item) {
     const student = students[studentIndex];
     
-    // Sjekk om studenten har nok EXP
-    if (student.exp < item.price) {
-        alert('Du har ikke nok EXP for å kjøpe denne gjenstanden!');
+    if ((student.credits || 0) < item.price) {
+        alert(`${student.name} har ikke nok kreditter til å kjøpe denne gjenstanden!`);
         return;
     }
     
@@ -411,7 +437,7 @@ function buyShopItem(studentIndex, item) {
         color: rgba(255, 255, 255, 0.7);
         font-size: 14px;
     `;
-    priceInfo.textContent = `Pris: ${item.price} EXP`;
+    priceInfo.textContent = `Pris: ${item.price} kreditter`;
     dialog.appendChild(priceInfo);
     
     // Legg til knapper
@@ -459,39 +485,14 @@ function buyShopItem(studentIndex, item) {
     `;
     confirmButton.textContent = 'Kjøp';
     confirmButton.onclick = function() {
-        // Trekk fra EXP
-        student.exp -= item.price;
+        // Trekk kreditter fra studenten
+        student.credits = (student.credits || 0) - item.price;
         
-        // Sjekk om dette er "Prøv lykken"-itemet
-        if (item.id === 'try_your_luck') {
-            // Bestem sjeldenhetsgrad basert på tilfeldighet
-            const rarityRoll = Math.random() * 100;
-            let rarity;
-            if (rarityRoll < 60) rarity = 'rare';
-            else if (rarityRoll < 90) rarity = 'epic';
-            else rarity = 'legendary';
-            
-            // Filtrer items basert på sjeldenhetsgrad
-            const possibleItems = items.filter(item => item.rarity === rarity);
-            
-            // Velg tilfeldig gjenstand fra filtrert liste
-            const randomItem = possibleItems[Math.floor(Math.random() * possibleItems.length)];
-            
-            // Legg til i studentens gjenstander
-            if (!student.items) {
-                student.items = [];
-            }
-            student.items.push(randomItem.id);
-            
-            // Vis melding med animasjon
-            showLuckyItemAnimation(randomItem);
-        } else {
-            // Legg til gjenstanden i ryggsekken
-            student.items.push(item.id);
-            
-            // Vis bekreftelsesmelding
-            showItemAcquiredAnimation(item);
-        }
+        // Legg til gjenstanden i ryggsekken
+        student.items.push(item.id);
+        
+        // Vis bekreftelsesmelding
+        showItemAcquiredAnimation(item);
         
         // Lagre endringene
         saveData();
@@ -499,7 +500,7 @@ function buyShopItem(studentIndex, item) {
         // Oppdater visningen
         updateTable();
         updateStudentDropdown();
-        document.getElementById('studentExpDisplay').textContent = `Tilgjengelig EXP: ${student.exp}`;
+        document.getElementById('shopStudentExpDisplay').textContent = `Tilgjengelige kreditter: ${student.credits || 0}`;
         
         // Fjern dialogen
         dialog.remove();

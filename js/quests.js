@@ -339,6 +339,17 @@ function addDailyQuestsInline() {
                 </div>
                 <div style="min-width: 80px; text-align: center; font-size: 18px; font-weight: bold; color: #ff80ff; text-shadow: 0 0 5px rgba(255, 128, 255, 0.3);">
                     +${quest.xpReward} XP
+                    <button id="awardQuestXpBtn" style="
+                        margin-top: 5px;
+                        background: rgba(0, 0, 0, 0.3);
+                        border: 1px solid #ff80ff;
+                        color: #ff80ff;
+                        padding: 3px 6px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 12px;
+                        transition: all 0.3s ease;
+                    " onclick="openQuestRewardModal(${quest.xpReward})">Tildel bonus</button>
                 </div>
             </div>
         `;
@@ -623,6 +634,9 @@ function addDailyQuestsInline() {
                     // Legg til event listener for oppdateringsknappen igjen
                     document.getElementById('refreshQuestBtn').addEventListener('click', arguments.callee);
                     
+                    // Legg til "Tildel bonus"-knappen
+                    addAwardQuestXpButton(quest.xpReward);
+                    
                     // Vis en liten animasjon for å indikere oppdatering
                     const btn = document.getElementById('refreshQuestBtn');
                     btn.innerHTML = '<i class="fas fa-check"></i> Oppdatert!';
@@ -641,6 +655,9 @@ function addDailyQuestsInline() {
                 }
             });
         }
+        
+        // Legg til "Tildel bonus"-knappen
+        addAwardQuestXpButton(quest.xpReward);
     } catch (error) {
         console.error('Feil i addDailyQuestsInline:', error);
     }
@@ -1366,4 +1383,691 @@ function testPopups() {
 }
 
 // Eksporter testfunksjonen til det globale scope
-window.testPopups = testPopups; 
+window.testPopups = testPopups;
+
+// Funksjon for å åpne modal for tildeling av oppdragsbelønning
+function openQuestRewardModal(xpReward) {
+    // Fjern eksisterende modal hvis den finnes
+    const existingModal = document.getElementById('questRewardModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Opprett modal
+    const modal = document.createElement('div');
+    modal.id = 'questRewardModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(3px);
+    `;
+    
+    // Opprett modal-innhold
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+        color: #ffffff;
+        border: 2px solid #ff80ff;
+        border-radius: 15px;
+        padding: 25px;
+        width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 0 30px rgba(255, 128, 255, 0.3);
+        font-family: 'Courier New', monospace;
+        position: relative;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    // Opprett tittel
+    const title = document.createElement('h3');
+    title.textContent = 'Tildel Oppdragsbonus';
+    title.style.cssText = `
+        margin: 0 0 20px 0;
+        color: #ff80ff;
+        text-shadow: 0 0 10px rgba(255, 128, 255, 0.5);
+        font-size: 24px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-align: center;
+    `;
+    
+    // Opprett beskrivelse
+    const description = document.createElement('p');
+    description.textContent = `Velg spillere som skal motta ${xpReward} XP for å ha fullført dagens oppdrag:`;
+    description.style.cssText = `
+        margin-bottom: 20px;
+        text-align: center;
+        color: #cccccc;
+    `;
+    
+    // Opprett container for studentliste
+    const studentListContainer = document.createElement('div');
+    studentListContainer.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 8px;
+    `;
+    
+    // Legg til studenter i listen
+    students.forEach((student, index) => {
+        const studentItem = document.createElement('div');
+        studentItem.className = 'student-selection-item';
+        studentItem.dataset.index = index;
+        studentItem.style.cssText = `
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        `;
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `student-${index}`;
+        checkbox.dataset.index = index;
+        checkbox.style.cssText = `
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        `;
+        
+        const studentName = document.createElement('div');
+        studentName.textContent = student.name;
+        studentName.style.cssText = `
+            flex-grow: 1;
+            font-size: 16px;
+            font-weight: 500;
+            color: #ffffff;
+        `;
+        
+        const checkmark = document.createElement('div');
+        checkmark.className = 'student-checkmark';
+        checkmark.innerHTML = '<i class="fas fa-check"></i>';
+        checkmark.style.cssText = `
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff80ff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+        `;
+        
+        studentItem.appendChild(checkbox);
+        studentItem.appendChild(studentName);
+        studentItem.appendChild(checkmark);
+        
+        // Funksjon for å oppdatere utseendet basert på valg
+        const updateAppearance = () => {
+            if (checkbox.checked) {
+                studentItem.style.background = 'rgba(255, 128, 255, 0.2)';
+                studentItem.style.borderColor = '#ff80ff';
+                checkmark.style.opacity = '1';
+                checkmark.style.transform = 'scale(1)';
+            } else {
+                studentItem.style.background = 'rgba(0, 0, 0, 0.2)';
+                studentItem.style.borderColor = 'transparent';
+                checkmark.style.opacity = '0';
+                checkmark.style.transform = 'scale(0)';
+            }
+        };
+        
+        // Legg til klikk-funksjonalitet for hele elementet
+        studentItem.addEventListener('click', function(e) {
+            checkbox.checked = !checkbox.checked;
+            updateAppearance();
+        });
+        
+        // Hover-effekt
+        studentItem.addEventListener('mouseenter', function() {
+            if (!checkbox.checked) {
+                this.style.background = 'rgba(255, 128, 255, 0.1)';
+                this.style.borderColor = 'rgba(255, 128, 255, 0.3)';
+            }
+        });
+        
+        studentItem.addEventListener('mouseleave', function() {
+            if (!checkbox.checked) {
+                this.style.background = 'rgba(0, 0, 0, 0.2)';
+                this.style.borderColor = 'transparent';
+            }
+        });
+        
+        studentListContainer.appendChild(studentItem);
+    });
+    
+    // Opprett knapper
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = `
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        margin-top: 20px;
+    `;
+    
+    // Velg alle / Velg ingen knapper
+    const selectionContainer = document.createElement('div');
+    selectionContainer.style.cssText = `
+        display: flex;
+        gap: 10px;
+    `;
+    
+    const selectAllButton = document.createElement('button');
+    selectAllButton.textContent = 'Velg alle';
+    selectAllButton.style.cssText = `
+        padding: 8px 12px;
+        background: linear-gradient(180deg, #333333, #222222);
+        border: 1px solid #3498db;
+        border-radius: 5px;
+        color: #3498db;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    `;
+    
+    const selectNoneButton = document.createElement('button');
+    selectNoneButton.textContent = 'Velg ingen';
+    selectNoneButton.style.cssText = `
+        padding: 8px 12px;
+        background: linear-gradient(180deg, #333333, #222222);
+        border: 1px solid #3498db;
+        border-radius: 5px;
+        color: #3498db;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    `;
+    
+    // Legg til hendelseshåndterere for velg alle/ingen
+    selectAllButton.onclick = function() {
+        const checkboxes = studentListContainer.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            cb.checked = true;
+            const studentItem = cb.closest('.student-selection-item');
+            if (studentItem) {
+                studentItem.style.background = 'rgba(255, 128, 255, 0.2)';
+                studentItem.style.borderColor = '#ff80ff';
+                const checkmark = studentItem.querySelector('.student-checkmark');
+                if (checkmark) {
+                    checkmark.style.opacity = '1';
+                    checkmark.style.transform = 'scale(1)';
+                }
+            }
+        });
+    };
+    
+    selectNoneButton.onclick = function() {
+        const checkboxes = studentListContainer.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            cb.checked = false;
+            const studentItem = cb.closest('.student-selection-item');
+            if (studentItem) {
+                studentItem.style.background = 'rgba(0, 0, 0, 0.2)';
+                studentItem.style.borderColor = 'transparent';
+                const checkmark = studentItem.querySelector('.student-checkmark');
+                if (checkmark) {
+                    checkmark.style.opacity = '0';
+                    checkmark.style.transform = 'scale(0)';
+                }
+            }
+        });
+    };
+    
+    selectionContainer.appendChild(selectAllButton);
+    selectionContainer.appendChild(selectNoneButton);
+    
+    // Avbryt og Tildel knapper
+    const actionContainer = document.createElement('div');
+    actionContainer.style.cssText = `
+        display: flex;
+        gap: 10px;
+    `;
+    
+    const cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Avbryt';
+    cancelButton.style.cssText = `
+        padding: 10px 15px;
+        background: linear-gradient(180deg, #333333, #222222);
+        border: 1px solid #e74c3c;
+        border-radius: 5px;
+        color: #e74c3c;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+    `;
+    
+    const awardButton = document.createElement('button');
+    awardButton.textContent = 'Tildel XP';
+    awardButton.style.cssText = `
+        padding: 12px 25px;
+        background: linear-gradient(180deg, #2ecc71, #27ae60);
+        border: 1px solid #2ecc71;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        font-weight: bold;
+        text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        min-width: 120px;
+    `;
+    
+    // Legg til hover-effekt for knappen
+    awardButton.onmouseover = function() {
+        this.style.background = 'linear-gradient(180deg, #3ee681, #2ecc71)';
+        this.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+    };
+    
+    awardButton.onmouseout = function() {
+        this.style.background = 'linear-gradient(180deg, #2ecc71, #27ae60)';
+        this.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+    };
+    
+    // Legg til hendelseshåndterere
+    cancelButton.onclick = function() {
+        modal.style.opacity = '0';
+        setTimeout(() => modal.remove(), 300);
+    };
+    
+    awardButton.onclick = function() {
+        const selectedCheckboxes = studentListContainer.querySelectorAll('input[type="checkbox"]:checked');
+        const selectedIndices = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.index));
+        
+        if (selectedIndices.length === 0) {
+            // Vis en advarsel hvis ingen er valgt
+            const warningMessage = document.createElement('div');
+            warningMessage.textContent = 'Velg minst én spiller for å tildele XP.';
+            warningMessage.style.cssText = `
+                color: #e74c3c;
+                text-align: center;
+                margin-top: 10px;
+                font-weight: bold;
+            `;
+            
+            // Fjern eksisterende advarsel hvis den finnes
+            const existingWarning = modalContent.querySelector('.warning-message');
+            if (existingWarning) {
+                existingWarning.remove();
+            }
+            
+            warningMessage.className = 'warning-message';
+            modalContent.appendChild(warningMessage);
+            
+            // Animer advarselen
+            warningMessage.animate([
+                { opacity: 0, transform: 'translateY(-10px)' },
+                { opacity: 1, transform: 'translateY(0)' }
+            ], {
+                duration: 300,
+                easing: 'ease-out'
+            });
+            
+            return;
+        }
+        
+        // Tildel XP til valgte studenter
+        selectedIndices.forEach(index => {
+            students[index].exp += xpReward;
+        });
+        
+        // Lagre data og oppdater tabellen
+        saveData();
+        updateTable();
+        
+        // Vis bekreftelsesmelding
+        showQuestRewardMessage(selectedIndices.length, xpReward);
+        
+        // Lukk modalen
+        modal.style.opacity = '0';
+        setTimeout(() => modal.remove(), 300);
+    };
+    
+    actionContainer.appendChild(cancelButton);
+    actionContainer.appendChild(awardButton);
+    
+    // Legg til elementer i modal
+    buttonContainer.appendChild(selectionContainer);
+    buttonContainer.appendChild(actionContainer);
+    
+    modalContent.appendChild(title);
+    modalContent.appendChild(description);
+    modalContent.appendChild(studentListContainer);
+    modalContent.appendChild(buttonContainer);
+    
+    modal.appendChild(modalContent);
+    
+    // Legg til modal i dokumentet
+    document.body.appendChild(modal);
+    
+    // Legg til CSS-animasjon
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Lukk modal ved klikk utenfor
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            cancelButton.click();
+        }
+    });
+    
+    // Lukk modal ved Escape-tastetrykk
+    const escapeListener = function(event) {
+        if (event.key === 'Escape') {
+            cancelButton.click();
+            document.removeEventListener('keydown', escapeListener);
+        }
+    };
+    document.addEventListener('keydown', escapeListener);
+}
+
+// Funksjon for å vise bekreftelsesmelding etter tildeling av XP
+function showQuestRewardMessage(playerCount, xpReward) {
+    // Fjern eksisterende melding hvis den finnes
+    const existingMessage = document.getElementById('questRewardMessage');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Opprett bakgrunnsoverlegg
+    const overlay = document.createElement('div');
+    overlay.id = 'questRewardOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(3px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        animation: fadeIn 0.5s ease;
+    `;
+    
+    // Opprett pop-up container
+    const popup = document.createElement('div');
+    popup.id = 'questRewardPopup';
+    popup.style.cssText = `
+        background: linear-gradient(135deg, rgba(16, 24, 48, 0.95) 0%, rgba(24, 36, 72, 0.95) 100%);
+        border: 3px solid #ff80ff;
+        border-radius: 15px;
+        box-shadow: 
+            0 0 30px rgba(255, 128, 255, 0.7),
+            0 0 60px rgba(255, 128, 255, 0.4),
+            0 0 100px rgba(255, 128, 255, 0.2);
+        padding: 30px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        animation: scaleIn 0.5s ease;
+    `;
+    
+    // Legg til dekorative elementer
+    const topDecoration = document.createElement('div');
+    topDecoration.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, transparent, #ff80ff, transparent);
+    `;
+    
+    const bottomDecoration = document.createElement('div');
+    bottomDecoration.style.cssText = `
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, transparent, #ff80ff, transparent);
+    `;
+    
+    // Opprett tittel
+    const title = document.createElement('h2');
+    title.textContent = 'Oppdrag Fullført!';
+    title.style.cssText = `
+        color: #ff80ff;
+        font-size: 32px;
+        margin: 0 0 20px 0;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(255, 128, 255, 0.7);
+        font-family: 'Courier New', monospace;
+    `;
+    
+    // Opprett ikon
+    const icon = document.createElement('div');
+    icon.innerHTML = '🏆';
+    icon.style.cssText = `
+        font-size: 64px;
+        margin: 10px 0 20px 0;
+        animation: pulse 2s infinite;
+    `;
+    
+    // Opprett XP-tekst
+    const xpText = document.createElement('div');
+    xpText.style.cssText = `
+        font-size: 28px;
+        color: #ffffff;
+        margin: 15px 0;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+    `;
+    
+    // Fremhev XP-verdien
+    xpText.innerHTML = `<span style="color: #ff80ff; font-size: 36px; text-shadow: 0 0 10px rgba(255, 128, 255, 0.7);">${xpReward} XP</span> tildelt!`;
+    
+    // Opprett spillertekst
+    const playerText = document.createElement('div');
+    playerText.textContent = `${playerCount} spiller${playerCount !== 1 ? 'e' : ''} har fullført dagens oppdrag`;
+    playerText.style.cssText = `
+        font-size: 18px;
+        color: #cccccc;
+        margin: 10px 0 25px 0;
+        font-family: 'Courier New', monospace;
+    `;
+    
+    // Opprett lukkeknapp
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Lukk';
+    closeButton.style.cssText = `
+        background: linear-gradient(180deg, #333333, #222222);
+        border: 1px solid #ff80ff;
+        color: #ff80ff;
+        padding: 12px 30px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        font-family: 'Courier New', monospace;
+    `;
+    
+    closeButton.onmouseover = function() {
+        this.style.background = 'linear-gradient(180deg, #444444, #333333)';
+        this.style.boxShadow = '0 0 15px rgba(255, 128, 255, 0.5)';
+    };
+    
+    closeButton.onmouseout = function() {
+        this.style.background = 'linear-gradient(180deg, #333333, #222222)';
+        this.style.boxShadow = 'none';
+    };
+    
+    // Legg til partikkeleffekt
+    const particles = document.createElement('div');
+    particles.className = 'particles';
+    particles.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+    `;
+    
+    // Legg til 20 partikler
+    for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        const size = Math.random() * 10 + 5;
+        const duration = Math.random() * 2 + 1;
+        const delay = Math.random() * 2;
+        
+        particle.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            background: #ff80ff;
+            border-radius: 50%;
+            top: ${Math.random() * 100}%;
+            left: ${Math.random() * 100}%;
+            opacity: 0;
+            animation: float ${duration}s ease-in-out ${delay}s infinite;
+        `;
+        
+        particles.appendChild(particle);
+    }
+    
+    // Legg til elementer i pop-up
+    popup.appendChild(topDecoration);
+    popup.appendChild(bottomDecoration);
+    popup.appendChild(title);
+    popup.appendChild(icon);
+    popup.appendChild(xpText);
+    popup.appendChild(playerText);
+    popup.appendChild(closeButton);
+    popup.appendChild(particles);
+    
+    // Legg til pop-up i overlay
+    overlay.appendChild(popup);
+    
+    // Legg til overlay i dokumentet
+    document.body.appendChild(overlay);
+    
+    // Legg til CSS-animasjoner
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Legg til hendelseshåndterere
+    closeButton.onclick = function() {
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 500);
+    };
+    
+    // Lukk ved klikk utenfor pop-up
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            closeButton.click();
+        }
+    });
+    
+    // Lukk ved Escape-tastetrykk
+    const escapeListener = function(event) {
+        if (event.key === 'Escape') {
+            closeButton.click();
+            document.removeEventListener('keydown', escapeListener);
+        }
+    };
+    document.addEventListener('keydown', escapeListener);
+    
+    // Fjern pop-up automatisk etter 10 sekunder
+    setTimeout(() => {
+        if (overlay && overlay.parentNode) {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), 500);
+        }
+    }, 10000);
+}
+
+// Funksjon for å legge til "Tildel bonus"-knappen
+function addAwardQuestXpButton(xpReward) {
+    // Finn XP-visningen i oppdragsboksen
+    const xpDisplay = document.querySelector('#inlineQuestBox div[style*="min-width: 80px"]');
+    if (!xpDisplay) return;
+    
+    // Sjekk om knappen allerede finnes
+    if (document.getElementById('awardQuestXpBtn')) return;
+    
+    // Opprett knappen
+    const awardButton = document.createElement('button');
+    awardButton.id = 'awardQuestXpBtn';
+    awardButton.textContent = 'Tildel bonus';
+    awardButton.style.cssText = `
+        margin-top: 5px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid #ff80ff;
+        color: #ff80ff;
+        padding: 3px 6px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.3s ease;
+    `;
+    awardButton.onclick = function() {
+        openQuestRewardModal(xpReward);
+    };
+    
+    // Legg til knappen i XP-visningen
+    xpDisplay.appendChild(awardButton);
+} 

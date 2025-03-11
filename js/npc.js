@@ -684,6 +684,9 @@ function createQuestElement(quest, studentIndex) {
     descDiv.textContent = quest.description;
     contentContainer.appendChild(descDiv);
     
+    // Beregn kredittbelønning (15% av XP-verdien)
+    const creditReward = Math.round(quest.reward * 0.15);
+    
     // Opprett belønningsboks
     const rewardBox = document.createElement('div');
     rewardBox.className = 'reward-box'; // Legg til klasse for å finne den senere
@@ -783,6 +786,20 @@ function createQuestElement(quest, studentIndex) {
     `;
     xpReward.textContent = `${quest.reward} XP`;
     rewardBox.appendChild(xpReward);
+    
+    // Kreditt belønning
+    const creditRewardDiv = document.createElement('div');
+    creditRewardDiv.style.cssText = `
+        color: ${isCompleted ? '#2ecc71' : '#2ecc71'};
+        font-size: 16px;
+        font-weight: bold;
+        text-shadow: 0 0 10px ${isCompleted ? 'rgba(46, 204, 113, 0.5)' : 'rgba(46, 204, 113, 0.5)'};
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    `;
+    creditRewardDiv.innerHTML = `<i class="fas fa-coins"></i> ${creditReward} kreditter`;
+    rewardBox.appendChild(creditRewardDiv);
     
     // Item belønning
     const itemReward = document.createElement('div');
@@ -921,8 +938,20 @@ function completeQuest(studentIndex, quest) {
     }
     
     console.log('Gir belønning:', quest.reward, 'XP');
-    // Gi belønning
+    // Gi XP-belønning
     student.exp += quest.reward;
+    
+    // Gi kreditt-belønning (15% av XP-verdien)
+    const creditReward = Math.round(quest.reward * 0.15);
+    console.log('Gir kreditt-belønning:', creditReward, 'kreditter');
+    
+    // Initialiser credits-feltet hvis det ikke finnes
+    if (student.credits === undefined) {
+        student.credits = 0;
+    }
+    
+    // Legg til kreditter
+    student.credits += creditReward;
     
     // Sjekk om items-variabelen er tilgjengelig
     console.log('Sjekker items-variabelen:', typeof items, items ? items.length : 'undefined');
@@ -954,116 +983,35 @@ function completeQuest(studentIndex, quest) {
                     addItemToBackpack(studentIndex, randomItem.id);
                     console.log('Gjenstand lagt til i ryggsekken:', randomItem.id);
                     
-                    // Vis popup-melding
-                    showQuestRewardPopup(quest, randomItem);
+                    // Vis popup-melding med både XP og kreditt-belønning
+                    showQuestRewardPopup(quest, randomItem, creditReward);
                 } catch (error) {
                     console.error('Feil ved tillegging av gjenstand i ryggsekk:', error);
                 }
             }
         }
     } catch (error) {
-        console.error('Feil ved håndtering av gjenstander:', error);
+        console.error('Feil ved tildeling av gjenstand:', error);
     }
     
-    try {
-        // Marker oppdraget som fullført
-        if (!student.completedQuests) {
-            student.completedQuests = [];
-        }
-        student.completedQuests.push(quest.id);
-        console.log('Oppdraget markert som fullført:', quest.id);
-        console.log('Oppdaterte fullførte oppdrag:', student.completedQuests);
-        
-        // Lagre endringene
-        saveData();
-        
-        // Oppdater visningen
-        updateTable();
-        
-        // Gjenopprett boksene under tabellen
-        if (typeof addDailyQuestsInline === 'function') {
-            addDailyQuestsInline();
-        } else {
-            console.error('addDailyQuestsInline-funksjonen er ikke tilgjengelig');
-        }
-        
-        // Oppdater oppdragsknappen umiddelbart
-        const clickedRewardBox = document.querySelector(`.quest-card[data-quest-id="${quest.id}"] .reward-box`);
-        if (clickedRewardBox) {
-            console.log('Oppdaterer oppdragsknapp for oppdrag:', quest.id);
-            
-            // Endre stil for fullført oppdrag
-            clickedRewardBox.style.cssText = `
-                background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(46, 204, 113, 0.05));
-                border: 1px solid #2ecc71;
-                border-radius: 6px;
-                padding: 10px 15px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-                width: fit-content;
-                flex-shrink: 0;
-                cursor: not-allowed;
-                position: relative;
-                opacity: 0.8;
-            `;
-            
-            // Legg til fullført-banner
-            const completedBanner = document.createElement('div');
-            completedBanner.style.cssText = `
-                position: absolute;
-                top: -10px;
-                right: -10px;
-                background: #2ecc71;
-                color: white;
-                padding: 5px 10px;
-                border-radius: 4px;
-                font-size: 12px;
-                font-weight: bold;
-                transform: rotate(15deg);
-                box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
-                z-index: 1;
-                white-space: nowrap;
-                text-align: center;
-            `;
-            completedBanner.textContent = 'Fullført';
-            clickedRewardBox.appendChild(completedBanner);
-            
-            // Deaktiver hover-effekter og klikk
-            clickedRewardBox.style.pointerEvents = 'none';
-            
-            // Oppdater XP-belønning farge
-            const xpReward = clickedRewardBox.querySelector('div:first-child');
-            if (xpReward) {
-                xpReward.style.color = '#2ecc71';
-                xpReward.style.textShadow = '0 0 10px rgba(46, 204, 113, 0.5)';
-            }
-            
-            // Oppdater item-belønning tekst
-            const itemReward = clickedRewardBox.querySelector('div:last-child');
-            if (itemReward) {
-                itemReward.innerHTML = '<i class="fas fa-check-circle"></i> Belønning mottatt';
-                itemReward.style.color = '#2ecc71';
-            }
-        } else {
-            console.log('Fant ikke oppdragsknapp for oppdrag:', quest.id);
-            // Hvis vi ikke finner oppdragsknappen, oppdater hele NPC-visningen
-            displayNPCs(studentIndex);
-        }
-        
-        // Oppdater ryggsekken hvis den er åpen
-        const itemBagModal = document.getElementById('itemBagModal');
-        if (itemBagModal && itemBagModal.style.display === 'block' && itemBagModal.getAttribute('data-student-index') === studentIndex.toString()) {
-            updateItemsDisplay(studentIndex);
-        }
-    } catch (error) {
-        console.error('Feil ved oppdatering av data eller visning:', error);
+    // Marker oppdraget som fullført
+    if (!student.completedQuests) {
+        student.completedQuests = [];
     }
+    student.completedQuests.push(quest.id);
+    
+    // Lagre data
+    saveData();
+    
+    // Oppdater visningen
+    updateTable();
+    
+    // Oppdater NPC-panelet
+    displayNPCs(studentIndex);
 }
 
 // Ny funksjon for å vise popup-melding
-function showQuestRewardPopup(quest, item) {
+function showQuestRewardPopup(quest, item, creditReward) {
     // Bestem bakgrunnsfarge basert på sjeldenhetsgrad
     let rarityColor, rarityGradient;
     switch(item.rarity) {
@@ -1129,6 +1077,9 @@ function showQuestRewardPopup(quest, item) {
         <div style="font-size: 28px; color: #f1c40f; margin: 20px 0; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);">
             +${quest.reward} XP
         </div>
+        <div style="font-size: 22px; color: #2ecc71; margin: 10px 0; text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);">
+            <i class="fas fa-coins"></i> +${creditReward} kreditter
+        </div>
         <div style="font-size: 18px; color: ${rarityColor}; margin: 20px 0; text-shadow: 0 0 5px ${rarityColor};">
             <i class="fas fa-gift"></i> Du fikk:
         </div>
@@ -1180,26 +1131,50 @@ function showQuestRewardPopup(quest, item) {
         popup.style.animation = 'none';
         popup.style.opacity = '0';
         popup.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        
         setTimeout(() => {
             popup.remove();
             style.remove();
         }, 300);
     });
     
-    // Legg til event listener for å lukke ved klikk på Escape-tasten
+    // Legg til event listener for å lukke ved Escape-tasten
     const escapeListener = function(event) {
         if (event.key === 'Escape') {
             popup.style.animation = 'none';
             popup.style.opacity = '0';
             popup.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            
             setTimeout(() => {
                 popup.remove();
                 style.remove();
             }, 300);
+            
             document.removeEventListener('keydown', escapeListener);
         }
     };
     document.addEventListener('keydown', escapeListener);
+    
+    // Spill lyd
+    playAchievementSound();
+    
+    // Fjern popup etter 10 sekunder hvis brukeren ikke lukker den
+    setTimeout(() => {
+        if (document.body.contains(popup)) {
+            popup.style.animation = 'none';
+            popup.style.opacity = '0';
+            popup.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            
+            setTimeout(() => {
+                if (document.body.contains(popup)) {
+                    popup.remove();
+                }
+                if (document.head.contains(style)) {
+                    style.remove();
+                }
+            }, 300);
+        }
+    }, 10000);
 }
 
 // Modifiser showQuestCompletedAnimation for å håndtere allerede fullførte oppdrag

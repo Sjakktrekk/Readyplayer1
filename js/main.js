@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         console.log('DOMContentLoaded starter...');
         
+        // Migrer eksisterende elever til å ha kreditter
+        migrateStudentsToCredits();
+        
         // Oppdater tabellen først
         updateTable();
         
@@ -223,22 +226,26 @@ function generateTableRow(index) {
     const student = students[index];
     const level = calculateLevel(student);
     return `
-         <td class="player-cell">
+         <td class="player-cell" style="padding: 8px; vertical-align: middle;">
               <div style="display: flex; align-items: center; justify-content: space-between;">
                   <a href="#" class="player-name" 
                       onclick="openAchievementsModal(${index}); return false;"
                       onmouseenter="createTooltip(event, ${index})"
                       onmouseleave="removeTooltip()">${student.name}</a>
                   <button class="small-button delete-student-button" 
-                      style="background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.4); color: #e74c3c; margin-right: 10px; display: ${isDeleteProtected ? 'none' : 'block'};"
+                      style="background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.4); color: #e74c3c; margin-right: 5px; display: ${isDeleteProtected ? 'none' : 'block'};"
                       onclick="removeStudent(${index})" 
                       title="Fjern student">
                       <i class="fas fa-trash-alt"></i>
                   </button>
               </div>
-             <div class="level-display">
+             <div class="level-display" style="margin-top: 3px;">
                  <span class="level-label">Nivå</span>
                  <span class="level-number">${level}</span>
+             </div>
+             <div class="credits-display" style="display: flex; align-items: center; margin-top: 3px; color: #f1c40f; cursor: pointer;" onclick="openCreditsDialog(${index})">
+                 <i class="fas fa-coins" style="margin-right: 5px;"></i>
+                 <span>${student.credits || 0}</span>
              </div>
           </td>
         ${generateSkillCell(index, 'Intelligens')}
@@ -269,16 +276,16 @@ function generateSkillCell(index, skill) {
     const progress = (totalValue / MAX_SKILL_LEVEL) * 100;
     
     return `
-        <td class="skill-cell" data-skill="${skill}">
+        <td class="skill-cell" data-skill="${skill}" style="padding: 8px; vertical-align: middle;">
             <div class="skill-content">
-                <div class="button-container">
-                    <button class="small-button" onclick="changeSkill(${index}, '${skill}', -1)">-</button>
-                    <span class="skill-value ${hasBonus ? 'has-bonus' : ''}" title="${hasBonus ? `Base: ${baseValue}, Bonus: ${totalValue - baseValue}` : ''}">
+                <div class="button-container" style="display: flex; align-items: center; justify-content: space-between;">
+                    <button class="small-button" onclick="changeSkill(${index}, '${skill}', -1)" style="min-width: 25px; height: 25px; padding: 0; font-size: 10px;">-</button>
+                    <span class="skill-value ${hasBonus ? 'has-bonus' : ''}" title="${hasBonus ? `Base: ${baseValue}, Bonus: ${totalValue - baseValue}` : ''}" style="min-width: 25px; text-align: center;">
                         ${totalValue}${hasBonus ? '*' : ''}
                     </span>
-                    <button class="small-button" onclick="changeSkill(${index}, '${skill}', 1)">+</button>
+                    <button class="small-button" onclick="changeSkill(${index}, '${skill}', 1)" style="min-width: 25px; height: 25px; padding: 0; font-size: 10px;">+</button>
                 </div>
-                <div class="progress-bar">
+                <div class="progress-bar" style="margin-top: 3px;">
                     <div class="progress-fill" style="width: ${progress}%"></div>
                 </div>
             </div>
@@ -288,13 +295,16 @@ function generateSkillCell(index, skill) {
 
 // Funksjon for å generere exp-celle
 function generateExpCell(index) {
+    const student = students[index];
     return `
-        <td class="exp-cell">
-            <div class="button-container" style="display: flex; align-items: center; gap: 2px;">
-                <button class="small-button" onclick="changeExp(${index}, -1000)" style="min-width: 30px;">-</button>
-                <span class="exp-value" style="min-width: 60px; text-align: center;">${students[index].exp}</span>
-                <button class="small-button" onclick="changeExp(${index}, 1000)" title="Legg til 1000 EXP" style="min-width: 40px; font-size: 0.9em;">+<small>1K</small></button>
-                <button class="small-button" onclick="openCustomExpDialog(${index})" title="Legg til egendefinert EXP" style="min-width: 40px; font-size: 0.9em;"><i class="fas fa-edit"></i></button>
+        <td class="exp-cell" data-student-index="${index}" style="padding: 8px; vertical-align: middle;">
+            <div class="exp-display" style="display: flex; align-items: center; justify-content: space-between;">
+                <span class="exp-value" style="min-width: 50px;">${student.exp}</span>
+                <div class="exp-buttons" style="display: flex; gap: 2px;">
+                    <button class="small-button" onclick="changeExp(${index}, -1000)" style="min-width: 25px; height: 25px; padding: 0; font-size: 10px;">-</button>
+                    <button class="small-button" onclick="openCustomExpDialog(${index})" style="min-width: 25px; height: 25px; padding: 0; font-size: 10px;"><i class="fas fa-edit"></i></button>
+                    <button class="small-button" onclick="changeExp(${index}, 1000)" title="Legg til 1000 EXP" style="min-width: 35px; height: 25px; padding: 0; font-size: 10px;">+<small>1K</small></button>
+                </div>
             </div>
         </td>
     `;
@@ -309,6 +319,12 @@ function calculateLevel(student) {
 // Funksjon for å endre exp
 function changeExp(index, amount) {
     students[index].exp = Math.max(0, students[index].exp + amount);
+    updateTable();
+}
+
+// Funksjon for å endre kreditter
+function changeCredits(index, amount) {
+    students[index].credits = Math.max(0, (students[index].credits || 0) + amount);
     updateTable();
 }
 
@@ -474,7 +490,7 @@ function openAddPlayersModal() {
     backdrop.style.width = '100%';
     backdrop.style.height = '100%';
     backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    backdrop.style.zIndex = '1000';
+    backdrop.style.zIndex = '1999';
     backdrop.style.opacity = '0';
     backdrop.style.transition = 'opacity 0.3s ease';
     document.body.appendChild(backdrop);
@@ -485,48 +501,58 @@ function openAddPlayersModal() {
     }, 10);
     
     // Vis modal
-    modal.style.display = 'block';
-    
-    // Tøm input-feltet
-    document.getElementById('playerNamesInput').value = '';
-    
-    // Legg til klikk-hendelse for å lukke modal ved klikk på backdrop
-    backdrop.addEventListener('click', function() {
-        closeAddPlayersModal();
-    });
+    if (modal) {
+        modal.style.display = 'block';
+        
+        // Tøm input-feltet
+        const namesInput = document.getElementById('playerNamesInput');
+        if (namesInput) {
+            namesInput.value = '';
+        }
+        
+        // Legg til klikk-hendelse for å lukke modal ved klikk på backdrop
+        backdrop.addEventListener('click', function(event) {
+            if (event.target === backdrop) {
+                closeAddPlayersModal();
+            }
+        });
+    }
 }
 
 // Funksjon for å lukke dialogboksen
 function closeAddPlayersModal() {
     const modal = document.getElementById('addPlayersModal');
     if (modal) {
+        // Sett display til none umiddelbart
         modal.style.display = 'none';
     }
     
-    // Fjern backdrop med fade-out effekt
+    // Fjern backdrop umiddelbart
     const backdrop = document.getElementById('modal-backdrop');
-    if (backdrop) {
-        backdrop.style.opacity = '0';
-        setTimeout(() => {
-            backdrop.remove();
-        }, 300);
+    if (backdrop && backdrop.parentNode) {
+        backdrop.parentNode.removeChild(backdrop);
+    }
+    
+    // Tøm input-feltet
+    const namesInput = document.getElementById('playerNamesInput');
+    if (namesInput) {
+        namesInput.value = '';
     }
 }
 
 // Funksjon for å legge til flere spillere samtidig
 function addMultiplePlayers() {
-    // Fjern sjekken for pinVerifiedForAddingPlayers siden vi nå håndterer dette på en annen måte
+    console.log('addMultiplePlayers kjører');
     
-    const namesInput = document.getElementById('playerNamesInput').value.trim();
-    
-    if (!namesInput) {
-        // Vis en feilmelding i samme stil som resten av siden
+    // Hent input-verdien
+    const namesInput = document.getElementById('playerNamesInput');
+    if (!namesInput || !namesInput.value.trim()) {
         showStylizedAlert('Vennligst skriv inn minst ett navn', 'error');
         return;
     }
     
     // Del opp input basert på komma eller linjeskift
-    const namesArray = namesInput.split(/[,\n]+/).map(name => name.trim()).filter(name => name);
+    const namesArray = namesInput.value.trim().split(/[,\n]+/).map(name => name.trim()).filter(name => name);
     
     if (namesArray.length === 0) {
         showStylizedAlert('Ingen gyldige navn funnet', 'error');
@@ -558,8 +584,10 @@ function addMultiplePlayers() {
                 // Legg til den nye spilleren i students-arrayen
                 students.push(newPlayer);
                 addedCount++;
+                console.log('La til spiller:', playerName);
             } else {
                 duplicateNames.push(playerName);
+                console.log('Duplikat spiller:', playerName);
             }
         }
     });
@@ -569,7 +597,19 @@ function addMultiplePlayers() {
     updateTable();
     
     // Lukk dialogboksen
-    closeAddPlayersModal();
+    console.log('Lukker modal...');
+    const modal = document.getElementById('addPlayersModal');
+    if (modal) {
+        modal.style.display = 'none';
+        console.log('Modal skjult');
+    }
+    
+    // Fjern backdrop
+    const backdrop = document.getElementById('modal-backdrop');
+    if (backdrop && backdrop.parentNode) {
+        backdrop.parentNode.removeChild(backdrop);
+        console.log('Backdrop fjernet');
+    }
     
     // Vis en bekreftelsesmelding
     if (addedCount > 0) {
@@ -578,8 +618,10 @@ function addMultiplePlayers() {
             message += `\n\nMerk: Følgende navn eksisterer allerede og ble ikke lagt til:\n${duplicateNames.join(', ')}`;
         }
         showStylizedAlert(message, 'success');
+        console.log('Viste bekreftelsesmelding');
     } else if (duplicateNames.length > 0) {
         showStylizedAlert(`Ingen nye spillere ble lagt til. Alle navn eksisterer allerede:\n${duplicateNames.join(', ')}`, 'warning');
+        console.log('Viste advarsel om duplikater');
     }
 }
 
@@ -2028,4 +2070,299 @@ function showStylizedConfirm(message, onConfirm, onCancel) {
         `;
         document.head.appendChild(style);
     }
-} 
+}
+
+// Funksjon for å migrere eksisterende elever til å ha kreditter
+function migrateStudentsToCredits() {
+    let migrated = 0;
+    
+    students.forEach(student => {
+        if (student.credits === undefined) {
+            student.credits = 50; // Standard startverdi
+            migrated++;
+        }
+    });
+    
+    if (migrated > 0) {
+        console.log(`Migrerte ${migrated} elever med kreditter`);
+        saveData();
+    }
+}
+
+// Funksjon for å åpne dialog for å endre kreditter
+function openCreditsDialog(index) {
+    const student = students[index];
+    
+    // Fjern eksisterende dialog hvis den finnes
+    const existingDialog = document.getElementById('creditsDialog');
+    if (existingDialog) {
+        existingDialog.remove();
+    }
+    
+    // Opprett dialog
+    const dialog = document.createElement('div');
+    dialog.id = 'creditsDialog';
+    dialog.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(180deg, rgba(16, 24, 48, 0.95) 0%, rgba(24, 36, 72, 0.95) 100%);
+        color: #f1c40f;
+        border: 2px solid #f1c40f;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 0 30px rgba(241, 196, 15, 0.3);
+        z-index: 9999;
+        max-width: 400px;
+        font-family: 'Courier New', monospace;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    // Legg til tittel
+    const title = document.createElement('div');
+    title.style.cssText = `
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #f1c40f;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    `;
+    title.innerHTML = `<i class="fas fa-coins" style="font-size: 24px;"></i> Endre kreditter for ${student.name}`;
+    dialog.appendChild(title);
+    
+    // Legg til nåværende kreditt-info
+    const currentCredits = document.createElement('div');
+    currentCredits.style.cssText = `
+        margin: 15px 0;
+        font-size: 18px;
+    `;
+    currentCredits.textContent = `Nåværende kreditter: ${student.credits || 0}`;
+    dialog.appendChild(currentCredits);
+    
+    // Legg til input-felt
+    const inputContainer = document.createElement('div');
+    inputContainer.style.cssText = `
+        margin: 20px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    `;
+    
+    const inputLabel = document.createElement('label');
+    inputLabel.textContent = 'Angi ny verdi:';
+    inputLabel.style.cssText = `
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+    `;
+    inputContainer.appendChild(inputLabel);
+    
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.id = 'creditsInput';
+    input.min = '0';
+    input.value = student.credits || 0;
+    input.style.cssText = `
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid #f1c40f;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        text-align: center;
+    `;
+    inputContainer.appendChild(input);
+    
+    // Legg til hurtigvalg-knapper
+    const quickButtons = document.createElement('div');
+    quickButtons.style.cssText = `
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
+    `;
+    
+    const quickValues = [10, 50, 100, 500];
+    
+    quickValues.forEach(value => {
+        const btn = document.createElement('button');
+        btn.textContent = `+${value}`;
+        btn.style.cssText = `
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s ease;
+        `;
+        btn.onmouseover = function() {
+            this.style.background = 'rgba(46, 204, 113, 0.3)';
+            this.style.transform = 'translateY(-2px)';
+        };
+        btn.onmouseout = function() {
+            this.style.background = 'rgba(46, 204, 113, 0.2)';
+            this.style.transform = 'translateY(0)';
+        };
+        btn.onclick = function() {
+            input.value = parseInt(input.value || 0) + value;
+        };
+        quickButtons.appendChild(btn);
+    });
+    
+    inputContainer.appendChild(quickButtons);
+    dialog.appendChild(inputContainer);
+    
+    // Legg til knapper
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = `
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+    `;
+    
+    // Avbryt-knapp
+    const cancelButton = document.createElement('button');
+    cancelButton.style.cssText = `
+        background: rgba(0, 0, 0, 0.3);
+        color: #ffffff;
+        border: 1px solid #ffffff;
+        border-radius: 4px;
+        padding: 8px 15px;
+        cursor: pointer;
+        font-family: 'Courier New', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    `;
+    cancelButton.textContent = 'Avbryt';
+    cancelButton.onclick = function() {
+        dialog.style.opacity = '0';
+        dialog.style.transform = 'translate(-50%, -50%) scale(0.9)';
+        setTimeout(() => dialog.remove(), 300);
+    };
+    buttonContainer.appendChild(cancelButton);
+    
+    // Bekreft-knapp
+    const confirmButton = document.createElement('button');
+    confirmButton.style.cssText = `
+        background: rgba(241, 196, 15, 0.3);
+        color: #f1c40f;
+        border: 1px solid #f1c40f;
+        border-radius: 4px;
+        padding: 8px 15px;
+        cursor: pointer;
+        font-family: 'Courier New', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    `;
+    confirmButton.textContent = 'Lagre';
+    confirmButton.onclick = function() {
+        const newValue = parseInt(document.getElementById('creditsInput').value);
+        if (!isNaN(newValue) && newValue >= 0) {
+            students[index].credits = newValue;
+            saveData();
+            updateTable();
+            
+            // Vis bekreftelse
+            const confirmation = document.createElement('div');
+            confirmation.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(46, 204, 113, 0.9);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                font-family: 'Courier New', monospace;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+            `;
+            confirmation.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 10px;"></i> Kreditter oppdatert for ${student.name}`;
+            document.body.appendChild(confirmation);
+            
+            setTimeout(() => {
+                confirmation.style.opacity = '0';
+                setTimeout(() => confirmation.remove(), 300);
+            }, 2000);
+        }
+        
+        dialog.style.opacity = '0';
+        dialog.style.transform = 'translate(-50%, -50%) scale(0.9)';
+        setTimeout(() => dialog.remove(), 300);
+    };
+    buttonContainer.appendChild(confirmButton);
+    
+    dialog.appendChild(buttonContainer);
+    
+    // Legg til backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9998;
+        animation: fadeIn 0.3s ease;
+    `;
+    backdrop.onclick = function() {
+        dialog.style.opacity = '0';
+        dialog.style.transform = 'translate(-50%, -50%) scale(0.9)';
+        backdrop.style.opacity = '0';
+        setTimeout(() => {
+            dialog.remove();
+            backdrop.remove();
+        }, 300);
+    };
+    
+    // Legg til CSS for animasjoner
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Legg til dialog og backdrop i DOM
+    document.body.appendChild(backdrop);
+    document.body.appendChild(dialog);
+    
+    // Fokuser på input-feltet
+    input.focus();
+    input.select();
+    
+    // Legg til event listener for å lukke ved klikk på Escape-tasten
+    const escapeListener = function(event) {
+        if (event.key === 'Escape') {
+            dialog.style.opacity = '0';
+            dialog.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            backdrop.style.opacity = '0';
+            setTimeout(() => {
+                dialog.remove();
+                backdrop.remove();
+            }, 300);
+            document.removeEventListener('keydown', escapeListener);
+        }
+    };
+    document.addEventListener('keydown', escapeListener);
+}
+  
