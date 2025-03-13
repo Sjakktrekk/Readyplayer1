@@ -21,6 +21,23 @@
             </div>
             <div class="user-info">
                 <span id="username">Laster...</span>
+                <a href="../index.html" class="cyber-button" style="
+                    background: linear-gradient(135deg, #3498db, #2980b9);
+                    border: none;
+                    color: white;
+                    padding: 8px 15px;
+                    margin-right: 10px;
+                    cursor: pointer;
+                    border-radius: 5px;
+                    font-family: 'Courier New', monospace;
+                    font-size: 14px;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    text-decoration: none;
+                    transition: all 0.3s ease;">
+                    <i class="fas fa-home"></i> Hovedside
+                </a>
                 <button id="logout-button" class="cyber-button">
                     <i class="fas fa-sign-out-alt"></i> Logg ut
                 </button>
@@ -226,6 +243,28 @@
     <!-- Notification System -->
     <div id="notification-container"></div>
 
+    <!-- Test Inventory Button -->
+    <button id="test-inventory-button" class="cyber-button" style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 999;
+        background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        border: none;
+        color: white;
+        padding: 10px 15px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);">
+        <i class="fas fa-flask"></i> Test Inventar
+    </button>
+
     <!-- Item Detail Modal -->
     <div id="item-modal" class="modal">
         <div class="modal-content">
@@ -240,408 +279,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <!-- Importer våre egne JavaScript-filer -->
-    <script type="module">
-        // Opprett Supabase-klienten direkte i dashboard-skriptet
-        const SUPABASE_URL = 'https://agjxwktmzcfvepdmiaeq.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnanh3a3RtemNmdmVwZG1pYWVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE4NjEwMDMsImV4cCI6MjA1NzQzNzAwM30.WB69HGvHJXzpYN56Z9lrOcLcwau7hQOLmZkEz8BI61M';
-        // Bruk det globale Supabase-objektet som blir lastet inn fra CDN
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        // Globale variabler
-        const MAX_SKILL_LEVEL = 30;
-        let currentUser = null;
-        let userProfile = null;
-        let skillsData = {};
-        let inventoryItems = [];
-        let achievements = [];
-        let quests = [];
-        let shopItems = [];
-        
-        // DOM-elementer
-        const usernameElement = document.getElementById('username');
-        const logoutButton = document.getElementById('logout-button');
-        const navItems = document.querySelectorAll('.nav-item');
-        const tabContents = document.querySelectorAll('.tab-content');
-        const playerLevelElement = document.getElementById('player-level');
-        const playerExpElement = document.getElementById('player-exp');
-        const playerCreditsElement = document.getElementById('player-credits');
-        const skillLevelElements = document.querySelectorAll('.skill-level');
-        const skillButtons = document.querySelectorAll('.skill-button');
-        const inventoryItemsContainer = document.getElementById('inventory-items');
-        const shopItemsContainer = document.getElementById('shop-items');
-        const achievementsListContainer = document.getElementById('achievements-list');
-        const activeQuestsContainer = document.querySelector('#active-quests .quests-list');
-        const availableQuestsContainer = document.querySelector('#available-quests .quests-list');
-        const notificationContainer = document.getElementById('notification-container');
-        const itemModal = document.getElementById('item-modal');
-        const closeModalButton = document.querySelector('.close-modal');
-        const itemDetailsContainer = document.querySelector('.item-details');
-        
-        // Statistikk-elementer
-        const statLevelElement = document.getElementById('stat-level');
-        const statExpElement = document.getElementById('stat-exp');
-        const statQuestsElement = document.getElementById('stat-quests');
-        const statAchievementsElement = document.getElementById('stat-achievements');
-        const statItemsElement = document.getElementById('stat-items');
-        const statCreditsSpentElement = document.getElementById('stat-credits-spent');
-        
-        // Initialiser dashbordet
-        async function initDashboard() {
-            try {
-                // Sjekk om brukeren er logget inn
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) {
-                    // Redirect til login-siden hvis ikke logget inn
-                    window.location.href = 'login.html';
-                    return;
-                }
-                
-                currentUser = user;
-                
-                // Hent brukerprofil
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-                
-                if (error) {
-                    showNotification('Feil ved henting av brukerprofil: ' + error.message, 'error');
-                    return;
-                }
-                
-                userProfile = data;
-                
-                // Oppdater UI med brukerdata
-                updateUserInterface();
-                
-                // Abonner på sanntidsoppdateringer for brukerprofilen
-                subscribeToProfileChanges(currentUser.id);
-                
-                // Last inn data for de ulike fanene
-                loadSkillsData();
-                loadInventoryItems();
-                loadAchievements();
-                loadQuests();
-                loadShopItems();
-                
-                // Oppdater statistikk
-                updateStatistics();
-                
-            } catch (error) {
-                console.error('Feil ved initialisering av dashbord:', error.message);
-                showNotification('Feil ved lasting av dashbord. Vennligst prøv igjen senere.', 'error');
-            }
-        }
-        
-        // Funksjon for å abonnere på endringer i en brukers profil
-        function subscribeToProfileChanges(userId) {
-            return supabase
-                .channel(`profile-${userId}`)
-                .on('postgres_changes', {
-                    event: 'UPDATE',
-                    schema: 'public',
-                    table: 'profiles',
-                    filter: `id=eq.${userId}`
-                }, (payload) => {
-                    userProfile = payload.new;
-                    updateUserInterface();
-                    updateStatistics();
-                })
-                .subscribe();
-        }
-        
-        // Funksjon for å oppdatere brukergrensesnittet med brukerdata
-        function updateUserInterface() {
-            if (!userProfile) return;
-            
-            // Oppdater brukernavn
-            usernameElement.textContent = userProfile.username;
-            
-            // Oppdater nivå, EXP og kreditter
-            const level = calculateLevel(userProfile.skills);
-            playerLevelElement.textContent = level;
-            playerExpElement.textContent = userProfile.exp.toLocaleString();
-            playerCreditsElement.textContent = userProfile.credits.toLocaleString();
-            
-            // Oppdater ferdigheter
-            const skillCards = document.querySelectorAll('.skill-card');
-            skillCards.forEach(card => {
-                const skillName = card.dataset.skill;
-                const skillLevel = userProfile.skills[skillName] || 0;
-                const levelElement = card.querySelector('.skill-level');
-                levelElement.textContent = skillLevel;
-            });
-        }
-        
-        // Funksjon for å beregne nivå basert på ferdigheter
-        function calculateLevel(skills) {
-            if (!skills) return 0;
-            
-            let totalSkillPoints = 0;
-            for (const skill in skills) {
-                totalSkillPoints += skills[skill];
-            }
-            
-            return Math.floor(totalSkillPoints / 5) + 1;
-        }
-        
-        // Funksjon for å laste inn ferdighetsdata
-        function loadSkillsData() {
-            if (!userProfile || !userProfile.skills) return;
-            
-            skillsData = userProfile.skills;
-            
-            // Oppdater UI for ferdigheter
-            const skillCards = document.querySelectorAll('.skill-card');
-            skillCards.forEach(card => {
-                const skillName = card.dataset.skill;
-                const skillLevel = skillsData[skillName] || 0;
-                const levelElement = card.querySelector('.skill-level');
-                levelElement.textContent = skillLevel;
-                
-                // Legg til event listeners for knappene
-                const increaseButton = card.querySelector('.increase');
-                const decreaseButton = card.querySelector('.decrease');
-                
-                increaseButton.addEventListener('click', () => {
-                    increaseSkill(skillName);
-                });
-                
-                decreaseButton.addEventListener('click', () => {
-                    decreaseSkill(skillName);
-                });
-            });
-        }
-        
-        // Funksjon for å øke en ferdighet
-        async function increaseSkill(skillName) {
-            if (!userProfile || userProfile.exp < 1000) {
-                showNotification('Ikke nok EXP for å øke ferdigheten', 'warning');
-                return;
-            }
-            
-            if (skillsData[skillName] >= MAX_SKILL_LEVEL) {
-                showNotification('Ferdigheten er allerede på maksimalt nivå', 'warning');
-                return;
-            }
-            
-            try {
-                // Oppdater lokalt først for raskere UI-respons
-                skillsData[skillName] += 1;
-                userProfile.exp -= 1000;
-                
-                // Oppdater UI
-                updateUserInterface();
-                
-                // Oppdater i databasen
-                await updateSkill(currentUser.id, skillName, skillsData[skillName]);
-                await updateExp(currentUser.id, userProfile.exp);
-                
-                showNotification(`${skillName} økt til nivå ${skillsData[skillName]}!`, 'success');
-                
-                // Sjekk for nye prestasjoner
-                checkAchievements();
-                
-            } catch (error) {
-                console.error('Feil ved økning av ferdighet:', error.message);
-                showNotification('Feil ved oppdatering av ferdighet', 'error');
-                
-                // Tilbakestill lokale endringer ved feil
-                skillsData[skillName] -= 1;
-                userProfile.exp += 1000;
-                updateUserInterface();
-            }
-        }
-        
-        // Funksjon for å oppdatere en brukers ferdigheter
-        async function updateSkill(userId, skill, value) {
-            try {
-                // Først henter vi gjeldende profil
-                const { data: profile, error: fetchError } = await supabase
-                    .from('profiles')
-                    .select('skills')
-                    .eq('id', userId)
-                    .single();
-                
-                if (fetchError) throw fetchError;
-                
-                // Oppdaterer skills-objektet
-                const updatedSkills = { ...profile.skills };
-                updatedSkills[skill] = value;
-                
-                // Lagrer oppdaterte skills
-                const { error: updateError } = await supabase
-                    .from('profiles')
-                    .update({ skills: updatedSkills })
-                    .eq('id', userId);
-                
-                if (updateError) throw updateError;
-                
-                return { success: true };
-            } catch (error) {
-                console.error('Feil ved oppdatering av ferdighet:', error.message);
-                return { success: false, error: error.message };
-            }
-        }
-        
-        // Funksjon for å oppdatere en brukers erfaringspoeng
-        async function updateExp(userId, expValue) {
-            try {
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ exp: expValue })
-                    .eq('id', userId);
-                
-                if (error) throw error;
-                
-                return { success: true };
-            } catch (error) {
-                console.error('Feil ved oppdatering av erfaringspoeng:', error.message);
-                return { success: false, error: error.message };
-            }
-        }
-        
-        // Funksjon for å redusere en ferdighet
-        async function decreaseSkill(skillName) {
-            if (!userProfile || skillsData[skillName] <= 0) {
-                showNotification('Ferdigheten er allerede på minimumsnivå', 'warning');
-                return;
-            }
-            
-            try {
-                // Oppdater lokalt først for raskere UI-respons
-                skillsData[skillName] -= 1;
-                userProfile.exp += 1000;
-                
-                // Oppdater UI
-                updateUserInterface();
-                
-                // Oppdater i databasen
-                await updateSkill(currentUser.id, skillName, skillsData[skillName]);
-                await updateExp(currentUser.id, userProfile.exp);
-                
-                showNotification(`${skillName} redusert til nivå ${skillsData[skillName]}`, 'success');
-                
-                // Sjekk om noen prestasjoner skal fjernes
-                checkAchievements();
-                
-            } catch (error) {
-                console.error('Feil ved reduksjon av ferdighet:', error.message);
-                showNotification('Feil ved oppdatering av ferdighet', 'error');
-                
-                // Tilbakestill lokale endringer ved feil
-                skillsData[skillName] += 1;
-                userProfile.exp -= 1000;
-                updateUserInterface();
-            }
-        }
-        
-        // Funksjon for å vise varsler
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            
-            let icon = 'fas fa-info-circle';
-            if (type === 'success') icon = 'fas fa-check-circle';
-            if (type === 'error') icon = 'fas fa-exclamation-circle';
-            if (type === 'warning') icon = 'fas fa-exclamation-triangle';
-            
-            notification.innerHTML = `
-                <i class="${icon}"></i>
-                <span>${message}</span>
-            `;
-            
-            notificationContainer.appendChild(notification);
-            
-            // Fjern varselet etter 5 sekunder
-            setTimeout(() => {
-                if (notificationContainer.contains(notification)) {
-                    notificationContainer.removeChild(notification);
-                }
-            }, 5000);
-        }
-        
-        // Funksjon for å sjekke prestasjoner
-        function checkAchievements() {
-            // Dette ville normalt sjekke om brukeren har oppnådd nye prestasjoner
-            // basert på deres ferdigheter, fullførte oppdrag, osv.
-        }
-        
-        // Funksjon for å oppdatere statistikk
-        function updateStatistics() {
-            if (!userProfile) return;
-            
-            const level = calculateLevel(userProfile.skills);
-            statLevelElement.textContent = level;
-            statExpElement.textContent = userProfile.exp.toLocaleString();
-            statQuestsElement.textContent = '0'; // Dette ville normalt være antall fullførte oppdrag
-            statAchievementsElement.textContent = userProfile.achievements ? userProfile.achievements.length : '0';
-            statItemsElement.textContent = userProfile.inventory ? userProfile.inventory.length : '0';
-            statCreditsSpentElement.textContent = '0'; // Dette ville normalt være totalt antall kreditter brukt
-        }
-        
-        // Funksjon for å laste inn inventar, prestasjoner, oppdrag og butikkvarer
-        // Disse funksjonene vil bli implementert senere
-        function loadInventoryItems() {
-            // Implementeres senere
-        }
-        
-        function loadAchievements() {
-            // Implementeres senere
-        }
-        
-        function loadQuests() {
-            // Implementeres senere
-        }
-        
-        function loadShopItems() {
-            // Implementeres senere
-        }
-        
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialiser dashbordet
-            initDashboard();
-            
-            // Håndter fanenavigasjon
-            navItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    // Fjern aktiv klasse fra alle faner
-                    navItems.forEach(navItem => navItem.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-                    
-                    // Legg til aktiv klasse på valgt fane
-                    item.classList.add('active');
-                    const tabId = `${item.dataset.tab}-tab`;
-                    document.getElementById(tabId).classList.add('active');
-                });
-            });
-            
-            // Håndter utlogging
-            logoutButton.addEventListener('click', async () => {
-                try {
-                    const { error } = await supabase.auth.signOut();
-                    if (error) throw error;
-                    window.location.href = 'login.html';
-                } catch (error) {
-                    console.error('Feil ved utlogging:', error.message);
-                    showNotification('Feil ved utlogging', 'error');
-                }
-            });
-            
-            // Håndter lukking av modal
-            closeModalButton.addEventListener('click', () => {
-                itemModal.style.display = 'none';
-            });
-            
-            // Lukk modal når man klikker utenfor innholdet
-            itemModal.addEventListener('click', (event) => {
-                if (event.target === itemModal) {
-                    itemModal.style.display = 'none';
-                }
-            });
-        });
-    </script>
+    <script type="module" src="../js/dashboard.js"></script>
 </body>
 </html> 

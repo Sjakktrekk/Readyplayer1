@@ -2,106 +2,221 @@
 const MAX_SKILL_LEVEL = 30;
 let isLocked = false;
 
+// Funksjon for å laste inn brukerdata fra Supabase
+async function loadSupabaseData() {
+    console.log('Laster inn data fra Supabase...');
+    
+    // Sjekk om Supabase er tilgjengelig
+    if (typeof supabase === 'undefined') {
+        console.warn('Supabase er ikke tilgjengelig');
+        return;
+    }
+    
+    try {
+        // Sjekk om brukeren er logget inn
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            console.log('Ingen bruker er logget inn');
+            return;
+        }
+        
+        console.log('Bruker funnet:', user.email);
+        
+        // Hent brukerprofil fra Supabase
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+        
+        if (error) {
+            console.error('Feil ved henting av brukerprofil:', error);
+            return;
+        }
+        
+        console.log('Brukerprofil hentet:', profile);
+        
+        // Sjekk om profilen har inventory
+        if (profile.inventory && Array.isArray(profile.inventory)) {
+            console.log('Inventory funnet i profil:', profile.inventory.length, 'gjenstander');
+            
+            // Finn studenten som tilsvarer denne brukeren
+            const studentIndex = students.findIndex(s => s.id === user.id);
+            if (studentIndex !== -1) {
+                console.log('Student funnet på indeks', studentIndex);
+                
+                // Konverter inventory (array av objekter) til items (array av IDs)
+                const itemIds = profile.inventory.map(item => item.id);
+                console.log('Konvertert til item IDs:', itemIds);
+                
+                // Oppdater studentens items
+                students[studentIndex].items = itemIds;
+                
+                // Oppdater andre felt fra profilen
+                students[studentIndex].exp = profile.exp || 0;
+                students[studentIndex].credits = profile.credits || 0;
+                students[studentIndex].achievements = profile.achievements || [];
+                
+                // Oppdater ferdigheter
+                if (profile.skills) {
+                    students[studentIndex].Intelligens = profile.skills.Intelligens || 0;
+                    students[studentIndex].Teknologi = profile.skills.Teknologi || 0;
+                    students[studentIndex].Stamina = profile.skills.Stamina || 0;
+                    students[studentIndex].Karisma = profile.skills.Karisma || 0;
+                    students[studentIndex].Kreativitet = profile.skills.Kreativitet || 0;
+                    students[studentIndex].Flaks = profile.skills.Flaks || 0;
+                }
+                
+                // Oppdater tabellen og inventaret
+                updateTable();
+                if (typeof updateItemsDisplay === 'function') {
+                    updateItemsDisplay(studentIndex);
+                }
+                
+                console.log('Student oppdatert med data fra Supabase');
+            } else {
+                console.log('Ingen student funnet for denne brukeren, oppretter ny');
+                
+                // Opprett en ny student basert på profilen
+                const newStudent = {
+                    id: user.id,
+                    name: profile.username || 'Ny student',
+                    Intelligens: profile.skills?.Intelligens || 0,
+                    Teknologi: profile.skills?.Teknologi || 0,
+                    Stamina: profile.skills?.Stamina || 0,
+                    Karisma: profile.skills?.Karisma || 0,
+                    Kreativitet: profile.skills?.Kreativitet || 0,
+                    Flaks: profile.skills?.Flaks || 0,
+                    exp: profile.exp || 0,
+                    credits: profile.credits || 0,
+                    achievements: profile.achievements || [],
+                    items: profile.inventory.map(item => item.id)
+                };
+                
+                // Legg til den nye studenten
+                students.push(newStudent);
+                
+                // Oppdater tabellen og inventaret
+                updateTable();
+                if (typeof updateItemsDisplay === 'function') {
+                    updateItemsDisplay(students.length - 1);
+                }
+                
+                console.log('Ny student opprettet med data fra Supabase');
+            }
+        } else {
+            console.log('Ingen inventory funnet i profilen');
+        }
+    } catch (error) {
+        console.error('Feil ved lasting av data fra Supabase:', error);
+    }
+}
+
 // Initialiser når siden lastes
 document.addEventListener('DOMContentLoaded', function() {
     try {
         console.log('DOMContentLoaded starter...');
         
-        // Migrer eksisterende elever til å ha kreditter
-        migrateStudentsToCredits();
-        
-        // Oppdater tabellen først
-        updateTable();
-        
-        // Legg til boksene etter at tabellen er oppdatert
-        setTimeout(function() {
-            addDailyQuestsInline();
-        }, 100);
-        
-        // Legg til hover-effekt på overskriften
-        const heading = document.querySelector('h1');
-        if (heading) {
-            heading.addEventListener('mouseover', function() {
-                this.style.textShadow = '0 0 15px rgba(52, 152, 219, 0.8)';
-                this.style.transform = 'scale(1.02)';
-                this.style.transition = 'all 0.3s ease';
-            });
+        // Last inn data fra Supabase først
+        loadSupabaseData().then(() => {
+            console.log('Supabase-data lastet, fortsetter med initialisering...');
             
-            heading.addEventListener('mouseout', function() {
-                this.style.textShadow = 'none';
-                this.style.transform = 'scale(1)';
-            });
-        }
-        
-        // Legg til event listener for å vise tooltips for skills med bonuser
-        document.addEventListener('mouseover', function(e) {
-            if (e.target.classList.contains('skill-value') && e.target.classList.contains('has-bonus')) {
-                const title = e.target.getAttribute('title');
-                if (title) {
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'skill-tooltip';
-                    tooltip.textContent = title;
-                    tooltip.style.position = 'absolute';
-                    tooltip.style.left = (e.pageX + 10) + 'px';
-                    tooltip.style.top = (e.pageY + 10) + 'px';
-                    tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-                    tooltip.style.color = 'white';
-                    tooltip.style.padding = '5px 10px';
-                    tooltip.style.borderRadius = '5px';
-                    tooltip.style.zIndex = '1000';
-                    tooltip.style.pointerEvents = 'none';
-                    document.body.appendChild(tooltip);
-                    
-                    e.target.addEventListener('mouseout', function() {
-                        if (document.body.contains(tooltip)) {
-                            document.body.removeChild(tooltip);
-                        }
-                    }, { once: true });
-                }
-            }
-        });
-        
-        // Oppdater utseendet på slettebeskyttelsesknappen ved oppstart
-        const deleteProtectionButton = document.getElementById('deleteProtectionButton');
-        if (deleteProtectionButton) {
-            const icon = deleteProtectionButton.querySelector('i') || document.createElement('i');
-            icon.className = 'fas fa-lock';
-            deleteProtectionButton.style.background = 'linear-gradient(180deg, #e74c3c 0%, #c0392b 100%)';
-            deleteProtectionButton.style.color = 'white';
-            deleteProtectionButton.style.borderColor = '#c0392b';
-            deleteProtectionButton.innerHTML = '';
-            deleteProtectionButton.appendChild(icon);
-            deleteProtectionButton.appendChild(document.createTextNode(' Sletting låst'));
-        }
-        
-        // Legg til sorteringsfunksjonalitet
-        let sortByLevelDesc = true;
-        const sortLevelBtn = document.getElementById('sortLevelBtn');
-        if (sortLevelBtn) {
-            sortLevelBtn.addEventListener('click', function() {
-                const sortedStudents = [...students].sort((a, b) => {
-                    const levelA = calculateLevel(a);
-                    const levelB = calculateLevel(b);
-                    return sortByLevelDesc ? levelB - levelA : levelA - levelB;
+            // Migrer eksisterende elever til å ha kreditter
+            migrateStudentsToCredits();
+            
+            // Oppdater tabellen først
+            updateTable();
+            
+            // Legg til boksene etter at tabellen er oppdatert
+            setTimeout(function() {
+                addDailyQuestsInline();
+            }, 100);
+            
+            // Legg til hover-effekt på overskriften
+            const heading = document.querySelector('h1');
+            if (heading) {
+                heading.addEventListener('mouseover', function() {
+                    this.style.textShadow = '0 0 15px rgba(52, 152, 219, 0.8)';
+                    this.style.transform = 'scale(1.02)';
+                    this.style.transition = 'all 0.3s ease';
                 });
                 
-                sortByLevelDesc = !sortByLevelDesc;
-                this.innerHTML = `<i class="fas fa-sort-${sortByLevelDesc ? 'down' : 'up'}"></i>`;
-                
-                students = sortedStudents;
-                updateTable();
-            });
-        }
-        
-        // Spor musposisjon på skill-knapp-klikk
-        document.addEventListener('click', function(e) {
-            if (e.target.matches('.small-button')) {
-                window.lastClickX = e.clientX;
-                window.lastClickY = e.clientY;
+                heading.addEventListener('mouseout', function() {
+                    this.style.textShadow = 'none';
+                    this.style.transform = 'scale(1)';
+                });
             }
+            
+            // Legg til event listener for å vise tooltips for skills med bonuser
+            document.addEventListener('mouseover', function(e) {
+                if (e.target.classList.contains('skill-value') && e.target.classList.contains('has-bonus')) {
+                    const title = e.target.getAttribute('title');
+                    if (title) {
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'skill-tooltip';
+                        tooltip.textContent = title;
+                        tooltip.style.position = 'absolute';
+                        tooltip.style.left = (e.pageX + 10) + 'px';
+                        tooltip.style.top = (e.pageY + 10) + 'px';
+                        tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                        tooltip.style.color = 'white';
+                        tooltip.style.padding = '5px 10px';
+                        tooltip.style.borderRadius = '5px';
+                        tooltip.style.zIndex = '1000';
+                        tooltip.style.pointerEvents = 'none';
+                        document.body.appendChild(tooltip);
+                        
+                        e.target.addEventListener('mouseout', function() {
+                            if (document.body.contains(tooltip)) {
+                                document.body.removeChild(tooltip);
+                            }
+                        }, { once: true });
+                    }
+                }
+            });
+            
+            // Oppdater utseendet på slettebeskyttelsesknappen ved oppstart
+            const deleteProtectionButton = document.getElementById('deleteProtectionButton');
+            if (deleteProtectionButton) {
+                const icon = deleteProtectionButton.querySelector('i') || document.createElement('i');
+                icon.className = 'fas fa-lock';
+                deleteProtectionButton.style.background = 'linear-gradient(180deg, #e74c3c 0%, #c0392b 100%)';
+                deleteProtectionButton.style.color = 'white';
+                deleteProtectionButton.style.borderColor = '#c0392b';
+                deleteProtectionButton.innerHTML = '';
+                deleteProtectionButton.appendChild(icon);
+                deleteProtectionButton.appendChild(document.createTextNode(' Sletting låst'));
+            }
+            
+            // Legg til sorteringsfunksjonalitet
+            let sortByLevelDesc = true;
+            const sortLevelBtn = document.getElementById('sortLevelBtn');
+            if (sortLevelBtn) {
+                sortLevelBtn.addEventListener('click', function() {
+                    const sortedStudents = [...students].sort((a, b) => {
+                        const levelA = calculateLevel(a);
+                        const levelB = calculateLevel(b);
+                        return sortByLevelDesc ? levelB - levelA : levelA - levelB;
+                    });
+                    
+                    sortByLevelDesc = !sortByLevelDesc;
+                    this.innerHTML = `<i class="fas fa-sort-${sortByLevelDesc ? 'down' : 'up'}"></i>`;
+                    
+                    students = sortedStudents;
+                    updateTable();
+                });
+            }
+            
+            // Spor musposisjon på skill-knapp-klikk
+            document.addEventListener('click', function(e) {
+                if (e.target.matches('.small-button')) {
+                    window.lastClickX = e.clientX;
+                    window.lastClickY = e.clientY;
+                }
+            });
+            
+            console.log('DOMContentLoaded fullført');
         });
-        
-        console.log('DOMContentLoaded fullført');
     } catch (error) {
         console.error('Feil i DOMContentLoaded:', error);
     }
@@ -212,8 +327,22 @@ async function saveData() {
                 
                 console.log('Lagrer data for student:', student.name);
                 
-                // Konverter items (array av IDs) til inventory (array av item-objekter)
-                let inventory = [];
+                // Hent først gjeldende profil for å få inventory
+                const { data: currentProfile, error: fetchError } = await supabase
+                    .from('profiles')
+                    .select('inventory')
+                    .eq('id', student.id)
+                    .single();
+                
+                if (fetchError) {
+                    console.error('Feil ved henting av gjeldende profil:', fetchError);
+                    continue;
+                }
+                
+                // Behold gjeldende inventory hvis det finnes
+                let inventory = currentProfile?.inventory || [];
+                
+                // Hvis studenten har items, konverter dem til inventory-format
                 if (student.items && Array.isArray(student.items)) {
                     console.log('Student har', student.items.length, 'gjenstander');
                     
