@@ -20,7 +20,31 @@
     <audio id="levelUpSound" src="https://www.soundjay.com/button/sounds/button-09.mp3" preload="auto"></audio>
     <audio id="itemFoundSound" src="sounds/item.mp3" preload="auto"></audio>
 
+    <!-- Login-knapp -->
+    <div style="position: absolute; top: 20px; right: 20px; z-index: 1000;">
+        <a href="pages/login.html" style="
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9));
+            border: 2px solid #0ff;
+            color: #0ff;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);">
+            <i class="fas fa-user"></i> Logg inn
+        </a>
+    </div>
+
+    <!-- Importer Supabase JavaScript bibliotek -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <!-- JavaScript-filer -->
+    <script src="js/supabase/supabase-main.js"></script>
     <script src="js/students.js"></script>
     <script src="js/achievements.js"></script>
     <script src="js/items.js"></script>

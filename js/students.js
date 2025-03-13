@@ -1,16 +1,18 @@
-// Initialize students data
-let students = JSON.parse(localStorage.getItem('students')) || [{
-    name: "Ny student",
-    Intelligens: 0,
-    Teknologi: 0,
-    Stamina: 0,
-    Karisma: 0,
-    Kreativitet: 0,
-    Flaks: 0,
-    exp: 10000,
-    credits: 100,
-    achievements: []
-}];
+// Initialize students data if it doesn't exist yet
+if (typeof students === 'undefined') {
+    let students = JSON.parse(localStorage.getItem('students')) || [{
+        name: "Ny student",
+        Intelligens: 0,
+        Teknologi: 0,
+        Stamina: 0,
+        Karisma: 0,
+        Kreativitet: 0,
+        Flaks: 0,
+        exp: 10000,
+        credits: 100,
+        achievements: []
+    }];
+}
 
 // Funksjon for å endre skill-verdi
 function changeSkill(index, skill, amount) {

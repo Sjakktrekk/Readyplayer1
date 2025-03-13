@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OASIS - Logg inn</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- CSS-filer -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/animations.css">
+    <link rel="stylesheet" href="../css/login.css">
+    <style>
+        body {
+            background-image: url('../bakgrunn.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            animation: glow 2s infinite alternate;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #0ff;
+            border-radius: 5px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+            border-color: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9));
+            border: 2px solid #0ff;
+            border-radius: 5px;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
+            animation: shineEffect 2s infinite;
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 20px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .toggle-form a {
+            color: #0ff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .toggle-form a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #ff4d4d;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .success-message {
+            color: #4dff4d;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            }
+            to {
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+            }
+        }
+
+        @keyframes shineEffect {
+            0% {
+                left: -100%;
+            }
+            20% {
+                left: 100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+
+        .logo {
+            width: 90px;
+            height: 60px;
+            margin-bottom: 20px;
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="title-container">
+        <img src="../player.png" alt="Player Icon" class="logo">
+        <h1>OASIS - LEVEL UP FACILITY</h1>
+        <img src="../player.png" alt="Player Icon" class="logo">
+    </div>
+
+    <div class="login-container">
+        <div id="login-form">
+            <h1>Logg inn</h1>
+            <div class="form-group">
+                <label for="login-email">E-post</label>
+                <input type="email" id="login-email" placeholder="Din e-post">
+            </div>
+            <div class="form-group">
+                <label for="login-password">Passord</label>
+                <input type="password" id="login-password" placeholder="Ditt passord">
+            </div>
+            <button id="login-button">
+                <i class="fas fa-sign-in-alt"></i> Logg inn
+            </button>
+            <div class="toggle-form">
+                Har du ikke en konto? <a id="show-register">Registrer deg</a>
+            </div>
+            <div id="login-error" class="error-message"></div>
+        </div>
+
+        <div id="register-form" style="display: none;">
+            <h1>Registrer deg</h1>
+            <div class="form-group">
+                <label for="register-username">Brukernavn</label>
+                <input type="text" id="register-username" placeholder="Velg et brukernavn">
+            </div>
+            <div class="form-group">
+                <label for="register-email">E-post</label>
+                <input type="email" id="register-email" placeholder="Din e-post">
+            </div>
+            <div class="form-group">
+                <label for="register-password">Passord</label>
+                <input type="password" id="register-password" placeholder="Velg et passord">
+            </div>
+            <div class="form-group">
+                <label for="register-confirm-password">Bekreft passord</label>
+                <input type="password" id="register-confirm-password" placeholder="Bekreft passordet ditt">
+            </div>
+            <button id="register-button">
+                <i class="fas fa-user-plus"></i> Registrer deg
+            </button>
+            <div class="toggle-form">
+                Har du allerede en konto? <a id="show-login">Logg inn</a>
+            </div>
+            <div id="register-error" class="error-message"></div>
+            <div id="register-success" class="success-message"></div>
+        </div>
+    </div>
+
+    <!-- Importer Supabase JavaScript bibliotek -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Importer våre egne JavaScript-filer -->
+    <script type="module">
+        // Opprett Supabase-klienten direkte i login-skriptet
+        const SUPABASE_URL = 'https://agjxwktmzcfvepdmiaeq.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnanh3a3RtemNmdmVwZG1pYWVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE4NjEwMDMsImV4cCI6MjA1NzQzNzAwM30.WB69HGvHJXzpYN56Z9lrOcLcwau7hQOLmZkEz8BI61M';
+        // Bruk det globale Supabase-objektet som blir lastet inn fra CDN
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementer
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const showRegisterLink = document.getElementById('show-register');
+            const showLoginLink = document.getElementById('show-login');
+            
+            const loginButton = document.getElementById('login-button');
+            const registerButton = document.getElementById('register-button');
+            
+            const loginEmail = document.getElementById('login-email');
+            const loginPassword = document.getElementById('login-password');
+            const loginError = document.getElementById('login-error');
+            
+            const registerUsername = document.getElementById('register-username');
+            const registerEmail = document.getElementById('register-email');
+            const registerPassword = document.getElementById('register-password');
+            const registerConfirmPassword = document.getElementById('register-confirm-password');
+            const registerError = document.getElementById('register-error');
+            const registerSuccess = document.getElementById('register-success');
+            
+            // Bytt mellom skjemaene
+            showRegisterLink.addEventListener('click', function() {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                loginError.textContent = '';
+            });
+            
+            showLoginLink.addEventListener('click', function() {
+                registerForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                registerError.textContent = '';
+                registerSuccess.textContent = '';
+            });
+            
+            // Håndter innlogging
+            loginButton.addEventListener('click', async function() {
+                loginError.textContent = '';
+                
+                const email = loginEmail.value.trim();
+                const password = loginPassword.value;
+                
+                if (!email || !password) {
+                    loginError.textContent = 'Vennligst fyll ut alle feltene';
+                    return;
+                }
+                
+                loginButton.disabled = true;
+                loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logger inn...';
+                
+                try {
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password,
+                    });
+                    
+                    if (error) throw error;
+                    
+                    // Redirect til dashbord
+                    window.location.href = 'dashboard.html';
+                } catch (error) {
+                    loginError.textContent = error.message || 'Feil ved innlogging. Sjekk e-post og passord.';
+                    console.error('Login error:', error);
+                } finally {
+                    loginButton.disabled = false;
+                    loginButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> Logg inn';
+                }
+            });
+            
+            // Håndter registrering
+            registerButton.addEventListener('click', async function() {
+                registerError.textContent = '';
+                registerSuccess.textContent = '';
+                
+                const username = registerUsername.value.trim();
+                const email = registerEmail.value.trim();
+                const password = registerPassword.value;
+                const confirmPassword = registerConfirmPassword.value;
+                
+                if (!username || !email || !password || !confirmPassword) {
+                    registerError.textContent = 'Vennligst fyll ut alle feltene';
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    registerError.textContent = 'Passordene stemmer ikke overens';
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    registerError.textContent = 'Passordet må være minst 6 tegn';
+                    return;
+                }
+                
+                registerButton.disabled = true;
+                registerButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrerer...';
+                
+                try {
+                    // Registrer brukeren med Supabase Auth
+                    const { data, error: authError } = await supabase.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            data: {
+                                username: username
+                            },
+                            emailRedirectTo: window.location.origin + '/pages/dashboard.html'
+                        }
+                    });
+                    
+                    if (authError) throw authError;
+                    
+                    // Opprett brukerdata i profiles-tabellen uansett om e-post er bekreftet eller ikke
+                    if (data.user) {
+                        const { error: profileError } = await supabase
+                            .from('profiles')
+                            .insert([
+                                { 
+                                    id: data.user.id, 
+                                    username: username,
+                                    skills: {
+                                        Intelligens: 0,
+                                        Teknologi: 0,
+                                        Stamina: 0,
+                                        Karisma: 0,
+                                        Kreativitet: 0,
+                                        Flaks: 0
+                                    },
+                                    exp: 10000,
+                                    credits: 100,
+                                    achievements: [],
+                                    inventory: []
+                                }
+                            ]);
+                        
+                        if (profileError) {
+                            console.error('Profil-feil:', profileError);
+                            throw new Error('Kunne ikke opprette brukerprofil. Vennligst kontakt support.');
+                        }
+                        
+                        // Sjekk om e-postbekreftelse er påkrevd
+                        if (data.session) {
+                            // Brukeren er logget inn automatisk, redirect til dashbord
+                            registerSuccess.textContent = 'Registrering vellykket! Omdirigerer til dashbord...';
+                            
+                            // Tøm feltene
+                            registerUsername.value = '';
+                            registerEmail.value = '';
+                            registerPassword.value = '';
+                            registerConfirmPassword.value = '';
+                            
+                            // Redirect til dashbord etter 1 sekund
+                            setTimeout(() => {
+                                window.location.href = 'dashboard.html';
+                            }, 1000);
+                        } else {
+                            // E-postbekreftelse er påkrevd
+                            registerSuccess.textContent = 'Registrering vellykket! Vennligst sjekk e-posten din for å bekrefte kontoen.';
+                            
+                            // Tøm feltene
+                            registerUsername.value = '';
+                            registerEmail.value = '';
+                            registerPassword.value = '';
+                            registerConfirmPassword.value = '';
+                            
+                            // Bytt til login-skjermen etter 3 sekunder
+                            setTimeout(() => {
+                                registerForm.style.display = 'none';
+                                loginForm.style.display = 'block';
+                            }, 3000);
+                        }
+                    }
+                } catch (error) {
+                    // Spesialhåndtering for "Email not confirmed" feil
+                    if (error.message && error.message.includes('Email not confirmed')) {
+                        registerError.textContent = 'E-posten din er ikke bekreftet. Vennligst sjekk innboksen din og klikk på bekreftelseslenken.';
+                    } else {
+                        registerError.textContent = error.message || 'Feil ved registrering. Prøv igjen senere.';
+                    }
+                    console.error('Registration error:', error);
+                } finally {
+                    registerButton.disabled = false;
+                    registerButton.innerHTML = '<i class="fas fa-user-plus"></i> Registrer deg';
+                }
+            });
+            
+            // Legg til enter-tast funksjonalitet
+            loginPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loginButton.click();
+                }
+            });
+            
+            registerConfirmPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    registerButton.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

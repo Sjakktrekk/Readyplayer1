@@ -198,8 +198,86 @@ function closeOasisModal() {
 }
 
 // Funksjon for å lagre data
-function saveData() {
+async function saveData() {
+    // Lagre lokalt som backup
     localStorage.setItem('students', JSON.stringify(students));
+    
+    // Hvis Supabase er tilgjengelig, synkroniser med Supabase
+    if (typeof supabase !== 'undefined') {
+        try {
+            // For hver student, oppdater tilsvarende profil i Supabase
+            for (const student of students) {
+                // Hopp over studenter uten ID (lokale studenter)
+                if (!student.id) continue;
+                
+                console.log('Lagrer data for student:', student.name);
+                
+                // Konverter items (array av IDs) til inventory (array av item-objekter)
+                let inventory = [];
+                if (student.items && Array.isArray(student.items)) {
+                    console.log('Student har', student.items.length, 'gjenstander');
+                    
+                    // Konverter hver item ID til et item-objekt
+                    inventory = student.items.map(itemId => {
+                        // Finn gjenstanden i items-arrayen
+                        const itemData = window.items.find(item => item.id === itemId);
+                        if (!itemData) {
+                            console.warn('Kunne ikke finne gjenstand med ID:', itemId);
+                            return null;
+                        }
+                        
+                        // Opprett et nytt item-objekt med samme format som i dashboard.js
+                        return {
+                            id: itemData.id,
+                            name: itemData.name,
+                            description: itemData.description,
+                            icon: itemData.icon,
+                            image: itemData.image,
+                            rarity: itemData.rarity || 'common',
+                            type: itemData.type || 'Gjenstand',
+                            slot: itemData.slot || null,
+                            stats: itemData.stats || {}
+                        };
+                    }).filter(item => item !== null); // Fjern null-verdier
+                    
+                    console.log('Konvertert til', inventory.length, 'inventory-gjenstander');
+                }
+                
+                // Konverter student-format til Supabase-format
+                const profileData = {
+                    username: student.name,
+                    skills: {
+                        Intelligens: student.Intelligens,
+                        Teknologi: student.Teknologi,
+                        Stamina: student.Stamina,
+                        Karisma: student.Karisma,
+                        Kreativitet: student.Kreativitet,
+                        Flaks: student.Flaks
+                    },
+                    exp: student.exp,
+                    credits: student.credits,
+                    achievements: student.achievements || [],
+                    inventory: inventory // Bruk den konverterte inventory-arrayen
+                };
+                
+                console.log('Oppdaterer profil i Supabase med inventory:', inventory.length, 'gjenstander');
+                
+                // Oppdater profilen i Supabase
+                const { error } = await supabase
+                    .from('profiles')
+                    .update(profileData)
+                    .eq('id', student.id);
+                
+                if (error) {
+                    console.error('Feil ved oppdatering av profil i Supabase:', error);
+                } else {
+                    console.log('Profil oppdatert i Supabase for', student.name);
+                }
+            }
+        } catch (error) {
+            console.error('Feil ved synkronisering med Supabase:', error);
+        }
+    }
 }
 
 // Funksjon for å oppdatere tabellen
