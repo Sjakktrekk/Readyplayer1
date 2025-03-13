@@ -42,6 +42,9 @@ let statAchievementsElement;
 let statItemsElement;
 let statCreditsSpentElement;
 
+// Gjør userProfile tilgjengelig globalt
+window.userProfile = userProfile;
+
 // Funksjon for å initialisere DOM-elementer
 function initDOMElements() {
     usernameElement = document.getElementById('username');
@@ -121,6 +124,9 @@ async function initDashboard() {
             credits: profile.credits || 0
         };
         
+        // Oppdater global userProfile
+        window.userProfile = userProfile;
+        
         // Logg inventaret
         console.log('Bruker har', userProfile.inventory.length, 'gjenstander i inventaret');
         if (userProfile.inventory.length > 0) {
@@ -153,11 +159,17 @@ async function initDashboard() {
                     credits: newData.credits
                 };
                 
+                // Oppdater global userProfile
+                window.userProfile = userProfile;
+                
                 // Oppdater brukergrensesnittet
                 updateUserInterface();
                 
                 // Last inn inventaret på nytt
                 loadInventoryItems();
+                
+                // Last inn prestasjoner på nytt
+                loadAchievements();
                 
                 showNotification('Profil oppdatert', 'success');
             })
@@ -187,6 +199,12 @@ function updateUserInterface() {
     // Oppdater brukernavn
     usernameElement.textContent = userProfile.username;
     
+    // Oppdater brukernavn i header
+    const usernameDisplayElement = document.getElementById('username-display');
+    if (usernameDisplayElement) {
+        usernameDisplayElement.textContent = userProfile.username.toUpperCase();
+    }
+    
     // Oppdater nivå, EXP og kreditter
     const level = calculateLevel(userProfile.skills);
     playerLevelElement.textContent = level;
@@ -200,6 +218,56 @@ function updateUserInterface() {
         const skillLevel = userProfile.skills[skillName] || 0;
         const levelElement = card.querySelector('.skill-level');
         levelElement.textContent = skillLevel;
+        
+        // Sett farge på ferdighetskortet basert på ferdighetstypen
+        const skillColor = getSkillColor(skillName);
+        const skillColorRgba = getSkillColor(skillName, 0.3);
+        
+        // Oppdater styling på kortet
+        card.style.borderColor = skillColor;
+        card.style.boxShadow = `0 0 10px ${skillColorRgba}`;
+        
+        // Oppdater styling på tittel
+        const titleElement = card.querySelector('.skill-name');
+        if (titleElement) {
+            titleElement.style.color = skillColor;
+            titleElement.style.textShadow = `0 0 5px ${skillColorRgba}`;
+        }
+        
+        // Oppdater styling på ikon
+        const iconElement = card.querySelector('.skill-icon');
+        if (iconElement) {
+            iconElement.style.color = skillColor;
+            iconElement.style.textShadow = `0 0 10px ${skillColorRgba}`;
+        }
+        
+        // Oppdater styling på nivå
+        if (levelElement) {
+            levelElement.style.color = skillColor;
+            levelElement.style.textShadow = `0 0 5px ${skillColorRgba}`;
+        }
+        
+        // Legg til event listeners for knappene
+        const increaseButton = card.querySelector('.increase');
+        const decreaseButton = card.querySelector('.decrease');
+        
+        // Oppdater styling på knappene
+        if (increaseButton) {
+            increaseButton.style.backgroundColor = skillColor;
+            increaseButton.style.borderColor = skillColor;
+        }
+        
+        if (decreaseButton) {
+            decreaseButton.style.borderColor = skillColor;
+        }
+        
+        increaseButton.addEventListener('click', () => {
+            increaseSkill(skillName);
+        });
+        
+        decreaseButton.addEventListener('click', () => {
+            decreaseSkill(skillName);
+        });
     });
 }
 
@@ -212,7 +280,27 @@ function calculateLevel(skills) {
         totalSkillPoints += skills[skill];
     }
     
-    return Math.floor(totalSkillPoints / 5) + 1;
+    return totalSkillPoints;
+}
+
+// Hjelpefunksjon for å hente farge for en ferdighet
+function getSkillColor(skill, alpha = 1) {
+    switch (skill) {
+        case 'Intelligens':
+            return alpha < 1 ? `rgba(0, 191, 255, ${alpha})` : '#00bfff';
+        case 'Teknologi':
+            return alpha < 1 ? `rgba(46, 204, 113, ${alpha})` : '#2ecc71';
+        case 'Stamina':
+            return alpha < 1 ? `rgba(255, 64, 64, ${alpha})` : '#ff4040';
+        case 'Karisma':
+            return alpha < 1 ? `rgba(255, 215, 0, ${alpha})` : '#ffd700';
+        case 'Kreativitet':
+            return alpha < 1 ? `rgba(255, 20, 147, ${alpha})` : '#ff1493';
+        case 'Flaks':
+            return alpha < 1 ? `rgba(0, 255, 255, ${alpha})` : '#00ffff';
+        default:
+            return alpha < 1 ? `rgba(255, 255, 255, ${alpha})` : '#ffffff';
+    }
 }
 
 // Funksjon for å laste inn ferdighetsdata
@@ -230,9 +318,47 @@ function loadSkillsData() {
         const levelElement = card.querySelector('.skill-level');
         levelElement.textContent = skillLevel;
         
+        // Sett farge på ferdighetskortet basert på ferdighetstypen
+        const skillColor = getSkillColor(skillName);
+        const skillColorRgba = getSkillColor(skillName, 0.3);
+        
+        // Oppdater styling på kortet
+        card.style.borderColor = skillColor;
+        card.style.boxShadow = `0 0 10px ${skillColorRgba}`;
+        
+        // Oppdater styling på tittel
+        const titleElement = card.querySelector('.skill-name');
+        if (titleElement) {
+            titleElement.style.color = skillColor;
+            titleElement.style.textShadow = `0 0 5px ${skillColorRgba}`;
+        }
+        
+        // Oppdater styling på ikon
+        const iconElement = card.querySelector('.skill-icon');
+        if (iconElement) {
+            iconElement.style.color = skillColor;
+            iconElement.style.textShadow = `0 0 10px ${skillColorRgba}`;
+        }
+        
+        // Oppdater styling på nivå
+        if (levelElement) {
+            levelElement.style.color = skillColor;
+            levelElement.style.textShadow = `0 0 5px ${skillColorRgba}`;
+        }
+        
         // Legg til event listeners for knappene
         const increaseButton = card.querySelector('.increase');
         const decreaseButton = card.querySelector('.decrease');
+        
+        // Oppdater styling på knappene
+        if (increaseButton) {
+            increaseButton.style.backgroundColor = skillColor;
+            increaseButton.style.borderColor = skillColor;
+        }
+        
+        if (decreaseButton) {
+            decreaseButton.style.borderColor = skillColor;
+        }
         
         increaseButton.addEventListener('click', () => {
             increaseSkill(skillName);
@@ -272,7 +398,7 @@ async function increaseSkill(skillName) {
         showNotification(`${skillName} økt til nivå ${skillsData[skillName]}!`, 'success');
         
         // Sjekk for nye prestasjoner
-        checkAchievements();
+        checkAchievements(skillName);
         
     } catch (error) {
         console.error('Feil ved økning av ferdighet:', error.message);
@@ -360,7 +486,7 @@ async function decreaseSkill(skillName) {
         showNotification(`${skillName} redusert til nivå ${skillsData[skillName]}`, 'success');
         
         // Sjekk om noen prestasjoner skal fjernes
-        checkAchievements();
+        checkAchievements(skillName);
         
     } catch (error) {
         console.error('Feil ved reduksjon av ferdighet:', error.message);
@@ -373,265 +499,38 @@ async function decreaseSkill(skillName) {
     }
 }
 
-// Funksjon for å laste inn inventar
-function loadInventoryItems() {
-    console.log('Laster inn inventar...');
-    
-    // Sjekk om brukerprofil og inventar finnes
-    if (!userProfile) {
-        console.warn('Ingen brukerprofil funnet ved lasting av inventar');
-        return;
-    }
-    
-    // Sjekk at inventory er et array
-    if (!Array.isArray(userProfile.inventory)) {
-        console.warn('Inventory er ikke et array, initialiserer tom array');
-        userProfile.inventory = [];
-    }
-    
-    // Logg inventaret
-    console.log('Bruker har', userProfile.inventory.length, 'gjenstander i inventaret');
-    if (userProfile.inventory.length > 0) {
-        console.log('Første gjenstand:', JSON.stringify(userProfile.inventory[0]));
-    }
-    
-    // Tøm container
-    inventoryItemsContainer.innerHTML = '';
-    
-    // Hvis inventaret er tomt, vis melding
-    if (userProfile.inventory.length === 0) {
-        console.log('Inventaret er tomt');
-        inventoryItemsContainer.innerHTML = `
-            <div style="
-                grid-column: 1 / -1;
-                text-align: center;
-                padding: 50px 20px;
-                color: rgba(255, 255, 255, 0.5);
-                font-style: italic;
-                font-family: 'Courier New', monospace;
-                border: 1px dashed rgba(255, 255, 255, 0.3);
-                border-radius: 8px;
-                background: rgba(0, 0, 0, 0.3);
-            ">
-                <i class="fas fa-backpack" style="font-size: 32px; margin-bottom: 15px; display: block;"></i>
-                RYGGSEKKEN ER TOM<br>
-                <span style="font-size: 14px; opacity: 0.7; margin-top: 10px; display: block;">Kjøp gjenstander i Oasis-butikken eller få tilfeldige gjenstander ved level up!</span>
-            </div>
-        `;
-        return;
-    }
-    
-    console.log(`Viser ${userProfile.inventory.length} gjenstander i inventaret`);
-    
-    // Vis hver gjenstand i inventaret
-    userProfile.inventory.forEach(item => {
-        console.log('Behandler gjenstand:', item);
-        
-        // Sjekk at gjenstanden har nødvendige felter
-        if (!item || !item.name) {
-            console.warn('Ugyldig gjenstand funnet:', item);
-            return;
-        }
-        
-        // Bestem farge basert på sjeldenhet
-        let rarityColor, rarityGlow, rarityName;
-        switch (item.rarity) {
-            case 'legendary':
-                rarityColor = '#f1c40f';
-                rarityGlow = 'rgba(241, 196, 15, 0.5)';
-                rarityName = 'LEGENDARISK';
-                break;
-            case 'epic':
-                rarityColor = '#9b59b6';
-                rarityGlow = 'rgba(155, 89, 182, 0.5)';
-                rarityName = 'EPISK';
-                break;
-            case 'rare':
-                rarityColor = '#3498db';
-                rarityGlow = 'rgba(52, 152, 219, 0.5)';
-                rarityName = 'SJELDEN';
-                break;
-            case 'uncommon':
-                rarityColor = '#1eff00';
-                rarityGlow = 'rgba(30, 255, 0, 0.5)';
-                rarityName = 'UVANLIG';
-                break;
-            default:
-                rarityColor = '#ffffff';
-                rarityGlow = 'rgba(255, 255, 255, 0.5)';
-                rarityName = 'VANLIG';
-        }
-        
-        // Opprett gjenstandskort med cyberpunk-stil
-        const itemElement = document.createElement('div');
-        itemElement.className = 'item-card';
-        itemElement.setAttribute('data-rarity', item.rarity || 'common');
-        itemElement.setAttribute('data-item-id', item.id);
-        
-        // Legg til spesielle effekter for legendariske gjenstander
-        const legendaryEffect = item.rarity === 'legendary' ? 
-            `animation: pulse-glow 2s infinite alternate;
-             background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9));` : '';
-        
-        itemElement.style.cssText = `
-            position: relative;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(10, 10, 20, 0.8));
-            border: 2px solid ${rarityColor};
-            border-radius: 8px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            transition: all 0.3s ease;
-            min-height: 180px;
-            box-shadow: 0 0 10px ${rarityGlow};
-            overflow: hidden;
-            ${legendaryEffect}
-        `;
-        
-        // Legg til holografisk overlay for cyberpunk-følelse
-        const holographicOverlay = document.createElement('div');
-        holographicOverlay.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                repeating-linear-gradient(90deg, rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 0px, 
-                rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 1px, transparent 1px, transparent 10px),
-                repeating-linear-gradient(0deg, rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 0px, 
-                rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 1px, transparent 1px, transparent 10px);
-            pointer-events: none;
-            z-index: 1;
-        `;
-        itemElement.appendChild(holographicOverlay);
-        
-        // Legg til innhold
-        const contentDiv = document.createElement('div');
-        contentDiv.style.cssText = `
-            position: relative;
-            z-index: 2;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        `;
-        
-        // Legg til sjeldenhetsmerke
-        const rarityBadge = document.createElement('div');
-        rarityBadge.style.cssText = `
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: ${rarityColor};
-            color: #000;
-            font-size: 10px;
-            padding: 3px 6px;
-            border-radius: 3px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 0 5px ${rarityGlow};
-        `;
-        rarityBadge.textContent = rarityName;
-        contentDiv.appendChild(rarityBadge);
-        
-        // Legg til slot-merke hvis gjenstanden kan equippes
-        if (item.slot) {
-            const slotNames = {
-                head: 'Hode',
-                chest: 'Bryst',
-                hands: 'Hender',
-                legs: 'Bein',
-                feet: 'Føtter',
-                accessory: 'Tilbehør'
-            };
-            
-            const slotBadge = document.createElement('div');
-            slotBadge.style.cssText = `
-                position: absolute;
-                top: -5px;
-                left: -5px;
-                background: rgba(0, 255, 255, 0.7);
-                color: #000;
-                font-size: 10px;
-                padding: 3px 6px;
-                border-radius: 3px;
-                font-weight: bold;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
-            `;
-            slotBadge.textContent = slotNames[item.slot];
-            contentDiv.appendChild(slotBadge);
-        }
-        
-        // Legg til ikon
-        const iconDiv = document.createElement('div');
-        iconDiv.style.cssText = `
-            font-size: 48px;
-            margin: 10px 0;
-            text-shadow: 0 0 10px ${rarityGlow};
-        `;
-        iconDiv.textContent = item.icon || '📦';
-        contentDiv.appendChild(iconDiv);
-        
-        // Legg til navn
-        const nameDiv = document.createElement('div');
-        nameDiv.style.cssText = `
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: ${rarityColor};
-            text-shadow: 0 0 5px ${rarityGlow};
-        `;
-        nameDiv.textContent = item.name;
-        contentDiv.appendChild(nameDiv);
-        
-        // Legg til beskrivelse
-        const descDiv = document.createElement('div');
-        descDiv.style.cssText = `
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 10px;
-            flex-grow: 1;
-        `;
-        descDiv.textContent = item.description || item.type || 'Gjenstand';
-        contentDiv.appendChild(descDiv);
-        
-        // Legg til hover-effekt
-        itemElement.addEventListener('mouseover', () => {
-            itemElement.style.transform = 'translateY(-5px) scale(1.03)';
-            itemElement.style.boxShadow = `0 10px 20px ${rarityGlow}`;
-            itemElement.style.zIndex = '10';
-        });
-        
-        itemElement.addEventListener('mouseout', () => {
-            itemElement.style.transform = 'translateY(0) scale(1)';
-            itemElement.style.boxShadow = `0 0 10px ${rarityGlow}`;
-            itemElement.style.zIndex = '1';
-        });
-        
-        // Legg til klikk-hendelse for å vise detaljer
-        itemElement.addEventListener('click', () => {
-            showItemDetails(item);
-        });
-        
-        // Legg til innholdet i kortet
-        itemElement.appendChild(contentDiv);
-        
-        // Legg til i container
-        inventoryItemsContainer.appendChild(itemElement);
-    });
-}
-
 // Funksjon for å laste inn prestasjoner
 function loadAchievements() {
     console.log('Laster inn prestasjoner...');
-    // Dette ville normalt laste inn prestasjoner fra brukerprofilen
-    // og vise dem i achievements-fanen
+    
+    // Sjekk om loadDashboardAchievements-funksjonen er tilgjengelig
+    if (typeof loadDashboardAchievements === 'function') {
+        // Send userProfile til loadDashboardAchievements
+        if (userProfile) {
+            loadDashboardAchievements(userProfile);
+        } else {
+            console.error('userProfile er ikke tilgjengelig i loadAchievements');
+            const achievementsContainer = document.getElementById('achievements-list');
+            if (achievementsContainer) {
+                achievementsContainer.innerHTML = '<div class="empty-message">Venter på brukerdata...</div>';
+                
+                // Prøv igjen om 1 sekund når userProfile kanskje er tilgjengelig
+                setTimeout(() => {
+                    if (userProfile) {
+                        loadDashboardAchievements(userProfile);
+                    } else {
+                        achievementsContainer.innerHTML = '<div class="empty-message">Kunne ikke laste brukerdata. Vennligst oppdater siden.</div>';
+                    }
+                }, 1000);
+            }
+        }
+    } else {
+        console.error('loadDashboardAchievements-funksjonen er ikke tilgjengelig');
+        const achievementsContainer = document.getElementById('achievements-list');
+        if (achievementsContainer) {
+            achievementsContainer.innerHTML = '<div class="empty-message">Kunne ikke laste prestasjoner. Vennligst prøv igjen senere.</div>';
+        }
+    }
 }
 
 // Funksjon for å laste inn oppdrag
@@ -1127,9 +1026,483 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
+// Funksjon for å sjekke achievements
+function checkAchievements(skillName) {
+    console.log('Sjekker prestasjoner for ferdighet:', skillName);
+    
+    if (!userProfile || !achievements || !Array.isArray(achievements)) {
+        console.error('Kan ikke sjekke prestasjoner: userProfile eller achievements mangler');
+        return;
+    }
+    
+    // Konverter userProfile til formatet som achievements.check forventer
+    const user = {
+        ...userProfile,
+        Intelligens: userProfile.skills.Intelligens || 0,
+        Teknologi: userProfile.skills.Teknologi || 0,
+        Stamina: userProfile.skills.Stamina || 0,
+        Karisma: userProfile.skills.Karisma || 0,
+        Kreativitet: userProfile.skills.Kreativitet || 0,
+        Flaks: userProfile.skills.Flaks || 0
+    };
+    
+    // Filtrer achievements basert på ferdighet
+    const skillAchievements = achievements.filter(a => a.skill === skillName);
+    
+    // Sjekk hver prestasjon
+    skillAchievements.forEach(achievement => {
+        const hasAchievement = userProfile.achievements?.includes(achievement.name);
+        const meetsRequirement = achievement.check(user);
+        
+        if (!hasAchievement && meetsRequirement) {
+            console.log('Ny prestasjon låst opp:', achievement.name);
+            
+            // Legg til prestasjon i brukerens liste
+            if (!userProfile.achievements) {
+                userProfile.achievements = [];
+            }
+            userProfile.achievements.push(achievement.name);
+            
+            // Oppdater i databasen
+            updateAchievements(currentUser.id, userProfile.achievements)
+                .then(() => {
+                    console.log('Prestasjoner oppdatert i databasen');
+                })
+                .catch(error => {
+                    console.error('Feil ved oppdatering av prestasjoner:', error);
+                });
+            
+            // Vis popup og spill lyd
+            showAchievementPopup(achievement);
+            
+            // Oppdater statistikk
+            updateStatistics();
+        }
+    });
+}
+
+// Funksjon for å oppdatere brukerens prestasjoner i databasen
+async function updateAchievements(userId, achievements) {
+    console.log(`Oppdaterer prestasjoner for bruker ${userId}`);
+    try {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ achievements: achievements })
+            .eq('id', userId);
+        
+        if (error) throw error;
+        
+        console.log('Prestasjoner oppdatert');
+        return { success: true };
+    } catch (error) {
+        console.error('Feil ved oppdatering av prestasjoner:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+// Funksjon for å vise achievement-popup
+function showAchievementPopup(achievement) {
+    console.log('Viser achievement popup for:', achievement.name);
+    
+    // Fjern eksisterende popup
+    const existingPopup = document.querySelector('.achievement-popup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+
+    // Opprett popup
+    const popup = document.createElement('div');
+    popup.className = 'achievement-popup';
+    popup.setAttribute('data-skill', achievement.skill);
+    
+    // Bestem farge basert på ferdighet
+    const skillColor = getSkillColor(achievement.skill);
+    const skillColorRgba = getSkillColor(achievement.skill, 0.5);
+    
+    popup.innerHTML = `
+        <div style="background: rgba(0, 0, 0, 0.8); padding: 30px; border-radius: 20px; border: 3px solid ${skillColor}; box-shadow: 0 0 30px ${skillColorRgba}">
+            <div style="font-size: 64px; margin-bottom: 20px; color: ${skillColor}; text-shadow: 0 0 15px ${skillColorRgba}; text-align: center;">
+                <i class="${getAchievementIcon(achievement.name)}"></i>
+            </div>
+            <p style="font-size: 36px; margin-bottom: 20px; color: ${skillColor}; text-shadow: 0 0 10px currentColor, 0 0 20px rgba(0,0,0,0.8); font-weight: bold; text-align: center;">Belønning låst opp</p>
+            <p style="font-size: 32px; margin: 15px 0; color: ${skillColor}; text-shadow: 0 0 10px currentColor, 0 0 20px rgba(0,0,0,0.8); font-weight: bold; text-align: center;">${achievement.name}</p>
+            <p style="font-size: 24px; margin-bottom: 20px; color: ${skillColor}; text-shadow: 0 0 10px currentColor, 0 0 20px rgba(0,0,0,0.8); text-align: center;">${achievement.description}</p>
+            <p style="font-size: 28px; color: ${skillColor}; text-shadow: 0 0 10px currentColor, 0 0 20px rgba(0,0,0,0.8); padding: 15px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; margin-top: 10px; text-align: center;">${achievement.reward || 'Ingen belønning spesifisert'}</p>
+        </div>
+    `;
+    
+    // Legg til CSS for animasjon hvis det ikke allerede finnes
+    if (!document.getElementById('achievement-popup-style')) {
+        const style = document.createElement('style');
+        style.id = 'achievement-popup-style';
+        style.textContent = `
+            .achievement-popup {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0.5);
+                z-index: 9999;
+                opacity: 0;
+                transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            .achievement-popup.show {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Legg til i dokumentet
+    document.body.appendChild(popup);
+
+    // Trigger animasjon
+    requestAnimationFrame(() => {
+        popup.classList.add('show');
+    });
+
+    // Spill achievement-lyd
+    playAchievementSound();
+
+    // Fjern etter forsinkelse
+    setTimeout(() => {
+        popup.classList.remove('show');
+        setTimeout(() => popup.remove(), 600);
+    }, 5000);
+}
+
+// Funksjon for å spille achievement-lyd
+function playAchievementSound() {
+    // Sjekk om lydelement finnes, hvis ikke, opprett det
+    let sound = document.getElementById('achievementSound');
+    if (!sound) {
+        sound = document.createElement('audio');
+        sound.id = 'achievementSound';
+        sound.src = '../sounds/achievement.mp3';
+        sound.preload = 'auto';
+        document.body.appendChild(sound);
+    }
+    
+    sound.currentTime = 0;
+    sound.volume = 0.3;
+    sound.play().catch(e => console.log('Sound play prevented:', e));
+}
+
+// Hjelpefunksjon for å få ikon basert på achievement-navn
+function getAchievementIcon(achievementName) {
+    const name = achievementName.toLowerCase();
+    if (name.includes('newbie')) {
+        return 'fas fa-star';
+    } else if (name.includes('explorer')) {
+        return 'fas fa-compass';
+    } else if (name.includes('master')) {
+        return 'fas fa-crown';
+    } else if (name.includes('legend')) {
+        return 'fas fa-trophy';
+    } else if (name.includes('champion')) {
+        return 'fas fa-medal';
+    } else {
+        return 'fas fa-award';
+    }
+}
+
+// Funksjon for å laste inn inventar
+function loadInventoryItems() {
+    console.log('Laster inn inventar...');
+    
+    // Sjekk om brukerprofil og inventar finnes
+    if (!userProfile) {
+        console.warn('Ingen brukerprofil funnet ved lasting av inventar');
+        return;
+    }
+    
+    // Sjekk at inventory er et array
+    if (!Array.isArray(userProfile.inventory)) {
+        console.warn('Inventory er ikke et array, initialiserer tom array');
+        userProfile.inventory = [];
+    }
+    
+    // Logg inventaret
+    console.log('Bruker har', userProfile.inventory.length, 'gjenstander i inventaret');
+    if (userProfile.inventory.length > 0) {
+        console.log('Første gjenstand:', JSON.stringify(userProfile.inventory[0]));
+    }
+    
+    // Tøm container
+    inventoryItemsContainer.innerHTML = '';
+    
+    // Hvis inventaret er tomt, vis melding
+    if (userProfile.inventory.length === 0) {
+        console.log('Inventaret er tomt');
+        inventoryItemsContainer.innerHTML = `
+            <div style="
+                grid-column: 1 / -1;
+                text-align: center;
+                padding: 50px 20px;
+                color: rgba(255, 255, 255, 0.5);
+                font-style: italic;
+                font-family: 'Courier New', monospace;
+                border: 1px dashed rgba(255, 255, 255, 0.3);
+                border-radius: 8px;
+                background: rgba(0, 0, 0, 0.3);
+            ">
+                <i class="fas fa-backpack" style="font-size: 32px; margin-bottom: 15px; display: block;"></i>
+                RYGGSEKKEN ER TOM<br>
+                <span style="font-size: 14px; opacity: 0.7; margin-top: 10px; display: block;">Kjøp gjenstander i Oasis-butikken eller få tilfeldige gjenstander ved level up!</span>
+            </div>
+        `;
+        return;
+    }
+    
+    console.log(`Viser ${userProfile.inventory.length} gjenstander i inventaret`);
+    
+    // Vis hver gjenstand i inventaret
+    userProfile.inventory.forEach(item => {
+        console.log('Behandler gjenstand:', item);
+        
+        // Sjekk at gjenstanden har nødvendige felter
+        if (!item || !item.name) {
+            console.warn('Ugyldig gjenstand funnet:', item);
+            return;
+        }
+        
+        // Bestem farge basert på sjeldenhet
+        let rarityColor, rarityGlow, rarityName;
+        switch (item.rarity) {
+            case 'legendary':
+                rarityColor = '#f1c40f';
+                rarityGlow = 'rgba(241, 196, 15, 0.5)';
+                rarityName = 'LEGENDARISK';
+                break;
+            case 'epic':
+                rarityColor = '#9b59b6';
+                rarityGlow = 'rgba(155, 89, 182, 0.5)';
+                rarityName = 'EPISK';
+                break;
+            case 'rare':
+                rarityColor = '#3498db';
+                rarityGlow = 'rgba(52, 152, 219, 0.5)';
+                rarityName = 'SJELDEN';
+                break;
+            case 'uncommon':
+                rarityColor = '#1eff00';
+                rarityGlow = 'rgba(30, 255, 0, 0.5)';
+                rarityName = 'UVANLIG';
+                break;
+            default:
+                rarityColor = '#ffffff';
+                rarityGlow = 'rgba(255, 255, 255, 0.5)';
+                rarityName = 'VANLIG';
+        }
+        
+        // Opprett gjenstandskort med cyberpunk-stil
+        const itemElement = document.createElement('div');
+        itemElement.className = 'item-card';
+        itemElement.setAttribute('data-rarity', item.rarity || 'common');
+        itemElement.setAttribute('data-item-id', item.id);
+        
+        // Legg til spesielle effekter for legendariske gjenstander
+        const legendaryEffect = item.rarity === 'legendary' ? 
+            `animation: pulse-glow 2s infinite alternate;
+             background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9));` : '';
+        
+        itemElement.style.cssText = `
+            position: relative;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(10, 10, 20, 0.8));
+            border: 2px solid ${rarityColor};
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.3s ease;
+            min-height: 180px;
+            box-shadow: 0 0 10px ${rarityGlow};
+            overflow: hidden;
+            ${legendaryEffect}
+        `;
+        
+        // Legg til holografisk overlay for cyberpunk-følelse
+        const holographicOverlay = document.createElement('div');
+        holographicOverlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(90deg, rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 0px, 
+                rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 1px, transparent 1px, transparent 10px),
+                repeating-linear-gradient(0deg, rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 0px, 
+                rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 1px, transparent 1px, transparent 10px);
+            pointer-events: none;
+            z-index: 1;
+        `;
+        itemElement.appendChild(holographicOverlay);
+        
+        // Legg til innhold
+        const contentDiv = document.createElement('div');
+        contentDiv.style.cssText = `
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        `;
+        
+        // Legg til sjeldenhetsmerke
+        const rarityBadge = document.createElement('div');
+        rarityBadge.style.cssText = `
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: ${rarityColor};
+            color: #000;
+            font-size: 10px;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 5px ${rarityGlow};
+        `;
+        rarityBadge.textContent = rarityName;
+        contentDiv.appendChild(rarityBadge);
+        
+        // Legg til slot-merke hvis gjenstanden kan equippes
+        if (item.slot) {
+            const slotNames = {
+                head: 'Hode',
+                chest: 'Bryst',
+                hands: 'Hender',
+                legs: 'Bein',
+                feet: 'Føtter',
+                accessory: 'Tilbehør'
+            };
+            
+            const slotBadge = document.createElement('div');
+            slotBadge.style.cssText = `
+                position: absolute;
+                top: -5px;
+                left: -5px;
+                background: rgba(0, 255, 255, 0.7);
+                color: #000;
+                font-size: 10px;
+                padding: 3px 6px;
+                border-radius: 3px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+            `;
+            slotBadge.textContent = slotNames[item.slot];
+            contentDiv.appendChild(slotBadge);
+        }
+        
+        // Legg til ikon
+        const iconDiv = document.createElement('div');
+        iconDiv.style.cssText = `
+            font-size: 48px;
+            margin: 10px 0;
+            text-shadow: 0 0 10px ${rarityGlow};
+        `;
+        iconDiv.textContent = item.icon || '📦';
+        contentDiv.appendChild(iconDiv);
+        
+        // Legg til navn
+        const nameDiv = document.createElement('div');
+        nameDiv.style.cssText = `
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: ${rarityColor};
+            text-shadow: 0 0 5px ${rarityGlow};
+        `;
+        nameDiv.textContent = item.name;
+        contentDiv.appendChild(nameDiv);
+        
+        // Legg til beskrivelse
+        const descDiv = document.createElement('div');
+        descDiv.style.cssText = `
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+            flex-grow: 1;
+        `;
+        descDiv.textContent = item.description || item.type || 'Gjenstand';
+        contentDiv.appendChild(descDiv);
+        
+        // Legg til hover-effekt
+        itemElement.addEventListener('mouseover', () => {
+            itemElement.style.transform = 'translateY(-5px) scale(1.03)';
+            itemElement.style.boxShadow = `0 10px 20px ${rarityGlow}`;
+            itemElement.style.zIndex = '10';
+        });
+        
+        itemElement.addEventListener('mouseout', () => {
+            itemElement.style.transform = 'translateY(0) scale(1)';
+            itemElement.style.boxShadow = `0 0 10px ${rarityGlow}`;
+            itemElement.style.zIndex = '1';
+        });
+        
+        // Legg til klikk-hendelse for å vise detaljer
+        itemElement.addEventListener('click', () => {
+            showItemDetails(item);
+        });
+        
+        // Legg til innholdet i kortet
+        itemElement.appendChild(contentDiv);
+        
+        // Legg til i container
+        inventoryItemsContainer.appendChild(itemElement);
+    });
+}
+
 // Initialiser når DOM er lastet
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM lastet, initialiserer dashboard...');
+    
+    // Skaler ned dashbordet til 80% av opprinnelig størrelse
+    const dashboardStyle = document.createElement('style');
+    dashboardStyle.textContent = `
+        .dashboard-container {
+            transform: scale(0.8);
+            transform-origin: top center;
+            width: 125%;
+            margin-left: -12.5%;
+        }
+        .nav-item, .tab-content, .skill-card, .item-card, .achievement-card, .quest-card {
+            font-size: 0.9em;
+        }
+        .notification {
+            transform: scale(0.8);
+        }
+    `;
+    document.head.appendChild(dashboardStyle);
+    
+    // Last inn achievements fra achievements.js
+    fetch('../js/achievements.js')
+        .then(response => response.text())
+        .then(achievementsScript => {
+            // Bruk regex for å hente ut achievements-arrayen
+            const match = achievementsScript.match(/const\s+achievements\s*=\s*(\[[\s\S]*?\]);/);
+            if (match && match[1]) {
+                try {
+                    // Parse achievements-arrayen
+                    achievements = eval(match[1]);
+                    console.log('Prestasjoner lastet:', achievements.length, 'prestasjoner');
+                } catch (error) {
+                    console.error('Feil ved parsing av prestasjoner:', error);
+                }
+            } else {
+                console.error('Kunne ikke finne achievements-array i achievements.js');
+            }
+        })
+        .catch(error => {
+            console.error('Feil ved lasting av achievements.js:', error);
+        });
     
     // Initialiser DOM-elementer
     initDOMElements();

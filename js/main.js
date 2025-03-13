@@ -320,6 +320,30 @@ async function saveData() {
     // Hvis Supabase er tilgjengelig, synkroniser med Supabase
     if (typeof supabase !== 'undefined') {
         try {
+            // Sjekk om items-arrayen er tilgjengelig, hvis ikke, last den inn
+            if (typeof window.items === 'undefined') {
+                console.log('items-arrayen er ikke tilgjengelig, prøver å laste den inn...');
+                try {
+                    // Hent items.js-filen
+                    const response = await fetch('../js/items.js');
+                    const itemsScript = await response.text();
+                    
+                    // Bruk regex for å hente ut items-arrayen
+                    const match = itemsScript.match(/const\s+items\s*=\s*(\[[\s\S]*?\]);/);
+                    if (match && match[1]) {
+                        // Parse items-arrayen
+                        window.items = eval(match[1]);
+                        console.log('items-arrayen lastet inn med', window.items.length, 'gjenstander');
+                    } else {
+                        console.error('Kunne ikke finne items-array i items.js');
+                        window.items = []; // Initialiser som tom array for å unngå feil
+                    }
+                } catch (error) {
+                    console.error('Feil ved lasting av items.js:', error);
+                    window.items = []; // Initialiser som tom array for å unngå feil
+                }
+            }
+            
             // For hver student, oppdater tilsvarende profil i Supabase
             for (const student of students) {
                 // Hopp over studenter uten ID (lokale studenter)
@@ -348,11 +372,37 @@ async function saveData() {
                     
                     // Konverter hver item ID til et item-objekt
                     inventory = student.items.map(itemId => {
+                        // Sjekk om items-arrayen er tilgjengelig
+                        if (!window.items || !Array.isArray(window.items)) {
+                            console.warn('items-arrayen er ikke tilgjengelig eller er ikke et array');
+                            // Returner et enkelt objekt med ID for å unngå feil
+                            return {
+                                id: itemId,
+                                name: `Gjenstand ${itemId}`,
+                                description: 'Beskrivelse ikke tilgjengelig',
+                                icon: '📦',
+                                rarity: 'common',
+                                type: 'Ukjent',
+                                slot: null,
+                                stats: {}
+                            };
+                        }
+                        
                         // Finn gjenstanden i items-arrayen
                         const itemData = window.items.find(item => item.id === itemId);
                         if (!itemData) {
                             console.warn('Kunne ikke finne gjenstand med ID:', itemId);
-                            return null;
+                            // Returner et enkelt objekt med ID for å unngå feil
+                            return {
+                                id: itemId,
+                                name: `Gjenstand ${itemId}`,
+                                description: 'Beskrivelse ikke tilgjengelig',
+                                icon: '📦',
+                                rarity: 'common',
+                                type: 'Ukjent',
+                                slot: null,
+                                stats: {}
+                            };
                         }
                         
                         // Opprett et nytt item-objekt med samme format som i dashboard.js
@@ -367,7 +417,7 @@ async function saveData() {
                             slot: itemData.slot || null,
                             stats: itemData.stats || {}
                         };
-                    }).filter(item => item !== null); // Fjern null-verdier
+                    });
                     
                     console.log('Konvertert til', inventory.length, 'inventory-gjenstander');
                 }

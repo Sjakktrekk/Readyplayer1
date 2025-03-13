@@ -19,8 +19,11 @@
                 <h1>OASIS - DASHBORD</h1>
                 <img src="../player.png" alt="Player Icon" class="logo">
             </div>
+            <div class="player-name-container">
+                <h1 id="player-name-display">VELKOMMEN <span id="username-display">Laster...</span></h1>
+            </div>
             <div class="user-info">
-                <span id="username">Laster...</span>
+                <span id="username" style="display: none;">Laster...</span>
                 <a href="../index.html" class="cyber-button" style="
                     background: linear-gradient(135deg, #3498db, #2980b9);
                     border: none;
@@ -279,6 +282,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <!-- Importer våre egne JavaScript-filer -->
+    <script src="../js/achievements.js"></script>
+    <script src="../js/dashboard-achievements.js"></script>
     <script type="module" src="../js/dashboard.js"></script>
 </body>
 </html> 

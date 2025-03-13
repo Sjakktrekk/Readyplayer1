@@ -365,6 +365,9 @@ const items = [
     }
 ];
 
+// Gjør items-arrayen tilgjengelig globalt
+window.items = items;
+
 // Funksjon for å åpne itembag-modalen
 function openItemBagModal(studentIndex) {
     const student = students[studentIndex];
@@ -555,111 +558,152 @@ function updateItemsDisplay(studentIndex) {
         student.items.forEach(itemId => {
             try {
                 // Prøv først å finne gjenstanden i vanlige items
-                let item = items.find(i => i.id === itemId);
+                let item = window.items.find(i => i.id === itemId);
                 
                 // Hvis ikke funnet, prøv å finne i shopItems
                 if (!item && typeof shopItems !== 'undefined' && shopItems) {
                     item = shopItems.find(i => i.id === itemId);
                 }
                 
-                if (item) {
-                    console.log('Viser gjenstand:', item.name, '(ID:', item.id, ')');
-                    // Bestem farge basert på sjeldenhetsgrad
-                    let rarityColor, rarityGlow, rarityName;
-                    
-                    // Hvis det er en butikk-gjenstand, bruk gullfarge
-                    if (typeof shopItems !== 'undefined' && shopItems && shopItems.some(i => i.id === item.id)) {
-                        rarityColor = '#f1c40f';
-                        rarityGlow = 'rgba(241, 196, 15, 0.5)';
-                        rarityName = 'BUTIKK';
-                    } else {
-                        switch(item.rarity) {
-                            case 'rare':
-                                rarityColor = '#3498db';
-                                rarityGlow = 'rgba(52, 152, 219, 0.5)';
-                                rarityName = 'SJELDEN';
-                                break;
-                            case 'epic':
-                                rarityColor = '#9b59b6';
-                                rarityGlow = 'rgba(155, 89, 182, 0.5)';
-                                rarityName = 'EPISK';
-                                break;
-                            case 'legendary':
-                                rarityColor = '#f1c40f';
-                                rarityGlow = 'rgba(241, 196, 15, 0.5)';
-                                rarityName = 'LEGENDARISK';
-                                break;
-                            default:
-                                rarityColor = '#ffffff';
-                                rarityGlow = 'rgba(255, 255, 255, 0.5)';
-                                rarityName = 'UKJENT';
-                        }
+                // Hvis fortsatt ikke funnet, opprett en enkel gjenstand basert på ID
+                if (!item) {
+                    console.warn('Kunne ikke finne gjenstand med ID:', itemId, 'oppretter enkel gjenstand');
+                    item = {
+                        id: itemId,
+                        name: `Gjenstand ${itemId}`,
+                        description: 'Beskrivelse ikke tilgjengelig',
+                        icon: '📦',
+                        rarity: 'common',
+                        type: 'Ukjent'
+                    };
+                }
+                
+                console.log('Viser gjenstand:', item.name, '(ID:', item.id, ')');
+                // Bestem farge basert på sjeldenhetsgrad
+                let rarityColor, rarityGlow, rarityName;
+                
+                // Hvis det er en butikk-gjenstand, bruk gullfarge
+                if (typeof shopItems !== 'undefined' && shopItems && shopItems.some(i => i.id === item.id)) {
+                    rarityColor = '#f1c40f';
+                    rarityGlow = 'rgba(241, 196, 15, 0.5)';
+                    rarityName = 'BUTIKK';
+                } else {
+                    switch(item.rarity) {
+                        case 'rare':
+                            rarityColor = '#3498db';
+                            rarityGlow = 'rgba(52, 152, 219, 0.5)';
+                            rarityName = 'SJELDEN';
+                            break;
+                        case 'epic':
+                            rarityColor = '#9b59b6';
+                            rarityGlow = 'rgba(155, 89, 182, 0.5)';
+                            rarityName = 'EPISK';
+                            break;
+                        case 'legendary':
+                            rarityColor = '#f1c40f';
+                            rarityGlow = 'rgba(241, 196, 15, 0.5)';
+                            rarityName = 'LEGENDARISK';
+                            break;
+                        default:
+                            rarityColor = '#ffffff';
+                            rarityGlow = 'rgba(255, 255, 255, 0.5)';
+                            rarityName = 'UKJENT';
                     }
+                }
+                
+                // Opprett gjenstandskortet med cyberpunk-stil
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item-card';
+                itemElement.setAttribute('data-rarity', item.rarity);
+                itemElement.setAttribute('data-item-id', item.id);
+                
+                // Legg til spesielle effekter for legendariske gjenstander
+                const legendaryEffect = item.rarity === 'legendary' ? 
+                    `animation: pulse-glow 2s infinite alternate;
+                     background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9));` : '';
+                
+                itemElement.style.cssText = `
+                    position: relative;
+                    background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(10, 10, 20, 0.8));
+                    border: 2px solid ${rarityColor};
+                    border-radius: 8px;
+                    padding: 15px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                    transition: all 0.3s ease;
+                    min-height: 180px;
+                    box-shadow: 0 0 10px ${rarityGlow};
+                    overflow: hidden;
+                    ${legendaryEffect}
+                `;
+                
+                // Legg til holografisk overlay for cyberpunk-følelse
+                const holographicOverlay = document.createElement('div');
+                holographicOverlay.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: 
+                        repeating-linear-gradient(90deg, rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 0px, 
+                        rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 1px, transparent 1px, transparent 10px),
+                        repeating-linear-gradient(0deg, rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 0px, 
+                        rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 1px, transparent 1px, transparent 10px);
+                    pointer-events: none;
+                    z-index: 1;
+                `;
+                itemElement.appendChild(holographicOverlay);
+                
+                // Legg til innhold
+                const contentDiv = document.createElement('div');
+                contentDiv.style.cssText = `
+                    position: relative;
+                    z-index: 2;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                `;
+                
+                // Legg til sjeldenhetsmerke
+                const rarityBadge = document.createElement('div');
+                rarityBadge.style.cssText = `
+                    position: absolute;
+                    top: -5px;
+                    right: -5px;
+                    background: ${rarityColor};
+                    color: #000;
+                    font-size: 10px;
+                    padding: 3px 6px;
+                    border-radius: 3px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    box-shadow: 0 0 5px ${rarityGlow};
+                `;
+                rarityBadge.textContent = rarityName;
+                contentDiv.appendChild(rarityBadge);
+                
+                // Legg til slot-merke hvis gjenstanden kan equippes
+                if (item.slot) {
+                    const slotNames = {
+                        head: 'Hode',
+                        chest: 'Bryst',
+                        hands: 'Hender',
+                        legs: 'Bein',
+                        feet: 'Føtter',
+                        accessory: 'Tilbehør'
+                    };
                     
-                    // Opprett gjenstandskortet med cyberpunk-stil
-                    const itemElement = document.createElement('div');
-                    itemElement.className = 'item-card';
-                    itemElement.setAttribute('data-rarity', item.rarity);
-                    itemElement.setAttribute('data-item-id', item.id);
-                    
-                    // Legg til spesielle effekter for legendariske gjenstander
-                    const legendaryEffect = item.rarity === 'legendary' ? 
-                        `animation: pulse-glow 2s infinite alternate;
-                         background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9));` : '';
-                    
-                    itemElement.style.cssText = `
-                        position: relative;
-                        background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(10, 10, 20, 0.8));
-                        border: 2px solid ${rarityColor};
-                        border-radius: 8px;
-                        padding: 15px;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        text-align: center;
-                        transition: all 0.3s ease;
-                        min-height: 180px;
-                        box-shadow: 0 0 10px ${rarityGlow};
-                        overflow: hidden;
-                        ${legendaryEffect}
-                    `;
-                    
-                    // Legg til holografisk overlay for cyberpunk-følelse
-                    const holographicOverlay = document.createElement('div');
-                    holographicOverlay.style.cssText = `
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background: 
-                            repeating-linear-gradient(90deg, rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 0px, 
-                            rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 1px, transparent 1px, transparent 10px),
-                            repeating-linear-gradient(0deg, rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 0px, 
-                            rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.03) 1px, transparent 1px, transparent 10px);
-                        pointer-events: none;
-                        z-index: 1;
-                    `;
-                    itemElement.appendChild(holographicOverlay);
-                    
-                    // Legg til innhold
-                    const contentDiv = document.createElement('div');
-                    contentDiv.style.cssText = `
-                        position: relative;
-                        z-index: 2;
-                        width: 100%;
-                        height: 100%;
-                        display: flex;
-                        flex-direction: column;
-                    `;
-                    
-                    // Legg til sjeldenhetsmerke
-                    const rarityBadge = document.createElement('div');
-                    rarityBadge.style.cssText = `
+                    const slotBadge = document.createElement('div');
+                    slotBadge.style.cssText = `
                         position: absolute;
                         top: -5px;
-                        right: -5px;
-                        background: ${rarityColor};
+                        left: -5px;
+                        background: rgba(0, 255, 255, 0.7);
                         color: #000;
                         font-size: 10px;
                         padding: 3px 6px;
@@ -667,178 +711,146 @@ function updateItemsDisplay(studentIndex) {
                         font-weight: bold;
                         text-transform: uppercase;
                         letter-spacing: 0.5px;
-                        box-shadow: 0 0 5px ${rarityGlow};
+                        box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
                     `;
-                    rarityBadge.textContent = rarityName;
-                    contentDiv.appendChild(rarityBadge);
-                    
-                    // Legg til slot-merke hvis gjenstanden kan equippes
-                    if (item.slot) {
-                        const slotNames = {
-                            head: 'Hode',
-                            chest: 'Bryst',
-                            hands: 'Hender',
-                            legs: 'Bein',
-                            feet: 'Føtter',
-                            accessory: 'Tilbehør'
-                        };
-                        
-                        const slotBadge = document.createElement('div');
-                        slotBadge.style.cssText = `
-                            position: absolute;
-                            top: -5px;
-                            left: -5px;
-                            background: rgba(0, 255, 255, 0.7);
-                            color: #000;
-                            font-size: 10px;
-                            padding: 3px 6px;
-                            border-radius: 3px;
-                            font-weight: bold;
-                            text-transform: uppercase;
-                            letter-spacing: 0.5px;
-                            box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
-                        `;
-                        slotBadge.textContent = slotNames[item.slot];
-                        contentDiv.appendChild(slotBadge);
-                    }
-                    
-                    // Legg til ikon
-                    const iconDiv = document.createElement('div');
-                    iconDiv.style.cssText = `
-                        font-size: 48px;
-                        margin: 10px 0;
-                        text-shadow: 0 0 10px ${rarityGlow};
-                    `;
-                    iconDiv.textContent = item.icon;
-                    contentDiv.appendChild(iconDiv);
-                    
-                    // Legg til navn
-                    const nameDiv = document.createElement('div');
-                    nameDiv.style.cssText = `
-                        font-size: 16px;
-                        font-weight: bold;
-                        margin-bottom: 5px;
-                        color: ${rarityColor};
-                        text-shadow: 0 0 5px ${rarityGlow};
-                    `;
-                    nameDiv.textContent = item.name;
-                    contentDiv.appendChild(nameDiv);
-                    
-                    // Legg til beskrivelse
-                    const descDiv = document.createElement('div');
-                    descDiv.style.cssText = `
-                        font-size: 12px;
-                        color: rgba(255, 255, 255, 0.7);
-                        margin-bottom: 10px;
-                        flex-grow: 1;
-                    `;
-                    descDiv.textContent = item.description;
-                    contentDiv.appendChild(descDiv);
-                    
-                    // Legg til knapper
-                    const buttonsDiv = document.createElement('div');
-                    buttonsDiv.style.cssText = `
-                        display: flex;
-                        justify-content: space-between;
-                        width: 100%;
-                        margin-top: auto;
-                    `;
-                    
-                    // Bruk-knapp
-                    const useButton = document.createElement('button');
-                    useButton.style.cssText = `
-                        background: rgba(0, 0, 0, 0.5);
-                        border: 1px solid ${rarityColor};
-                        color: ${rarityColor};
-                        padding: 5px 10px;
-                        border-radius: 3px;
-                        cursor: pointer;
-                        font-family: 'Courier New', monospace;
-                        font-size: 12px;
-                        transition: all 0.3s ease;
-                        flex: 1;
-                        margin-right: 5px;
-                        text-shadow: 0 0 5px ${rarityGlow};
-                    `;
-                    useButton.textContent = item.slot ? 'UTSTYR' : 'BRUK';
-                    useButton.onmouseover = function() {
-                        this.style.background = `rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.2)`;
-                        this.style.transform = 'scale(1.05)';
-                    };
-                    useButton.onmouseout = function() {
-                        this.style.background = 'rgba(0, 0, 0, 0.5)';
-                        this.style.transform = 'scale(1)';
-                    };
-                    
-                    // Legg til klikk-hendelse for bruk-knappen
-                    useButton.onclick = function(event) {
-                        event.stopPropagation(); // Hindre at item-kortet også reagerer på klikket
-                        
-                        if (item.slot) {
-                            // Hvis gjenstanden kan equippes, prøv å equipe den
-                            equipItem(studentIndex, item.id, item.slot);
-                        } else {
-                            // Ellers, bruk den vanlige removeItemFromBackpack-funksjonen
-                            removeItemFromBackpack(studentIndex, item.id);
-                        }
-                    };
-                    
-                    buttonsDiv.appendChild(useButton);
-                    
-                    // Selg-knapp
-                    const sellButton = document.createElement('button');
-                    sellButton.style.cssText = `
-                        background: rgba(0, 0, 0, 0.5);
-                        border: 1px solid #e74c3c;
-                        color: #e74c3c;
-                        padding: 5px 10px;
-                        border-radius: 3px;
-                        cursor: pointer;
-                        font-family: 'Courier New', monospace;
-                        font-size: 12px;
-                        transition: all 0.3s ease;
-                        flex: 1;
-                        margin-left: 5px;
-                        text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
-                    `;
-                    sellButton.textContent = 'SELG';
-                    sellButton.onmouseover = function() {
-                        this.style.background = 'rgba(231, 76, 60, 0.2)';
-                        this.style.transform = 'scale(1.05)';
-                    };
-                    sellButton.onmouseout = function() {
-                        this.style.background = 'rgba(0, 0, 0, 0.5)';
-                        this.style.transform = 'scale(1)';
-                    };
-                    
-                    // Legg til klikk-hendelse for selg-knappen
-                    sellButton.onclick = function(event) {
-                        event.stopPropagation(); // Hindre at item-kortet også reagerer på klikket
-                        showSellItemDialog(studentIndex, item.id, item);
-                    };
-                    
-                    buttonsDiv.appendChild(sellButton);
-                    contentDiv.appendChild(buttonsDiv);
-                    
-                    itemElement.appendChild(contentDiv);
-                    
-                    // Legg til hover-effekt
-                    itemElement.onmouseover = function() {
-                        this.style.transform = 'translateY(-5px) scale(1.03)';
-                        this.style.boxShadow = `0 10px 20px ${rarityGlow}`;
-                        this.style.zIndex = '10';
-                    };
-                    
-                    itemElement.onmouseout = function() {
-                        this.style.transform = 'translateY(0) scale(1)';
-                        this.style.boxShadow = `0 0 10px ${rarityGlow}`;
-                        this.style.zIndex = '1';
-                    };
-                    
-                    itemsContainer.appendChild(itemElement);
-                } else {
-                    console.error('Gjenstand med ID', itemId, 'ikke funnet');
+                    slotBadge.textContent = slotNames[item.slot];
+                    contentDiv.appendChild(slotBadge);
                 }
+                
+                // Legg til ikon
+                const iconDiv = document.createElement('div');
+                iconDiv.style.cssText = `
+                    font-size: 48px;
+                    margin: 10px 0;
+                    text-shadow: 0 0 10px ${rarityGlow};
+                `;
+                iconDiv.textContent = item.icon;
+                contentDiv.appendChild(iconDiv);
+                
+                // Legg til navn
+                const nameDiv = document.createElement('div');
+                nameDiv.style.cssText = `
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin-bottom: 5px;
+                    color: ${rarityColor};
+                    text-shadow: 0 0 5px ${rarityGlow};
+                `;
+                nameDiv.textContent = item.name;
+                contentDiv.appendChild(nameDiv);
+                
+                // Legg til beskrivelse
+                const descDiv = document.createElement('div');
+                descDiv.style.cssText = `
+                    font-size: 12px;
+                    color: rgba(255, 255, 255, 0.7);
+                    margin-bottom: 10px;
+                    flex-grow: 1;
+                `;
+                descDiv.textContent = item.description;
+                contentDiv.appendChild(descDiv);
+                
+                // Legg til knapper
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.style.cssText = `
+                    display: flex;
+                    justify-content: space-between;
+                    width: 100%;
+                    margin-top: auto;
+                `;
+                
+                // Bruk-knapp
+                const useButton = document.createElement('button');
+                useButton.style.cssText = `
+                    background: rgba(0, 0, 0, 0.5);
+                    border: 1px solid ${rarityColor};
+                    color: ${rarityColor};
+                    padding: 5px 10px;
+                    border-radius: 3px;
+                    cursor: pointer;
+                    font-family: 'Courier New', monospace;
+                    font-size: 12px;
+                    transition: all 0.3s ease;
+                    flex: 1;
+                    margin-right: 5px;
+                    text-shadow: 0 0 5px ${rarityGlow};
+                `;
+                useButton.textContent = item.slot ? 'UTSTYR' : 'BRUK';
+                useButton.onmouseover = function() {
+                    this.style.background = `rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.2)`;
+                    this.style.transform = 'scale(1.05)';
+                };
+                useButton.onmouseout = function() {
+                    this.style.background = 'rgba(0, 0, 0, 0.5)';
+                    this.style.transform = 'scale(1)';
+                };
+                
+                // Legg til klikk-hendelse for bruk-knappen
+                useButton.onclick = function(event) {
+                    event.stopPropagation(); // Hindre at item-kortet også reagerer på klikket
+                    
+                    if (item.slot) {
+                        // Hvis gjenstanden kan equippes, prøv å equipe den
+                        equipItem(studentIndex, item.id, item.slot);
+                    } else {
+                        // Ellers, bruk den vanlige removeItemFromBackpack-funksjonen
+                        removeItemFromBackpack(studentIndex, item.id);
+                    }
+                };
+                
+                buttonsDiv.appendChild(useButton);
+                
+                // Selg-knapp
+                const sellButton = document.createElement('button');
+                sellButton.style.cssText = `
+                    background: rgba(0, 0, 0, 0.5);
+                    border: 1px solid #e74c3c;
+                    color: #e74c3c;
+                    padding: 5px 10px;
+                    border-radius: 3px;
+                    cursor: pointer;
+                    font-family: 'Courier New', monospace;
+                    font-size: 12px;
+                    transition: all 0.3s ease;
+                    flex: 1;
+                    margin-left: 5px;
+                    text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
+                `;
+                sellButton.textContent = 'SELG';
+                sellButton.onmouseover = function() {
+                    this.style.background = 'rgba(231, 76, 60, 0.2)';
+                    this.style.transform = 'scale(1.05)';
+                };
+                sellButton.onmouseout = function() {
+                    this.style.background = 'rgba(0, 0, 0, 0.5)';
+                    this.style.transform = 'scale(1)';
+                };
+                
+                // Legg til klikk-hendelse for selg-knappen
+                sellButton.onclick = function(event) {
+                    event.stopPropagation(); // Hindre at item-kortet også reagerer på klikket
+                    showSellItemDialog(studentIndex, item.id, item);
+                };
+                
+                buttonsDiv.appendChild(sellButton);
+                contentDiv.appendChild(buttonsDiv);
+                
+                itemElement.appendChild(contentDiv);
+                
+                // Legg til hover-effekt
+                itemElement.onmouseover = function() {
+                    this.style.transform = 'translateY(-5px) scale(1.03)';
+                    this.style.boxShadow = `0 10px 20px ${rarityGlow}`;
+                    this.style.zIndex = '10';
+                };
+                
+                itemElement.onmouseout = function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = `0 0 10px ${rarityGlow}`;
+                    this.style.zIndex = '1';
+                };
+                
+                itemsContainer.appendChild(itemElement);
             } catch (error) {
                 console.error('Feil ved visning av gjenstand med ID', itemId, ':', error);
             }
