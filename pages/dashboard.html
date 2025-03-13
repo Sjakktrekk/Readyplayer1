@@ -69,6 +69,13 @@
                         <li class="nav-item" data-tab="stats">
                             <i class="fas fa-chart-line"></i> Statistikk
                         </li>
+                        <li class="nav-item" data-tab="status">
+                            <i class="fas fa-info-circle"></i> Status
+                        </li>
+                        <li class="nav-item" data-tab="chat">
+                            <i class="fas fa-comments"></i> Chat
+                            <span id="chat-notification" class="notification-badge" style="display: none;">•</span>
+                        </li>
                     </ul>
                 </nav>
                 
@@ -212,30 +219,230 @@
                 <!-- Stats Tab -->
                 <div class="tab-content" id="stats-tab">
                     <h2><i class="fas fa-chart-line"></i> Statistikk</h2>
+                    <div class="stats-header">
+                        <div class="stats-header-line"></div>
+                        <div class="stats-header-text">OASIS BRUKERDATA</div>
+                        <div class="stats-header-line"></div>
+                    </div>
                     <div class="stats-container">
-                        <div class="stats-card">
-                            <h3>Spillernivå</h3>
-                            <div class="stat-value" id="stat-level">0</div>
+                        <div class="stats-card" data-stat="level">
+                            <div class="stats-card-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="stats-card-content">
+                                <h3>Spillernivå</h3>
+                                <div class="stat-value-container">
+                                    <div class="stat-value" id="stat-level">0</div>
+                                </div>
+                                <div class="stats-card-bar">
+                                    <div class="stats-card-bar-fill" style="width: 100%"></div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="stats-card">
-                            <h3>Total EXP</h3>
-                            <div class="stat-value" id="stat-exp">0</div>
+                        <div class="stats-card" data-stat="exp">
+                            <div class="stats-card-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="stats-card-content">
+                                <h3>Total EXP</h3>
+                                <div class="stat-value-container">
+                                    <div class="stat-value" id="stat-exp">0</div>
+                                </div>
+                                <div class="stats-card-bar">
+                                    <div class="stats-card-bar-fill" style="width: 75%"></div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="stats-card">
-                            <h3>Oppdrag Fullført</h3>
-                            <div class="stat-value" id="stat-quests">0</div>
+                        <div class="stats-card" data-stat="quests">
+                            <div class="stats-card-icon">
+                                <i class="fas fa-scroll"></i>
+                            </div>
+                            <div class="stats-card-content">
+                                <h3>Oppdrag Fullført</h3>
+                                <div class="stat-value-container">
+                                    <div class="stat-value" id="stat-quests">0</div>
+                                </div>
+                                <div class="stats-card-bar">
+                                    <div class="stats-card-bar-fill" style="width: 30%"></div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="stats-card">
-                            <h3>Prestasjoner</h3>
-                            <div class="stat-value" id="stat-achievements">0</div>
+                        <div class="stats-card" data-stat="achievements">
+                            <div class="stats-card-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="stats-card-content">
+                                <h3>Prestasjoner</h3>
+                                <div class="stat-value-container">
+                                    <div class="stat-value" id="stat-achievements">0</div>
+                                </div>
+                                <div class="stats-card-bar">
+                                    <div class="stats-card-bar-fill" style="width: 45%"></div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="stats-card">
-                            <h3>Gjenstander</h3>
-                            <div class="stat-value" id="stat-items">0</div>
+                        <div class="stats-card" data-stat="items">
+                            <div class="stats-card-icon">
+                                <i class="fas fa-cube"></i>
+                            </div>
+                            <div class="stats-card-content">
+                                <h3>Gjenstander</h3>
+                                <div class="stat-value-container">
+                                    <div class="stat-value" id="stat-items">0</div>
+                                </div>
+                                <div class="stats-card-bar">
+                                    <div class="stats-card-bar-fill" style="width: 60%"></div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="stats-card">
-                            <h3>Kreditter Brukt</h3>
-                            <div class="stat-value" id="stat-credits-spent">0</div>
+                        <div class="stats-card" data-stat="credits">
+                            <div class="stats-card-icon">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="stats-card-content">
+                                <h3>Kreditter Brukt</h3>
+                                <div class="stat-value-container">
+                                    <div class="stat-value" id="stat-credits-spent">0</div>
+                                </div>
+                                <div class="stats-card-bar">
+                                    <div class="stats-card-bar-fill" style="width: 25%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-graph-container">
+                        <div class="stats-graph-header">
+                            <div class="stats-graph-title">FERDIGHETSFORDELING</div>
+                            <div class="stats-graph-subtitle">Visuell representasjon av dine ferdigheter</div>
+                        </div>
+                        <div class="stats-graph">
+                            <div class="stats-graph-hexagon">
+                                <div class="stats-graph-skill" data-skill="Intelligens">
+                                    <div class="stats-graph-label">INT</div>
+                                    <div class="stats-graph-value" id="graph-intelligens">0</div>
+                                </div>
+                                <div class="stats-graph-skill" data-skill="Teknologi">
+                                    <div class="stats-graph-label">TEK</div>
+                                    <div class="stats-graph-value" id="graph-teknologi">0</div>
+                                </div>
+                                <div class="stats-graph-skill" data-skill="Stamina">
+                                    <div class="stats-graph-label">STA</div>
+                                    <div class="stats-graph-value" id="graph-stamina">0</div>
+                                </div>
+                                <div class="stats-graph-skill" data-skill="Karisma">
+                                    <div class="stats-graph-label">KAR</div>
+                                    <div class="stats-graph-value" id="graph-karisma">0</div>
+                                </div>
+                                <div class="stats-graph-skill" data-skill="Kreativitet">
+                                    <div class="stats-graph-label">KRE</div>
+                                    <div class="stats-graph-value" id="graph-kreativitet">0</div>
+                                </div>
+                                <div class="stats-graph-skill" data-skill="Flaks">
+                                    <div class="stats-graph-label">FLK</div>
+                                    <div class="stats-graph-value" id="graph-flaks">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Status Tab -->
+                <div class="tab-content" id="status-tab">
+                    <h2><i class="fas fa-info-circle"></i> Status</h2>
+                    <div class="status-container">
+                        <!-- Boss Fights Section -->
+                        <div class="status-section">
+                            <h3><i class="fas fa-dragon"></i> Boss Fights</h3>
+                            <div class="status-cards">
+                                <div class="status-card">
+                                    <div class="status-icon"><i class="fas fa-server"></i></div>
+                                    <div class="status-title">Server Overload</div>
+                                    <div class="status-info">Status: <span class="status-pending">Venter</span></div>
+                                    <div class="status-description">Bekjemp servermonsteret som truer med å overbelaste OASIS.</div>
+                                </div>
+                                <div class="status-card">
+                                    <div class="status-icon"><i class="fas fa-bug"></i></div>
+                                    <div class="status-title">Debug Demon</div>
+                                    <div class="status-info">Status: <span class="status-locked">Låst</span></div>
+                                    <div class="status-description">Finn og eliminer den skjulte feilen i systemet.</div>
+                                </div>
+                                <div class="status-card">
+                                    <div class="status-icon"><i class="fas fa-bolt"></i></div>
+                                    <div class="status-title">Strømregning</div>
+                                    <div class="status-info">Status: <span class="status-locked">Låst</span></div>
+                                    <div class="status-description">Bekjemp den enorme strømregningen som truer med å slukke OASIS.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Daily Missions Section -->
+                        <div class="status-section">
+                            <h3><i class="fas fa-calendar-day"></i> Dagens Oppdrag</h3>
+                            <div class="status-cards">
+                                <div class="status-card">
+                                    <div class="status-icon"><i class="fas fa-code"></i></div>
+                                    <div class="status-title">Kode Utfordring</div>
+                                    <div class="status-info">Status: <span class="status-active">Aktiv</span></div>
+                                    <div class="status-description">Løs dagens kodeutfordring for å få ekstra EXP.</div>
+                                    <div class="status-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 30%"></div>
+                                        </div>
+                                        <div class="progress-text">30% fullført</div>
+                                    </div>
+                                </div>
+                                <div class="status-card">
+                                    <div class="status-icon"><i class="fas fa-book"></i></div>
+                                    <div class="status-title">Lesehack</div>
+                                    <div class="status-info">Status: <span class="status-completed">Fullført</span></div>
+                                    <div class="status-description">Les dokumentasjonen for å få bedre forståelse av OASIS.</div>
+                                    <div class="status-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 100%"></div>
+                                        </div>
+                                        <div class="progress-text">100% fullført</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- World Status Section -->
+                        <div class="status-section">
+                            <h3><i class="fas fa-globe"></i> Verdensstatus</h3>
+                            <div class="status-cards">
+                                <div class="status-card">
+                                    <div class="status-icon"><i class="fas fa-users"></i></div>
+                                    <div class="status-title">Spillere Online</div>
+                                    <div class="status-value">1,337</div>
+                                </div>
+                                <div class="status-card">
+                                    <div class="status-icon"><i class="fas fa-server"></i></div>
+                                    <div class="status-title">Serverstatus</div>
+                                    <div class="status-value status-online">Online</div>
+                                </div>
+                                <div class="status-card">
+                                    <div class="status-icon"><i class="fas fa-clock"></i></div>
+                                    <div class="status-title">Neste Event</div>
+                                    <div class="status-value">12:00 - Hackathon</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat Tab -->
+                <div class="tab-content" id="chat-tab">
+                    <h2><i class="fas fa-comments"></i> Global Chat</h2>
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chat-messages">
+                            <!-- Chat meldinger vil bli vist her -->
+                        </div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chat-input" class="chat-input" placeholder="Skriv en melding..." maxlength="200">
+                            <button id="chat-send-button" class="chat-send-button" onclick="if(window.chatDebug && window.chatDebug.directSendMessage) { const input = document.getElementById('chat-input'); window.chatDebug.directSendMessage(input.value); input.value = ''; }">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -284,6 +491,8 @@
     <!-- Importer våre egne JavaScript-filer -->
     <script src="../js/achievements.js"></script>
     <script src="../js/dashboard-achievements.js"></script>
+    <script src="../js/dashboard-status.js"></script>
+    <script src="../js/chat.js"></script>
     <script type="module" src="../js/dashboard.js"></script>
 </body>
 </html> 

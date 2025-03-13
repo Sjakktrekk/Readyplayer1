@@ -171,6 +171,9 @@ async function initDashboard() {
                 // Last inn prestasjoner på nytt
                 loadAchievements();
                 
+                // Oppdater statistikk-fanen
+                updateStatsTab();
+                
                 showNotification('Profil oppdatert', 'success');
             })
             .subscribe();
@@ -184,6 +187,9 @@ async function initDashboard() {
         
         // Oppdater statistikk
         updateStatistics();
+        
+        // Oppdater statistikk-fanen
+        updateStatsTab();
         
         console.log('Dashboard initialisert');
     } catch (error) {
@@ -371,8 +377,17 @@ function loadSkillsData() {
 }
 
 // Funksjon for å øke en ferdighet
+let skillButtonsLocked = false; // Variabel for å forhindre raske gjentatte klikk
+
 async function increaseSkill(skillName) {
     console.log(`Forsøker å øke ferdighet: ${skillName}`);
+    
+    // Sjekk om knappene er låst (forhindrer raske gjentatte klikk)
+    if (skillButtonsLocked) {
+        console.log('Knapper er låst, ignorerer klikk');
+        return;
+    }
+    
     if (!userProfile || userProfile.exp < 1000) {
         showNotification('Ikke nok EXP for å øke ferdigheten', 'warning');
         return;
@@ -384,6 +399,9 @@ async function increaseSkill(skillName) {
     }
     
     try {
+        // Lås knappene for å forhindre raske gjentatte klikk
+        skillButtonsLocked = true;
+        
         // Oppdater lokalt først for raskere UI-respons
         skillsData[skillName] = (skillsData[skillName] || 0) + 1;
         userProfile.exp -= 1000;
@@ -408,6 +426,11 @@ async function increaseSkill(skillName) {
         skillsData[skillName] -= 1;
         userProfile.exp += 1000;
         updateUserInterface();
+    } finally {
+        // Lås opp knappene etter en kort forsinkelse
+        setTimeout(() => {
+            skillButtonsLocked = false;
+        }, 500); // 500 ms forsinkelse
     }
 }
 
@@ -466,12 +489,22 @@ async function updateExp(userId, expValue) {
 // Funksjon for å redusere en ferdighet
 async function decreaseSkill(skillName) {
     console.log(`Forsøker å redusere ferdighet: ${skillName}`);
+    
+    // Sjekk om knappene er låst (forhindrer raske gjentatte klikk)
+    if (skillButtonsLocked) {
+        console.log('Knapper er låst, ignorerer klikk');
+        return;
+    }
+    
     if (!userProfile || !skillsData[skillName] || skillsData[skillName] <= 0) {
         showNotification('Ferdigheten er allerede på minimumsnivå', 'warning');
         return;
     }
     
     try {
+        // Lås knappene for å forhindre raske gjentatte klikk
+        skillButtonsLocked = true;
+        
         // Oppdater lokalt først for raskere UI-respons
         skillsData[skillName] -= 1;
         userProfile.exp += 1000;
@@ -496,6 +529,11 @@ async function decreaseSkill(skillName) {
         skillsData[skillName] += 1;
         userProfile.exp -= 1000;
         updateUserInterface();
+    } finally {
+        // Lås opp knappene etter en kort forsinkelse
+        setTimeout(() => {
+            skillButtonsLocked = false;
+        }, 500); // 500 ms forsinkelse
     }
 }
 
@@ -1459,6 +1497,132 @@ function loadInventoryItems() {
         inventoryItemsContainer.appendChild(itemElement);
     });
 }
+
+// Funksjon for å oppdatere statistikk-fanen
+function updateStatsTab() {
+    console.log('Oppdaterer statistikk-fanen...');
+    // Hent statistikk fra brukerens profil
+    if (!userProfile) {
+        console.error('userProfile er ikke definert');
+        return;
+    }
+
+    console.log('userProfile:', userProfile);
+
+    // Oppdater statistikk-verdier
+    document.getElementById('stat-level').textContent = calculateLevel(userProfile.skills) || 1;
+    document.getElementById('stat-exp').textContent = userProfile.exp || 0;
+    document.getElementById('stat-quests').textContent = userProfile.completedQuests || 0;
+    document.getElementById('stat-achievements').textContent = userProfile.achievements?.length || 0;
+    document.getElementById('stat-items').textContent = userProfile.inventory?.length || 0;
+    document.getElementById('stat-credits-spent').textContent = userProfile.creditsSpent || 0;
+
+    // Oppdater ferdighetsgrafen
+    updateSkillsGraph(userProfile);
+
+    // Legg til animasjonseffekter
+    animateStatCards();
+}
+
+// Funksjon for å oppdatere ferdighetsgrafen
+function updateSkillsGraph(user) {
+    // Oppdater ferdighetsverdier i grafen
+    document.getElementById('graph-intelligens').textContent = user.skills?.Intelligens || 0;
+    document.getElementById('graph-teknologi').textContent = user.skills?.Teknologi || 0;
+    document.getElementById('graph-stamina').textContent = user.skills?.Stamina || 0;
+    document.getElementById('graph-karisma').textContent = user.skills?.Karisma || 0;
+    document.getElementById('graph-kreativitet').textContent = user.skills?.Kreativitet || 0;
+    document.getElementById('graph-flaks').textContent = user.skills?.Flaks || 0;
+
+    // Beregn posisjoner basert på ferdighetsverdier
+    const maxSkill = 10; // Maksimal ferdighetsverdi
+    const baseRadius = 80; // Basisradius for grafen
+
+    const skills = [
+        { name: 'Intelligens', value: user.skills?.Intelligens || 0 },
+        { name: 'Teknologi', value: user.skills?.Teknologi || 0 },
+        { name: 'Stamina', value: user.skills?.Stamina || 0 },
+        { name: 'Karisma', value: user.skills?.Karisma || 0 },
+        { name: 'Kreativitet', value: user.skills?.Kreativitet || 0 },
+        { name: 'Flaks', value: user.skills?.Flaks || 0 }
+    ];
+
+    // Oppdater posisjoner for ferdighetssirklene
+    skills.forEach(skill => {
+        const element = document.querySelector(`.stats-graph-skill[data-skill="${skill.name}"]`);
+        if (!element) return;
+
+        // Beregn radius basert på ferdighetsnivå
+        const radius = baseRadius * (0.4 + (skill.value / maxSkill) * 0.6);
+        
+        // Oppdater størrelse basert på ferdighetsnivå
+        const size = 40 + (skill.value / maxSkill) * 20;
+        element.style.width = `${size}px`;
+        element.style.height = `${size}px`;
+
+        // Oppdater posisjon basert på ferdighetsnivå og opprinnelig posisjon
+        const currentPosition = window.getComputedStyle(element);
+        const currentTop = parseFloat(currentPosition.top);
+        const currentLeft = parseFloat(currentPosition.left);
+        
+        // Behold opprinnelig posisjon, men juster basert på ferdighetsnivå
+        if (skill.name === 'Intelligens') {
+            element.style.top = `${radius * 0.2}px`;
+        } else if (skill.name === 'Teknologi') {
+            element.style.right = `${radius * 0.2}px`;
+        } else if (skill.name === 'Stamina') {
+            element.style.bottom = `${radius * 0.6}px`;
+            element.style.right = `${radius * 0.2}px`;
+        } else if (skill.name === 'Karisma') {
+            element.style.bottom = `${radius * 0.2}px`;
+        } else if (skill.name === 'Kreativitet') {
+            element.style.bottom = `${radius * 0.6}px`;
+            element.style.left = `${radius * 0.2}px`;
+        } else if (skill.name === 'Flaks') {
+            element.style.left = `${radius * 0.2}px`;
+        }
+    });
+}
+
+// Funksjon for å animere statistikk-kortene
+function animateStatCards() {
+    const statCards = document.querySelectorAll('.stats-card');
+    
+    statCards.forEach((card, index) => {
+        // Legg til forsinkelse for hver kort
+        setTimeout(() => {
+            card.classList.add('animate-in');
+            
+            // Animer progresjonsbaren
+            const bar = card.querySelector('.stats-card-bar-fill');
+            if (bar) {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            }
+        }, index * 150);
+    });
+}
+
+// Legg til lytter for tab-endringer for å oppdatere statistikk
+document.querySelectorAll('.nav-item').forEach(tab => {
+    tab.addEventListener('click', function() {
+        if (this.getAttribute('data-tab') === 'stats') {
+            updateStatsTab();
+        }
+    });
+});
+
+// Oppdater statistikk når siden lastes
+document.addEventListener('DOMContentLoaded', function() {
+    // Sjekk om brukeren er på statistikk-fanen
+    const activeTab = document.querySelector('.nav-item.active');
+    if (activeTab && activeTab.getAttribute('data-tab') === 'stats') {
+        updateStatsTab();
+    }
+});
 
 // Initialiser når DOM er lastet
 document.addEventListener('DOMContentLoaded', () => {
