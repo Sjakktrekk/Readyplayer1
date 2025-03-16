@@ -1,5 +1,5 @@
-// Importer Supabase-klienten
-import { supabase } from './supabase-config.js';
+// Bruk den felles Supabase-klienten
+const supabase = window.supabaseHelper.getSupabase();
 
 // Funksjon for å abonnere på endringer i en brukers profil
 function subscribeToProfileChanges(userId, callback) {

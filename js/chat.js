@@ -2,19 +2,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Chat.js lastet');
     
-    // Opprett Supabase-klienten
-    const SUPABASE_URL = 'https://agjxwktmzcfvepdmiaeq.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnanh3a3RtemNmdmVwZG1pYWVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE4NjEwMDMsImV4cCI6MjA1NzQzNzAwM30.WB69HGvHJXzpYN56Z9lrOcLcwau7hQOLmZkEz8BI61M';
-    
-    // Sjekk om Supabase-biblioteket er lastet
-    if (!window.supabase) {
-        console.error('Supabase-biblioteket er ikke lastet');
-        return;
-    }
-    
-    // Opprett en egen Supabase-klient for chat
-    const chatSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log('Chat Supabase-klient opprettet');
+    // Bruk den felles Supabase-klienten
+    const chatSupabase = window.supabaseHelper.getSupabase();
+    console.log('Chat bruker felles Supabase-klient');
     
     // Globale variabler for feilsøking
     window.chatDebug = {

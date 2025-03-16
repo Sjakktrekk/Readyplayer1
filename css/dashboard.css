@@ -523,34 +523,29 @@ h3 {
 
 .skill-controls {
     display: flex;
-    gap: 10px;
+    justify-content: center;
+    margin-top: 5px;
 }
 
 .skill-button {
     background: rgba(0, 0, 0, 0.7);
-    border: 1px solid #0ff;
+    border: 2px solid #0ff;
     color: #0ff;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    font-size: 16px;
 }
 
 .skill-button:hover {
     background: rgba(0, 255, 255, 0.2);
-}
-
-.skill-button.decrease {
-    border-color: #ff4d4d;
-    color: #ff4d4d;
-}
-
-.skill-button.decrease:hover {
-    background: rgba(255, 77, 77, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
 /* Skill-specific colors */
@@ -813,17 +808,21 @@ h3 {
     background: linear-gradient(135deg, #2ecc71, #27ae60);
     border: none;
     color: white;
-    padding: 8px 15px;
+    padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
     transition: all 0.3s ease;
-    margin-top: auto;
+    margin-top: 15px;
+    width: 100%;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .buy-button:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
 }
 
 @keyframes legendary-pulse {
@@ -896,58 +895,332 @@ h3 {
 .quests-container {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 20px;
+    height: calc(100vh - 200px);
+    overflow-y: auto;
 }
 
-.quest-card {
-    background: rgba(0, 0, 0, 0.5);
+.quests-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 0;
+}
+
+.quests-header-line {
+    flex-grow: 1;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.7), transparent);
+}
+
+.quests-header-text {
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #00ffff;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+    margin: 0 15px;
+    letter-spacing: 2px;
+}
+
+.quests-filter {
+    display: flex;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 0;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    overflow-x: auto;
+}
+
+.filter-button {
+    background: rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(0, 255, 255, 0.3);
-    border-radius: 8px;
+    color: rgba(0, 255, 255, 0.7);
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.filter-button:hover {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.7);
+    transform: translateY(-2px);
+}
+
+.filter-button.active {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: #00ffff;
+    color: #fff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.npcs-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.npc-card {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.npc-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+    border-color: rgba(0, 255, 255, 0.7);
+}
+
+.npc-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.7), transparent);
+    z-index: 1;
+}
+
+.npc-header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.npc-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+    background: rgba(0, 0, 0, 0.5);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 255, 255, 0.5);
+}
+
+.npc-info {
+    flex-grow: 1;
+}
+
+.npc-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #00ffff;
+    margin-bottom: 5px;
+}
+
+.npc-description {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.npc-quests {
+    padding: 15px;
+}
+
+.quest-item {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 5px;
     padding: 15px;
     margin-bottom: 15px;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.quest-card:hover {
-    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+.quest-item:hover {
+    background: rgba(0, 0, 0, 0.7);
+    border-color: rgba(0, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.quest-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
 }
 
 .quest-title {
+    font-size: 1rem;
     font-weight: bold;
-    font-size: 18px;
+    color: #fff;
     margin-bottom: 10px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
+}
+
+.quest-status {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.quest-status.active {
+    background: rgba(46, 204, 113, 0.3);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.5);
+}
+
+.quest-status.completed {
+    background: rgba(52, 152, 219, 0.3);
+    color: #3498db;
+    border: 1px solid rgba(52, 152, 219, 0.5);
+}
+
+.quest-status.available {
+    background: rgba(241, 196, 15, 0.3);
+    color: #f1c40f;
+    border: 1px solid rgba(241, 196, 15, 0.5);
 }
 
 .quest-description {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
     margin-bottom: 15px;
-    color: #ccc;
+    line-height: 1.4;
 }
 
-.quest-rewards {
-    display: flex;
-    gap: 15px;
+.quest-progress {
+    margin-bottom: 10px;
+}
+
+.progress-bar {
+    height: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00ffff, #2ecc71);
+    border-radius: 4px;
+    transition: width 0.5s ease;
 }
 
 .quest-reward {
     display: flex;
     align-items: center;
-    gap: 5px;
-}
-
-.quest-exp {
-    color: #2ecc71;
-}
-
-.quest-credits {
+    justify-content: space-between;
+    font-size: 0.9rem;
     color: #f1c40f;
+    margin-bottom: 15px;
 }
 
-.quest-button {
-    margin-top: 15px;
-    padding: 8px 15px;
+.reward-xp {
+    display: flex;
+    align-items: center;
+}
+
+.reward-xp i {
+    margin-right: 5px;
+}
+
+.quest-action {
+    background: linear-gradient(135deg, #00ffff, #2980b9);
+    color: #000;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.quest-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+}
+
+.quest-action:disabled {
+    background: rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.3);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px;
+    grid-column: 1 / -1;
+    color: rgba(0, 255, 255, 0.7);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 255, 255, 0.3);
+    border-top: 3px solid rgba(0, 255, 255, 0.9);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.empty-quests {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 50px;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px dashed rgba(0, 255, 255, 0.3);
+    border-radius: 10px;
+}
+
+/* Scrollbar styling for quests container */
+.quests-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.quests-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.quests-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.quests-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 255, 0.5);
 }
 
 /* Achievements Tab */
@@ -1355,8 +1628,8 @@ h3 {
     }
     
     .stats-graph-skill {
-        width: 50px;
-        height: 50px;
+    width: 50px;
+    height: 50px;
     }
 }
 
@@ -1624,7 +1897,7 @@ h3 {
     right: 0;
     bottom: 0;
     background: 
-        repeating-linear-gradient(90deg, rgba(0, 255, 255, 0.03) 0px, 
+        repeating-linear-gradient(45deg, rgba(0, 255, 255, 0.03) 0px, 
         rgba(0, 255, 255, 0.03) 1px, transparent 1px, transparent 10px),
         repeating-linear-gradient(0deg, rgba(0, 255, 255, 0.03) 0px, 
         rgba(0, 255, 255, 0.03) 1px, transparent 1px, transparent 10px);
@@ -2134,4 +2407,593 @@ h3 {
 
 .new-message-notification:hover {
     background: rgba(0, 204, 255, 1);
+}
+
+/* Forbedret butikk-stil */
+.shop-container {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 30, 0.9)),
+                repeating-linear-gradient(45deg, rgba(241, 196, 15, 0.03) 0px, 
+                rgba(241, 196, 15, 0.03) 1px, transparent 1px, transparent 10px);
+    border: 2px solid #f1c40f;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 0 25px rgba(241, 196, 15, 0.3);
+    position: relative;
+    overflow: hidden;
+    margin-top: 10px;
+    height: calc(100vh - 150px);
+    overflow-y: auto;
+}
+
+.shop-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(241, 196, 15, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.shop-container > * {
+    position: relative;
+    z-index: 2;
+}
+
+.shop-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.shop-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.shop-container::-webkit-scrollbar-thumb {
+    background: rgba(241, 196, 15, 0.5);
+    border-radius: 4px;
+}
+
+.shop-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(241, 196, 15, 0.7);
+}
+
+.shop-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #f1c40f, transparent);
+    animation: scanline 3s linear infinite;
+}
+
+.shop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+.shop-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: #f1c40f;
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
+}
+
+.shop-title i {
+    font-size: 1.6rem;
+}
+
+.shop-search {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid #f1c40f;
+    border-radius: 20px;
+    padding: 5px 15px;
+    width: 250px;
+}
+
+.shop-search input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    padding: 5px;
+    width: 100%;
+    font-family: 'Courier New', monospace;
+    outline: none;
+}
+
+.shop-search i {
+    color: #f1c40f;
+    margin-right: 5px;
+}
+
+.shop-categories {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.shop-categories::-webkit-scrollbar {
+    height: 5px;
+}
+
+.shop-categories::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.shop-categories::-webkit-scrollbar-thumb {
+    background: rgba(241, 196, 15, 0.5);
+    border-radius: 5px;
+}
+
+.shop-category {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(241, 196, 15, 0.5);
+    border-radius: 20px;
+    padding: 8px 15px;
+    color: #f1c40f;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.shop-category:hover {
+    background: rgba(241, 196, 15, 0.2);
+    transform: translateY(-2px);
+}
+
+.shop-category.active {
+    background: rgba(241, 196, 15, 0.3);
+    border-color: #f1c40f;
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+}
+
+.shop-section {
+    margin-bottom: 30px;
+}
+
+.shop-section-title {
+    color: #f1c40f;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.shop-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.shop-item {
+    background: rgba(20, 20, 20, 0.8);
+    border: 1px solid #f1c40f;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    height: 220px; /* Fast høyde for alle kort */
+}
+
+.shop-item:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+    z-index: 10;
+}
+
+.shop-item::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(241, 196, 15, 0.2) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.shop-item:hover::after {
+    opacity: 1;
+}
+
+.shop-item-icon {
+    font-size: 36px;
+    margin: 5px 0;
+    text-shadow: 0 0 15px rgba(241, 196, 15, 0.7);
+}
+
+.shop-item-name {
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin: 5px 0 3px;
+    color: #fff;
+}
+
+.shop-item-description {
+    font-size: 0.75rem;
+    color: #ccc;
+    margin-bottom: 8px;
+    flex-grow: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
+}
+
+.shop-item-price {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #f1c40f;
+    font-size: 1rem;
+    margin-top: auto;
+    margin-bottom: 5px;
+}
+
+.shop-item-price i {
+    margin-right: 5px;
+}
+
+.shop-item-buy {
+    background: linear-gradient(135deg, #f1c40f, #e67e22);
+    border: none;
+    border-radius: 4px;
+    color: #000;
+    padding: 5px 10px;
+    margin-top: 5px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    width: 90%;
+    font-size: 0.8rem;
+}
+
+.shop-item-buy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 10px rgba(241, 196, 15, 0.7);
+}
+
+.shop-item-buy:active {
+    transform: translateY(0);
+}
+
+.shop-item-tag {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(241, 196, 15, 0.8);
+    color: #000;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    z-index: 1;
+}
+
+.shop-item-tag.new {
+    background: rgba(46, 204, 113, 0.8);
+}
+
+.shop-item-tag.sale {
+    background: rgba(231, 76, 60, 0.8);
+}
+
+.shop-item-tag.popular {
+    background: rgba(52, 152, 219, 0.8);
+}
+
+.shop-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 30px;
+    color: #ccc;
+    font-size: 1.1rem;
+}
+
+.shop-empty i {
+    font-size: 48px;
+    color: #f1c40f;
+    margin-bottom: 15px;
+    display: block;
+}
+
+@keyframes scanline {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
 } 
+
+/* Spesiell styling for butikkfanen for å fjerne den ytre rammen */
+#shop-tab.tab-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+#shop-tab.tab-content h2 {
+    display: none; /* Skjuler overskriften hvis den fortsatt vises */
+}
+
+/* Juster shop-container for å fylle hele området når den ytre rammen er fjernet */
+#shop-tab .shop-container {
+    margin-top: 0;
+    height: calc(100vh - 120px); /* Justert høyde siden vi ikke har ytre padding nå */
+}
+
+/* Overstyr dashboard-main styling for butikkfanen */
+.dashboard-main #shop-tab {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Fjern padding fra dashboard-main når butikkfanen er aktiv */
+.dashboard-main:has(#shop-tab.active) {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Alternativ løsning hvis :has() ikke støttes */
+.dashboard-main .tab-content#shop-tab.active ~ .dashboard-main {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Legg til en klasse som kan brukes av JavaScript */
+.dashboard-main.shop-tab-active {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Direkte styling for dashboard-main når butikkfanen er aktiv */
+body .dashboard-content .dashboard-main:has(#shop-tab.active) {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Alternativ løsning med høyere spesifisitet */
+body .dashboard-container .dashboard-content .dashboard-main .tab-content#shop-tab.active {
+    margin: -20px !important; /* Motvirker padding fra dashboard-main */
+    width: calc(100% + 40px) !important; /* Kompenserer for margin */
+    height: calc(100% + 40px) !important; /* Kompenserer for margin */
+}
+
+.quest-rewards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.reward-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.reward-item i {
+    margin-right: 5px;
+}
+
+.reward-xp {
+    color: #2ecc71;
+}
+
+.reward-credits {
+    color: #f1c40f;
+}
+
+.reward-item-bonus {
+    color: #9b59b6;
+}
+
+.quest-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Fjerner de gamle stilene som kan forårsake konflikter */
+.quest-reward {
+    display: none !important;
+}
+
+.reward-xp {
+    display: none !important;
+}
+
+/* Nye stiler med høyere spesifisitet */
+.quest-item .quest-rewards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.quest-item .reward-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.quest-item .reward-item i {
+    margin-right: 5px;
+}
+
+.quest-item .reward-item.reward-xp {
+    display: flex !important;
+    color: #2ecc71;
+}
+
+.quest-item .reward-item.reward-credits {
+    color: #f1c40f;
+}
+
+.quest-item .reward-item.reward-item-bonus {
+    color: #9b59b6;
+}
+
+.quest-item .quest-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Forbedret z-index for filterknappene */
+.quests-filter {
+    display: flex;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 0;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    overflow-x: auto;
+}
+
+/* Nye stiler for quest-belønninger og filterknapper med høyere spesifisitet */
+.quests-container .quest-item .quest-rewards {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+    z-index: 5;
+}
+
+.quests-container .quest-item .reward-item {
+    display: flex !important;
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.quests-container .quest-item .reward-item i {
+    margin-right: 5px;
+}
+
+.quests-container .quest-item .reward-item.reward-xp {
+    display: flex !important;
+    color: #2ecc71;
+}
+
+.quests-container .quest-item .reward-item.reward-credits {
+    display: flex !important;
+    color: #f1c40f;
+}
+
+.quests-container .quest-item .reward-item.reward-item-bonus {
+    display: flex !important;
+    color: #9b59b6;
+}
+
+.quests-container .quest-item .quest-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Forbedret z-index for filterknappene */
+.quests-container .quests-filter {
+    display: flex !important;
+    gap: 10px;
+    position: sticky !important;
+    top: 0;
+    z-index: 1000 !important;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 0;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    overflow-x: auto;
+}
+
+.quests-container .quests-filter .filter-button {
+    position: relative;
+    z-index: 1001;
+}
+
+/* Ny CSS-regel for filterknappene */
+#quests-tab .quests-filter {
+    display: flex !important;
+    gap: 10px;
+    position: relative;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    overflow-x: auto;
+}
+
+#quests-tab .quests-filter .filter-button {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 5px;
+    padding: 8px 15px;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1001;
+}
+
+#quests-tab .quests-filter .filter-button:hover {
+    background: rgba(0, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+#quests-tab .quests-filter .filter-button.active {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: rgba(0, 255, 255, 0.8);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}

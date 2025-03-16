@@ -1,8 +1,5 @@
-// Opprett Supabase-klienten
-const SUPABASE_URL = 'https://agjxwktmzcfvepdmiaeq.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnanh3a3RtemNmdmVwZG1pYWVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE4NjEwMDMsImV4cCI6MjA1NzQzNzAwM30.WB69HGvHJXzpYN56Z9lrOcLcwau7hQOLmZkEz8BI61M';
-// Bruk det globale Supabase-objektet som blir lastet inn fra CDN
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Bruk den felles Supabase-klienten
+const supabase = window.supabaseHelper.getSupabase();
 
 // Globale variabler
 const MAX_SKILL_LEVEL = 30;
@@ -73,6 +70,54 @@ function initDOMElements() {
     statAchievementsElement = document.getElementById('stat-achievements');
     statItemsElement = document.getElementById('stat-items');
     statCreditsSpentElement = document.getElementById('stat-credits-spent');
+
+    // Legg til event listeners for navigasjonselementer
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            
+            // Fjern active class fra alle tabs og nav items
+            document.querySelectorAll('.nav-item').forEach(navItem => {
+                navItem.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab-content').forEach(tabContent => {
+                tabContent.classList.remove('active');
+            });
+            
+            // Legg til active class på valgt tab og nav item
+            this.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Spesiell håndtering for butikkfanen
+            const dashboardMain = document.querySelector('.dashboard-main');
+            if (tabName === 'shop') {
+                dashboardMain.classList.add('shop-tab-active');
+                // Sett inline styles direkte
+                dashboardMain.style.background = 'transparent';
+                dashboardMain.style.border = 'none';
+                dashboardMain.style.boxShadow = 'none';
+                dashboardMain.style.padding = '0';
+            } else {
+                dashboardMain.classList.remove('shop-tab-active');
+                // Fjern inline styles
+                dashboardMain.style.background = '';
+                dashboardMain.style.border = '';
+                dashboardMain.style.boxShadow = '';
+                dashboardMain.style.padding = '';
+            }
+            
+            // Oppdater statistikk hvis statistikk-fanen er valgt
+            if (tabName === 'stats') {
+                updateStatsTab();
+            }
+            
+            // Last inn oppdrag hvis oppdragsfanen er valgt
+            if (tabName === 'quests') {
+                loadQuests();
+            }
+        });
+    });
 }
 
 // Funksjon for å initialisere dashbordet
@@ -253,26 +298,17 @@ function updateUserInterface() {
             levelElement.style.textShadow = `0 0 5px ${skillColorRgba}`;
         }
         
-        // Legg til event listeners for knappene
+        // Legg til event listeners for plussknappen
         const increaseButton = card.querySelector('.increase');
-        const decreaseButton = card.querySelector('.decrease');
         
-        // Oppdater styling på knappene
+        // Oppdater styling på knappen
         if (increaseButton) {
             increaseButton.style.backgroundColor = skillColor;
             increaseButton.style.borderColor = skillColor;
         }
         
-        if (decreaseButton) {
-            decreaseButton.style.borderColor = skillColor;
-        }
-        
         increaseButton.addEventListener('click', () => {
             increaseSkill(skillName);
-        });
-        
-        decreaseButton.addEventListener('click', () => {
-            decreaseSkill(skillName);
         });
     });
 }
@@ -352,26 +388,17 @@ function loadSkillsData() {
             levelElement.style.textShadow = `0 0 5px ${skillColorRgba}`;
         }
         
-        // Legg til event listeners for knappene
+        // Legg til event listener for plussknappen
         const increaseButton = card.querySelector('.increase');
-        const decreaseButton = card.querySelector('.decrease');
         
-        // Oppdater styling på knappene
+        // Oppdater styling på knappen
         if (increaseButton) {
             increaseButton.style.backgroundColor = skillColor;
             increaseButton.style.borderColor = skillColor;
         }
         
-        if (decreaseButton) {
-            decreaseButton.style.borderColor = skillColor;
-        }
-        
         increaseButton.addEventListener('click', () => {
             increaseSkill(skillName);
-        });
-        
-        decreaseButton.addEventListener('click', () => {
-            decreaseSkill(skillName);
         });
     });
 }
@@ -486,57 +513,6 @@ async function updateExp(userId, expValue) {
     }
 }
 
-// Funksjon for å redusere en ferdighet
-async function decreaseSkill(skillName) {
-    console.log(`Forsøker å redusere ferdighet: ${skillName}`);
-    
-    // Sjekk om knappene er låst (forhindrer raske gjentatte klikk)
-    if (skillButtonsLocked) {
-        console.log('Knapper er låst, ignorerer klikk');
-        return;
-    }
-    
-    if (!userProfile || !skillsData[skillName] || skillsData[skillName] <= 0) {
-        showNotification('Ferdigheten er allerede på minimumsnivå', 'warning');
-        return;
-    }
-    
-    try {
-        // Lås knappene for å forhindre raske gjentatte klikk
-        skillButtonsLocked = true;
-        
-        // Oppdater lokalt først for raskere UI-respons
-        skillsData[skillName] -= 1;
-        userProfile.exp += 1000;
-        
-        // Oppdater UI
-        updateUserInterface();
-        
-        // Oppdater i databasen
-        await updateSkill(currentUser.id, skillName, skillsData[skillName]);
-        await updateExp(currentUser.id, userProfile.exp);
-        
-        showNotification(`${skillName} redusert til nivå ${skillsData[skillName]}`, 'success');
-        
-        // Sjekk om noen prestasjoner skal fjernes
-        checkAchievements(skillName);
-        
-    } catch (error) {
-        console.error('Feil ved reduksjon av ferdighet:', error.message);
-        showNotification('Feil ved oppdatering av ferdighet', 'error');
-        
-        // Tilbakestill lokale endringer ved feil
-        skillsData[skillName] += 1;
-        userProfile.exp -= 1000;
-        updateUserInterface();
-    } finally {
-        // Lås opp knappene etter en kort forsinkelse
-        setTimeout(() => {
-            skillButtonsLocked = false;
-        }, 500); // 500 ms forsinkelse
-    }
-}
-
 // Funksjon for å laste inn prestasjoner
 function loadAchievements() {
     console.log('Laster inn prestasjoner...');
@@ -574,16 +550,491 @@ function loadAchievements() {
 // Funksjon for å laste inn oppdrag
 function loadQuests() {
     console.log('Laster inn oppdrag...');
-    // Dette ville normalt laste inn oppdrag fra en database
-    // og vise dem i quests-fanen
+    
+    const npcsContainer = document.getElementById('npcs-container');
+    if (!npcsContainer) {
+        console.error('Kunne ikke finne npcs-container');
+        return;
+    }
+    
+    // Vis laster-melding
+    npcsContainer.innerHTML = `
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>Laster inn NPCer og oppdrag...</p>
+        </div>
+    `;
+    
+    // Hent NPCer fra npc.js
+    fetch('../js/npc.js')
+        .then(response => response.text())
+        .then(npcScript => {
+            // Bruk regex for å hente ut npcs-arrayen
+            const match = npcScript.match(/const\s+npcs\s*=\s*(\[[\s\S]*?\]);/);
+            if (match && match[1]) {
+                try {
+                    // Parse npcs-arrayen
+                    const npcsArray = eval(match[1]);
+                    console.log('NPCer lastet:', npcsArray.length, 'NPCer');
+                    
+                    // Hvis ingen NPCer er tilgjengelige, vis melding
+                    if (!npcsArray || npcsArray.length === 0) {
+                        npcsContainer.innerHTML = `
+                            <div class="empty-quests">
+                                <i class="fas fa-user-slash"></i>
+                                <p>Ingen NPCer er tilgjengelige for øyeblikket.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Tøm container
+                    npcsContainer.innerHTML = '';
+                    
+                    // Legg til event listeners for filtrering
+                    setupQuestFilters(npcsArray);
+                    
+                    // Vis alle NPCer og deres oppdrag
+                    displayNPCs(npcsArray, npcsContainer);
+                    
+                    // Abonner på sanntidsoppdateringer for oppdrag
+                    subscribeToQuestUpdates();
+                    
+                } catch (error) {
+                    console.error('Feil ved parsing av NPCer:', error);
+                    npcsContainer.innerHTML = `
+                        <div class="empty-quests">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Feil ved lasting av NPCer.</p>
+                        </div>
+                    `;
+                }
+            } else {
+                console.error('Kunne ikke finne npcs-array i npc.js');
+                npcsContainer.innerHTML = `
+                    <div class="empty-quests">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Feil ved lasting av NPCer.</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Feil ved lasting av npc.js:', error);
+            npcsContainer.innerHTML = `
+                <div class="empty-quests">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Feil ved lasting av NPCer.</p>
+                </div>
+            `;
+        });
+}
+
+// Funksjon for å sette opp oppdragsfiltre
+function setupQuestFilters(npcsArray) {
+    console.log('Setter opp oppdragsfiltre');
+    
+    // Finn alle filterknappene
+    const filterButtons = document.querySelectorAll('.quests-filter .filter-button');
+    const npcsContainer = document.getElementById('npcs-container');
+    
+    // Legg til klikk-hendelse for hver filterknapp
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            console.log('Filter klikket:', button.getAttribute('data-filter'));
+            
+            // Fjern active-klassen fra alle knapper
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Legg til active-klassen på den klikkede knappen
+            button.classList.add('active');
+            
+            // Filtrer NPCer basert på valgt filter
+            const filter = button.getAttribute('data-filter');
+            displayNPCs(npcsArray, npcsContainer, filter);
+        });
+    });
+}
+
+// Funksjon for å vise NPCer og deres oppdrag
+function displayNPCs(npcsArray, container, filter = 'all') {
+    // Tøm container
+    container.innerHTML = '';
+    
+    // Hent brukerens oppdragsstatus
+    const questStatus = getUserQuestStatus();
+    
+    // Vis hver NPC
+    npcsArray.forEach(npc => {
+        // Filtrer oppdrag basert på valgt filter
+        let filteredQuests = npc.quests;
+        
+        if (filter !== 'all') {
+            filteredQuests = npc.quests.filter(quest => {
+                const status = getQuestStatus(quest, questStatus);
+                return status === filter;
+            });
+        }
+        
+        // Hvis NPC ikke har noen oppdrag etter filtrering, ikke vis NPC
+        if (filteredQuests.length === 0) {
+                                return;
+                            }
+        
+        // Opprett NPC-kort
+        const npcElement = createNPCElement(npc, filteredQuests, questStatus);
+        container.appendChild(npcElement);
+    });
+    
+    // Hvis ingen NPCer er synlige etter filtrering, vis melding
+    if (container.children.length === 0) {
+        container.innerHTML = `
+            <div class="empty-quests">
+                <i class="fas fa-filter"></i>
+                <p>Ingen oppdrag funnet med valgt filter.</p>
+            </div>
+        `;
+    }
+}
+
+// Funksjon for å opprette et NPC-element
+function createNPCElement(npc, quests, questStatus) {
+    const npcElement = document.createElement('div');
+    npcElement.className = 'npc-card';
+    npcElement.setAttribute('data-npc-id', npc.id);
+    
+    // Opprett NPC-header
+    const npcHeader = document.createElement('div');
+    npcHeader.className = 'npc-header';
+    
+    // Legg til NPC-ikon
+    const npcIcon = document.createElement('div');
+    npcIcon.className = 'npc-icon';
+    npcIcon.textContent = npc.icon || '👤';
+    npcHeader.appendChild(npcIcon);
+    
+    // Legg til NPC-info
+    const npcInfo = document.createElement('div');
+    npcInfo.className = 'npc-info';
+    
+    const npcName = document.createElement('div');
+    npcName.className = 'npc-name';
+    npcName.textContent = npc.name;
+    npcInfo.appendChild(npcName);
+    
+    const npcDescription = document.createElement('div');
+    npcDescription.className = 'npc-description';
+    npcDescription.textContent = npc.description;
+    npcInfo.appendChild(npcDescription);
+    
+    npcHeader.appendChild(npcInfo);
+    npcElement.appendChild(npcHeader);
+    
+    // Opprett NPC-oppdrag
+    const npcQuests = document.createElement('div');
+    npcQuests.className = 'npc-quests';
+    
+    // Vis hvert oppdrag
+    quests.forEach(quest => {
+        const questElement = createQuestElement(quest, npc, questStatus);
+        npcQuests.appendChild(questElement);
+    });
+    
+    npcElement.appendChild(npcQuests);
+    
+    return npcElement;
+}
+
+// Funksjon for å opprette et oppdragselement
+function createQuestElement(quest, npc, questStatus) {
+    console.log("Oppretter quest-element for:", quest.title, "med belønninger:", quest.reward, quest.credits, quest.item);
+    
+    const questElement = document.createElement('div');
+    questElement.className = 'quest-item';
+    questElement.setAttribute('data-quest-id', quest.id);
+    
+    // Bestem oppdragsstatus
+    const status = getQuestStatus(quest, questStatus);
+    
+    // Legg til oppdragstittel
+    const questTitle = document.createElement('div');
+    questTitle.className = 'quest-title';
+    questTitle.innerHTML = `
+        <span>${quest.title}</span>
+        <span class="quest-status ${status}">${getStatusText(status)}</span>
+    `;
+    questElement.appendChild(questTitle);
+    
+    // Legg til oppdragsbeskrivelse
+    const questDescription = document.createElement('div');
+    questDescription.className = 'quest-description';
+    questDescription.textContent = quest.description;
+    questElement.appendChild(questDescription);
+    
+    // Legg til fremgangslinje hvis oppdraget er aktivt
+    if (status === 'active') {
+        const questProgress = document.createElement('div');
+        questProgress.className = 'quest-progress';
+        
+        const progressText = document.createElement('div');
+        progressText.textContent = `Fremgang: ${quest.progress || 0}/${quest.required}`;
+        questProgress.appendChild(progressText);
+        
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        
+        const progressFill = document.createElement('div');
+        progressFill.className = 'progress-fill';
+        const progressPercent = ((quest.progress || 0) / quest.required) * 100;
+        progressFill.style.width = `${progressPercent}%`;
+        
+        progressBar.appendChild(progressFill);
+        questProgress.appendChild(progressBar);
+        
+        questElement.appendChild(questProgress);
+    }
+    
+    // Helt ny implementasjon av belønningsseksjonen
+    const rewardsDiv = document.createElement('div');
+    rewardsDiv.style.display = 'flex';
+    rewardsDiv.style.flexWrap = 'wrap';
+    rewardsDiv.style.gap = '10px';
+    rewardsDiv.style.marginBottom = '15px';
+    rewardsDiv.style.position = 'relative';
+    rewardsDiv.style.zIndex = '5';
+    
+    // XP-belønning
+    if (quest.reward) {
+        const xpReward = document.createElement('div');
+        xpReward.style.display = 'flex';
+        xpReward.style.alignItems = 'center';
+        xpReward.style.padding = '3px 8px';
+        xpReward.style.borderRadius = '5px';
+        xpReward.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+        xpReward.style.color = '#2ecc71';
+        xpReward.style.fontSize = '0.85rem';
+        xpReward.innerHTML = `<i class="fas fa-bolt" style="margin-right: 5px;"></i> ${quest.reward} XP`;
+        rewardsDiv.appendChild(xpReward);
+    }
+    
+    // Kreditt-belønning
+    if (quest.credits) {
+        const creditReward = document.createElement('div');
+        creditReward.style.display = 'flex';
+        creditReward.style.alignItems = 'center';
+        creditReward.style.padding = '3px 8px';
+        creditReward.style.borderRadius = '5px';
+        creditReward.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+        creditReward.style.color = '#f1c40f';
+        creditReward.style.fontSize = '0.85rem';
+        creditReward.innerHTML = `<i class="fas fa-coins" style="margin-right: 5px;"></i> ${quest.credits} kreditter`;
+        rewardsDiv.appendChild(creditReward);
+    }
+    
+    // Gjenstandsbelønning
+    if (quest.item) {
+        const itemReward = document.createElement('div');
+        itemReward.style.display = 'flex';
+        itemReward.style.alignItems = 'center';
+        itemReward.style.padding = '3px 8px';
+        itemReward.style.borderRadius = '5px';
+        itemReward.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+        itemReward.style.color = '#9b59b6';
+        itemReward.style.fontSize = '0.85rem';
+        itemReward.innerHTML = `<i class="fas fa-cube" style="margin-right: 5px;"></i> ${quest.item}`;
+        rewardsDiv.appendChild(itemReward);
+    }
+    
+    questElement.appendChild(rewardsDiv);
+    
+    // Legg til handlingsknapp
+    const questActions = document.createElement('div');
+    questActions.className = 'quest-actions';
+    questActions.style.display = 'flex';
+    questActions.style.justifyContent = 'flex-end';
+    
+    const questAction = document.createElement('button');
+    questAction.className = 'quest-action';
+    
+    if (status === 'available') {
+        questAction.textContent = 'Start oppdrag';
+        questAction.addEventListener('click', () => {
+            startQuest(npc.id, quest.id);
+        });
+    } else if (status === 'active') {
+        questAction.textContent = 'Vis detaljer';
+        questAction.addEventListener('click', () => {
+            showQuestDetails(npc, quest);
+        });
+    } else if (status === 'completed') {
+        questAction.textContent = 'Fullført';
+        questAction.disabled = true;
+    }
+    
+    questActions.appendChild(questAction);
+    questElement.appendChild(questActions);
+    
+    return questElement;
+}
+
+// Funksjon for å hente oppdragsstatus
+function getQuestStatus(quest, questStatus) {
+    if (!questStatus) return 'available';
+    
+    const questId = quest.id;
+    
+    if (questStatus.completed && questStatus.completed.includes(questId)) {
+        return 'completed';
+    } else if (questStatus.active && questStatus.active.includes(questId)) {
+        return 'active';
+            } else {
+        return 'available';
+    }
+}
+
+// Funksjon for å hente statustekst
+function getStatusText(status) {
+    switch (status) {
+        case 'active': return 'AKTIV';
+        case 'completed': return 'FULLFØRT';
+        case 'available': return 'TILGJENGELIG';
+        default: return '';
+    }
+}
+
+// Funksjon for å hente brukerens oppdragsstatus
+function getUserQuestStatus() {
+    if (!userProfile) return null;
+    
+    return {
+        active: userProfile.activeQuests || [],
+        completed: userProfile.completedQuests || []
+    };
+}
+
+// Funksjon for å starte et oppdrag
+function startQuest(npcId, questId) {
+    console.log(`Starter oppdrag ${questId} fra NPC ${npcId}`);
+    
+    if (!userProfile || !currentUser) {
+        showNotification('Du må være logget inn for å starte oppdrag', 'error');
+        return;
+    }
+    
+    // Oppdater lokalt
+    if (!userProfile.activeQuests) {
+        userProfile.activeQuests = [];
+    }
+    
+    // Sjekk om oppdraget allerede er aktivt
+    if (userProfile.activeQuests.includes(questId)) {
+        showNotification('Dette oppdraget er allerede aktivt', 'warning');
+        return;
+    }
+    
+    // Legg til oppdraget i aktive oppdrag
+    userProfile.activeQuests.push(questId);
+    
+    // Oppdater i databasen
+    updateActiveQuests(currentUser.id, userProfile.activeQuests)
+        .then(() => {
+            showNotification('Oppdrag startet!', 'success');
+            
+            // Last inn oppdrag på nytt
+            loadQuests();
+        })
+        .catch(error => {
+            console.error('Feil ved start av oppdrag:', error);
+            showNotification('Feil ved start av oppdrag', 'error');
+            
+            // Fjern oppdraget fra aktive oppdrag lokalt
+            userProfile.activeQuests = userProfile.activeQuests.filter(id => id !== questId);
+        });
+}
+
+// Funksjon for å oppdatere aktive oppdrag i databasen
+async function updateActiveQuests(userId, activeQuests) {
+    console.log(`Oppdaterer aktive oppdrag for bruker ${userId}`);
+    try {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ activeQuests: activeQuests })
+            .eq('id', userId);
+        
+        if (error) throw error;
+        
+        console.log('Aktive oppdrag oppdatert');
+        return { success: true };
+    } catch (error) {
+        console.error('Feil ved oppdatering av aktive oppdrag:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+// Funksjon for å vise oppdragsdetaljer
+function showQuestDetails(npc, quest) {
+    console.log(`Viser detaljer for oppdrag ${quest.id} fra NPC ${npc.id}`);
+    
+    // Dette kan implementeres senere, f.eks. med en modal
+    // som viser mer detaljert informasjon om oppdraget
+    
+    // For nå, bare vis en notifikasjon
+    showNotification(`Oppdrag: ${quest.title} - ${quest.description}`, 'info');
+}
+
+// Funksjon for å abonnere på sanntidsoppdateringer for oppdrag
+function subscribeToQuestUpdates() {
+    if (!currentUser) return;
+    
+    // Abonner på sanntidsoppdateringer for brukerprofilen
+    const channel = supabase
+        .channel('quest-updates')
+        .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${currentUser.id}`
+        }, (payload) => {
+            console.log('Profil oppdatert med nye oppdragsdata:', payload);
+            
+            // Oppdater userProfile med nye data
+            const newData = payload.new;
+            
+            // Oppdater oppdragsrelaterte felt
+            userProfile.activeQuests = newData.activeQuests || [];
+            userProfile.completedQuests = newData.completedQuests || [];
+            
+            // Last inn oppdrag på nytt
+            loadQuests();
+            
+            showNotification('Oppdragsstatus oppdatert', 'success');
+        })
+        .subscribe();
 }
 
 // Funksjon for å laste inn butikkvarer
 function loadShopItems() {
     console.log('Laster inn butikkvarer...');
     
-    // Tøm container
+    // Tøm containere
+    const shopItemsContainer = document.getElementById('shop-items');
+    const shopRecommendedContainer = document.getElementById('shop-recommended');
+    
+    if (!shopItemsContainer || !shopRecommendedContainer) {
+        console.error('Kunne ikke finne butikk-containere');
+        return;
+    }
+    
     shopItemsContainer.innerHTML = '';
+    shopRecommendedContainer.innerHTML = '';
+    
+    // Vis laster-melding
+    shopItemsContainer.innerHTML = `
+        <div class="shop-empty">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Laster butikkvarer...</p>
+        </div>
+    `;
     
     // Hent butikkvarer fra shop.js
     fetch('../js/shop.js')
@@ -599,282 +1050,339 @@ function loadShopItems() {
                     
                     // Hvis ingen varer er tilgjengelige, vis melding
                     if (!shopItemsArray || shopItemsArray.length === 0) {
-                        const emptyMessage = document.createElement('div');
-                        emptyMessage.className = 'empty-message';
-                        emptyMessage.innerHTML = `
-                            <div class="cyber-box" style="
-                                background: rgba(0, 0, 0, 0.7);
-                                border: 1px solid #ff5722;
-                                padding: 20px;
-                                text-align: center;
-                                color: #ff5722;
-                                border-radius: 5px;
-                                box-shadow: 0 0 10px rgba(255, 87, 34, 0.3);
-                                margin: 20px auto;
-                                max-width: 400px;">
-                                <i class="fas fa-store-slash" style="font-size: 48px; margin-bottom: 15px;"></i>
-                                <h3>BUTIKKEN ER TOM</h3>
+                        shopItemsContainer.innerHTML = `
+                            <div class="shop-empty">
+                                <i class="fas fa-store-slash"></i>
                                 <p>Ingen varer er tilgjengelige for øyeblikket.</p>
                             </div>
                         `;
-                        shopItemsContainer.appendChild(emptyMessage);
-                        return;
-                    }
+        return;
+    }
+    
+                    // Tøm containere
+                    shopItemsContainer.innerHTML = '';
+                    shopRecommendedContainer.innerHTML = '';
                     
-                    // Vis de første 12 varene (eller alle hvis færre enn 12)
-                    const itemsToShow = shopItemsArray.slice(0, 12);
+                    // Legg til event listeners for kategorier
+                    setupShopCategories(shopItemsArray);
                     
-                    // Vis hver vare i butikken
-                    itemsToShow.forEach(item => {
-                        // Bestem farge basert på sjeldenhet
-                        let rarityColor, rarityName, rarityClass;
-                        switch (item.rarity) {
-                            case 'legendary':
-                                rarityColor = '#ff9900';
-                                rarityName = 'LEGENDARISK';
-                                rarityClass = 'legendary';
-                                break;
-                            case 'epic':
-                                rarityColor = '#a335ee';
-                                rarityName = 'EPISK';
-                                rarityClass = 'epic';
-                                break;
-                            case 'rare':
-                                rarityColor = '#0070dd';
-                                rarityName = 'SJELDEN';
-                                rarityClass = 'rare';
-                                break;
-                            case 'uncommon':
-                                rarityColor = '#1eff00';
-                                rarityName = 'UVANLIG';
-                                rarityClass = 'uncommon';
-                                break;
-                            default:
-                                rarityColor = '#9d9d9d';
-                                rarityName = 'VANLIG';
-                                rarityClass = 'common';
-                        }
-                        
-                        // Opprett varekort
-                        const itemCard = document.createElement('div');
-                        itemCard.className = `item-card ${rarityClass}`;
-                        itemCard.innerHTML = `
-                            <div class="item-icon">${item.icon || '📦'}</div>
-                            <div class="item-name">${item.name}</div>
-                            <div class="item-price">${item.price} kreditter</div>
-                            <div class="item-rarity" style="color: ${rarityColor};">${rarityName}</div>
-                            <button class="buy-button">Kjøp</button>
-                        `;
-                        
-                        // Legg til hover-effekt
-                        itemCard.addEventListener('mouseover', () => {
-                            itemCard.style.transform = 'translateY(-5px)';
-                            itemCard.style.boxShadow = `0 10px 20px rgba(0, 0, 0, 0.3), 0 0 10px ${rarityColor}`;
-                        });
-                        
-                        itemCard.addEventListener('mouseout', () => {
-                            itemCard.style.transform = 'translateY(0)';
-                            itemCard.style.boxShadow = `0 5px 15px rgba(0, 0, 0, 0.2), 0 0 5px ${rarityColor}`;
-                        });
-                        
-                        // Legg til klikk-hendelse for å vise detaljer
-                        itemCard.addEventListener('click', (event) => {
-                            // Ikke vis detaljer hvis kjøp-knappen ble klikket
-                            if (event.target.classList.contains('buy-button')) {
-                                return;
-                            }
-                            showItemDetails(item);
-                        });
-                        
-                        // Legg til klikk-hendelse for kjøp-knappen
-                        const buyButton = itemCard.querySelector('.buy-button');
-                        buyButton.addEventListener('click', () => {
-                            buyItem(item);
-                        });
-                        
-                        // Legg til i container
-                        shopItemsContainer.appendChild(itemCard);
-                    });
+                    // Legg til event listener for søk
+                    setupShopSearch(shopItemsArray);
+                    
+                    // Vis anbefalte varer (populære og nye)
+                    displayRecommendedItems(shopItemsArray, shopRecommendedContainer);
+                    
+                    // Vis alle varer
+                    displayShopItems(shopItemsArray, shopItemsContainer);
                     
                 } catch (error) {
                     console.error('Feil ved parsing av butikkvarer:', error);
-                    shopItemsContainer.innerHTML = '<div class="empty-message">Feil ved lasting av butikkvarer.</div>';
+                    shopItemsContainer.innerHTML = `
+                        <div class="shop-empty">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Feil ved lasting av butikkvarer.</p>
+                        </div>
+                    `;
                 }
             } else {
                 console.error('Kunne ikke finne shopItems-array i shop.js');
-                shopItemsContainer.innerHTML = '<div class="empty-message">Feil ved lasting av butikkvarer.</div>';
+                shopItemsContainer.innerHTML = `
+                    <div class="shop-empty">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Feil ved lasting av butikkvarer.</p>
+                    </div>
+                `;
             }
         })
         .catch(error => {
             console.error('Feil ved lasting av shop.js:', error);
-            shopItemsContainer.innerHTML = '<div class="empty-message">Feil ved lasting av butikkvarer.</div>';
+            shopItemsContainer.innerHTML = `
+                <div class="shop-empty">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Feil ved lasting av butikkvarer.</p>
+                </div>
+            `;
         });
 }
 
-// Funksjon for å vise detaljer om en gjenstand
-function showItemDetails(item) {
-    console.log('Viser detaljer for gjenstand:', item);
+// Funksjon for å sette opp kategori-filtrering
+function setupShopCategories(items) {
+    const categories = document.querySelectorAll('.shop-category');
+    const shopItemsContainer = document.getElementById('shop-items');
     
-    // Bestem farge basert på sjeldenhet
-    let rarityColor, rarityGlow, rarityName;
-    switch (item.rarity) {
-        case 'legendary':
-            rarityColor = '#f1c40f';
-            rarityGlow = 'rgba(241, 196, 15, 0.5)';
-            rarityName = 'LEGENDARISK';
-            break;
-        case 'epic':
-            rarityColor = '#9b59b6';
-            rarityGlow = 'rgba(155, 89, 182, 0.5)';
-            rarityName = 'EPISK';
-            break;
-        case 'rare':
-            rarityColor = '#3498db';
-            rarityGlow = 'rgba(52, 152, 219, 0.5)';
-            rarityName = 'SJELDEN';
-            break;
-        case 'uncommon':
-            rarityColor = '#1eff00';
-            rarityGlow = 'rgba(30, 255, 0, 0.5)';
-            rarityName = 'UVANLIG';
-            break;
-        default:
-            rarityColor = '#ffffff';
-            rarityGlow = 'rgba(255, 255, 255, 0.5)';
-            rarityName = 'VANLIG';
-    }
-    
-    // Opprett HTML for statistikk
-    let statsHTML = '';
-    if (item.stats) {
-        statsHTML = '<div class="item-stats" style="margin-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 15px;">';
-        for (const stat in item.stats) {
-            const statValue = item.stats[stat];
-            const valueColor = statValue > 0 ? '#1eff00' : '#ff4040';
-            const sign = statValue > 0 ? '+' : '';
+    categories.forEach(category => {
+        category.addEventListener('click', () => {
+            // Fjern active-klassen fra alle kategorier
+            categories.forEach(cat => cat.classList.remove('active'));
             
-            statsHTML += `
-                <div class="stat-row" style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <span style="color: rgba(255, 255, 255, 0.8);">${stat}:</span> 
-                    <span style="color: ${valueColor};">${sign}${statValue}</span>
-                </div>`;
-        }
-        statsHTML += '</div>';
-    }
-    
-    // Opprett HTML for slot-informasjon
-    let slotHTML = '';
-    if (item.slot) {
-        const slotNames = {
-            head: 'Hode',
-            chest: 'Bryst',
-            hands: 'Hender',
-            legs: 'Bein',
-            feet: 'Føtter',
-            accessory: 'Tilbehør'
-        };
-        
-        slotHTML = `
-            <div class="item-slot" style="
-                margin-top: 10px;
-                padding: 5px 10px;
-                background: rgba(0, 255, 255, 0.1);
-                border: 1px solid rgba(0, 255, 255, 0.3);
-                border-radius: 4px;
-                display: inline-block;
-                color: rgba(0, 255, 255, 0.8);
-                font-size: 12px;
-                text-transform: uppercase;
-            ">
-                Slot: ${slotNames[item.slot] || item.slot}
-            </div>
-        `;
-    }
-    
-    // Sett innhold i modal med cyberpunk-stil
-    itemDetailsContainer.innerHTML = `
-        <div class="item-detail-header" style="
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid ${rarityColor};
-            box-shadow: 0 5px 10px -5px ${rarityGlow};
-        ">
-            <div class="item-detail-icon" style="
-                font-size: 64px;
-                margin-right: 20px;
-                text-shadow: 0 0 15px ${rarityGlow};
-                background: rgba(0, 0, 0, 0.3);
-                width: 80px;
-                height: 80px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-radius: 50%;
-                border: 2px solid ${rarityColor};
-            ">${item.icon || '📦'}</div>
-            <div class="item-detail-title">
-                <h3 style="
-                    color: ${rarityColor};
-                    margin: 0 0 5px 0;
-                    font-size: 24px;
-                    text-shadow: 0 0 10px ${rarityGlow};
-                    letter-spacing: 1px;
-                ">${item.name}</h3>
-                <div class="item-detail-rarity" style="
-                    color: ${rarityColor};
-                    font-size: 14px;
-                    font-weight: bold;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                ">${rarityName}</div>
-            </div>
-        </div>
-        <div class="item-detail-description" style="
-            margin-bottom: 15px;
-            color: rgba(255, 255, 255, 0.8);
-            font-style: italic;
-            line-height: 1.5;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 5px;
-            border-left: 3px solid ${rarityColor};
-        ">${item.description || 'Ingen beskrivelse tilgjengelig.'}</div>
-        ${statsHTML}
-        <div class="item-detail-type" style="
-            margin-top: 15px;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
-        ">Type: ${item.type || 'Ukjent'}</div>
-        ${slotHTML}
-    `;
-    
-    // Legg til holografisk effekt på modal
-    itemModal.style.background = `
-        linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(20, 20, 30, 0.95)),
-        repeating-linear-gradient(45deg, rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.05) 0px, 
-        rgba(${rarityColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.05) 1px, transparent 1px, transparent 10px)
-    `;
-    itemModal.style.borderColor = rarityColor;
-    itemModal.style.boxShadow = `0 0 20px ${rarityGlow}, inset 0 0 10px ${rarityGlow}`;
-    
-    // Vis modal
-    itemModal.style.display = 'block';
+            // Legg til active-klassen på valgt kategori
+            category.classList.add('active');
+            
+            // Filtrer varer basert på valgt kategori
+            const selectedCategory = category.getAttribute('data-category');
+            
+            if (selectedCategory === 'all') {
+                displayShopItems(items, shopItemsContainer);
+            } else {
+                const filteredItems = items.filter(item => item.category === selectedCategory);
+                displayShopItems(filteredItems, shopItemsContainer);
+            }
+        });
+    });
 }
 
-// Funksjon for å kjøpe en gjenstand
-async function buyItem(item) {
-    console.log('Forsøker å kjøpe gjenstand:', item);
+// Funksjon for å sette opp søkefunksjonalitet
+function setupShopSearch(items) {
+    const searchInput = document.getElementById('shop-search-input');
+    const shopItemsContainer = document.getElementById('shop-items');
     
-    if (!userProfile) {
+    if (!searchInput) return;
+    
+    searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        
+        if (searchTerm === '') {
+            // Vis alle varer hvis søkefeltet er tomt
+            const activeCategory = document.querySelector('.shop-category.active');
+            const categoryFilter = activeCategory.getAttribute('data-category');
+            
+            if (categoryFilter === 'all') {
+                displayShopItems(items, shopItemsContainer);
+            } else {
+                const filteredItems = items.filter(item => item.category === categoryFilter);
+                displayShopItems(filteredItems, shopItemsContainer);
+            }
+        } else {
+            // Filtrer varer basert på søkeord
+            const filteredItems = items.filter(item => 
+                item.name.toLowerCase().includes(searchTerm) || 
+                item.description.toLowerCase().includes(searchTerm)
+            );
+            
+            displayShopItems(filteredItems, shopItemsContainer);
+        }
+    });
+}
+
+// Funksjon for å vise anbefalte varer
+function displayRecommendedItems(items, container) {
+    // Filtrer ut populære og nye varer
+    const recommendedItems = items.filter(item => 
+        item.tags && (item.tags.includes('popular') || item.tags.includes('new'))
+    );
+    
+    if (recommendedItems.length === 0) {
+        // Skjul anbefalte-seksjonen hvis det ikke er noen anbefalte varer
+        const recommendedSection = container.closest('.shop-section');
+        if (recommendedSection) {
+            recommendedSection.style.display = 'none';
+        }
+        return;
+    }
+    
+    // Vis anbefalte varer
+    recommendedItems.forEach(item => {
+        const itemElement = createShopItemElement(item);
+        container.appendChild(itemElement);
+    });
+}
+
+// Funksjon for å vise butikkvarer
+function displayShopItems(items, container) {
+    // Tøm container
+    container.innerHTML = '';
+    
+    if (items.length === 0) {
+        container.innerHTML = `
+            <div class="shop-empty">
+                <i class="fas fa-search"></i>
+                <p>Ingen varer funnet.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Vis varer
+    items.forEach(item => {
+        const itemElement = createShopItemElement(item);
+        container.appendChild(itemElement);
+    });
+}
+
+// Funksjon for å opprette et butikkvare-element
+function createShopItemElement(item) {
+    const itemElement = document.createElement('div');
+    itemElement.className = 'shop-item';
+    itemElement.setAttribute('data-item-id', item.id);
+    
+    // Legg til tag hvis varen er ny eller populær
+    if (item.tags && item.tags.length > 0) {
+        const tag = item.tags[0]; // Bruk første tag
+        const tagElement = document.createElement('div');
+        tagElement.className = `shop-item-tag ${tag}`;
+        tagElement.textContent = tag === 'new' ? 'NY!' : tag === 'popular' ? 'POPULÆR' : tag.toUpperCase();
+        itemElement.appendChild(tagElement);
+    }
+    
+    // Legg til ikon
+    const iconElement = document.createElement('div');
+    iconElement.className = 'shop-item-icon';
+    iconElement.textContent = item.icon;
+    itemElement.appendChild(iconElement);
+    
+    // Legg til navn
+    const nameElement = document.createElement('div');
+    nameElement.className = 'shop-item-name';
+    nameElement.textContent = item.name;
+    itemElement.appendChild(nameElement);
+    
+    // Legg til beskrivelse
+    const descElement = document.createElement('div');
+    descElement.className = 'shop-item-description';
+    descElement.textContent = item.description;
+    itemElement.appendChild(descElement);
+    
+    // Legg til pris
+    const priceElement = document.createElement('div');
+    priceElement.className = 'shop-item-price';
+    priceElement.innerHTML = `<i class="fas fa-coins"></i> ${item.price}`;
+    itemElement.appendChild(priceElement);
+    
+    // Legg til kjøp-knapp
+    const buyButton = document.createElement('button');
+    buyButton.className = 'shop-item-buy';
+    buyButton.textContent = 'KJØP';
+    buyButton.addEventListener('click', (event) => {
+        event.stopPropagation(); // Hindre at klikk på knappen også trigger klikk på varen
+        buyShopItem(item);
+    });
+    itemElement.appendChild(buyButton);
+    
+    // Legg til klikk-hendelse for å vise detaljer
+    itemElement.addEventListener('click', () => {
+        showItemDetails(item);
+    });
+    
+    return itemElement;
+}
+
+// Funksjon for å vise detaljer om en vare
+function showItemDetails(item) {
+    console.log('Viser detaljer for:', item.name);
+    
+    // Finn modal-elementet
+    const modal = document.getElementById('item-modal');
+    if (!modal) {
+        console.error('Fant ikke modal-elementet');
+        return;
+    }
+    
+    // Oppdater modal-innholdet
+    const iconElement = modal.querySelector('.item-detail-icon i');
+    if (iconElement) {
+        iconElement.className = item.icon || 'fas fa-cube';
+    }
+    
+    const titleElement = modal.querySelector('.item-detail-title h3');
+    if (titleElement) {
+        titleElement.textContent = item.name || 'Ukjent gjenstand';
+    }
+    
+    const rarityElement = modal.querySelector('.item-detail-rarity');
+    if (rarityElement) {
+        rarityElement.textContent = item.rarity || 'Vanlig';
+        
+        // Sett farge basert på sjeldenhet
+        switch (item.rarity) {
+            case 'legendary':
+                rarityElement.style.color = '#ff9900';
+                break;
+            case 'epic':
+                rarityElement.style.color = '#a335ee';
+                break;
+            case 'rare':
+                rarityElement.style.color = '#0070dd';
+                break;
+            case 'uncommon':
+                rarityElement.style.color = '#1eff00';
+                break;
+            default:
+                rarityElement.style.color = '#ffffff';
+                break;
+        }
+    }
+    
+    const descriptionElement = modal.querySelector('.item-detail-description');
+    if (descriptionElement) {
+        descriptionElement.textContent = item.description || 'Ingen beskrivelse tilgjengelig';
+    }
+    
+    const typeElement = modal.querySelector('.item-detail-type');
+    if (typeElement) {
+        typeElement.textContent = item.type || 'Ukjent type';
+    }
+    
+    const priceElement = modal.querySelector('.item-detail-price');
+    if (priceElement) {
+        priceElement.innerHTML = `${item.price || 0} <i class="fas fa-coins"></i>`;
+    }
+    
+    const effectElement = modal.querySelector('.item-detail-effect');
+    if (effectElement) {
+        effectElement.textContent = item.effect || 'Ingen effekt';
+    }
+    
+    const buyButton = modal.querySelector('#detail-buy-button');
+    if (buyButton) {
+        // Oppdater pris i kjøp-knappen
+        const priceButtonElement = buyButton.querySelector('.item-detail-price-button');
+        if (priceButtonElement) {
+            priceButtonElement.textContent = item.price || 0;
+        }
+        
+        // Fjern eventuelle eksisterende event listeners
+        const newButton = buyButton.cloneNode(true);
+        buyButton.parentNode.replaceChild(newButton, buyButton);
+        
+        // Legg til ny event listener
+        newButton.addEventListener('click', () => {
+            buyShopItem(item);
+            modal.style.display = 'none';
+        });
+    }
+    
+    // Vis modalen
+    modal.style.display = 'block';
+    
+    // Legg til event listener for å lukke modalen
+    const closeButton = modal.querySelector('.close-modal');
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+    
+    // Lukk modalen når brukeren klikker utenfor
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+// Funksjon for å kjøpe en vare
+async function buyShopItem(item) {
+    console.log('Kjøper:', item.name);
+    
+    // Sjekk om brukeren er logget inn
+    if (!userProfile || !currentUser) {
         showNotification('Du må være logget inn for å kjøpe gjenstander', 'error');
         return;
     }
     
     // Sjekk om brukeren har nok kreditter
     if (userProfile.credits < item.price) {
-        showNotification('Ikke nok kreditter til å kjøpe denne gjenstanden', 'error');
+        showNotification('Du har ikke nok kreditter til å kjøpe denne gjenstanden', 'error');
         return;
     }
     
@@ -882,119 +1390,96 @@ async function buyItem(item) {
         // Oppdater lokalt først for raskere UI-respons
         userProfile.credits -= item.price;
         
-        // Initialiser inventory hvis det ikke finnes
+        // Legg til gjenstanden i inventaret hvis den ikke allerede finnes
         if (!userProfile.inventory) {
             userProfile.inventory = [];
         }
         
-        // Opprett en ny gjenstand med unikt ID
-        const newItem = {
-            id: Date.now(),
-            name: item.name,
-            description: item.description,
-            icon: item.icon,
-            image: item.image,
-            rarity: item.rarity,
-            type: item.type,
-            slot: item.slot,
-            stats: item.stats
-        };
-        
-        // Legg til i inventar
-        userProfile.inventory.push(newItem);
-        
-        console.log('Gjenstand lagt til i inventar:', newItem);
-        console.log('Oppdatert inventar:', userProfile.inventory);
+        // Sjekk om brukeren allerede har gjenstanden
+        const existingItem = userProfile.inventory.find(invItem => invItem.id === item.id);
+        if (existingItem) {
+            // Hvis gjenstanden allerede finnes, øk antallet
+            existingItem.quantity = (existingItem.quantity || 1) + 1;
+        } else {
+            // Hvis ikke, legg til gjenstanden med antall 1
+            userProfile.inventory.push({
+                ...item,
+                quantity: 1,
+                purchasedAt: new Date().toISOString()
+            });
+        }
         
         // Oppdater UI
         updateUserInterface();
-        loadInventoryItems();
         
         // Oppdater i databasen
-        const { error: creditsError } = await supabase
-            .from('profiles')
-            .update({ credits: userProfile.credits })
-            .eq('id', currentUser.id);
-            
-        if (creditsError) throw creditsError;
+        await updateInventory(currentUser.id, userProfile.inventory);
+        await updateCredits(currentUser.id, userProfile.credits);
         
-        const { error: inventoryError } = await supabase
-            .from('profiles')
-            .update({ inventory: userProfile.inventory })
-            .eq('id', currentUser.id);
-            
-        if (inventoryError) throw inventoryError;
+        // Vis bekreftelse
+        showNotification(`Du har kjøpt ${item.name} for ${item.price} kreditter!`, 'success');
         
-        showNotification(`Du har kjøpt ${item.name}!`, 'success');
+        // Oppdater inventaret
+        loadInventoryItems();
         
     } catch (error) {
-        console.error('Feil ved kjøp av gjenstand:', error);
+        console.error('Feil ved kjøp av gjenstand:', error.message);
         showNotification('Feil ved kjøp av gjenstand', 'error');
         
         // Tilbakestill lokale endringer ved feil
         userProfile.credits += item.price;
-        userProfile.inventory.pop();
+        // Fjern gjenstanden fra inventaret igjen
+        if (userProfile.inventory) {
+            const existingItem = userProfile.inventory.find(invItem => invItem.id === item.id);
+            if (existingItem && existingItem.quantity > 1) {
+                existingItem.quantity -= 1;
+            } else {
+                userProfile.inventory = userProfile.inventory.filter(invItem => invItem.id !== item.id);
+            }
+        }
         updateUserInterface();
-        loadInventoryItems();
     }
 }
 
-// Funksjon for å legge til en testgjenstand i inventaret (for testing)
-async function addTestItem() {
-    console.log('Legger til testgjenstand...');
-    
-    if (!userProfile) {
-        showNotification('Ingen brukerprofil funnet', 'error');
-        return;
-    }
-    
-    // Initialiser inventory hvis det ikke finnes
-    if (!userProfile.inventory) {
-        console.log('Initialiserer tom inventory-array');
-        userProfile.inventory = [];
-    }
-    
-    // Opprett en testgjenstand
-    const testItem = {
-        id: Date.now(),
-        name: 'Testgjenstand',
-        description: 'En gjenstand for testing',
-        icon: '🧪',
-        rarity: 'epic',
-        type: 'Test',
-        slot: null,
-        stats: {
-            'Styrke': 5,
-            'Intelligens': 3
-        }
-    };
-    
-    // Legg til i inventar
-    userProfile.inventory.push(testItem);
-    
-    console.log('Testgjenstand lagt til i inventar:', testItem);
-    console.log('Oppdatert inventar:', userProfile.inventory);
+// Funksjon for å oppdatere inventaret i databasen
+async function updateInventory(userId, inventory) {
+    console.log('Oppdaterer inventar for bruker', userId);
     
     try {
-        // Oppdater i databasen
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('profiles')
-            .update({ inventory: userProfile.inventory })
-            .eq('id', currentUser.id);
-            
+            .update({ inventory: inventory })
+            .eq('id', userId);
+        
         if (error) throw error;
         
-        // Oppdater UI
-        loadInventoryItems();
-        showNotification('Testgjenstand lagt til i inventaret', 'success');
-        
+        console.log('Inventar oppdatert');
+        return true;
     } catch (error) {
-        console.error('Feil ved lagring av testgjenstand:', error);
-        showNotification('Feil ved lagring av testgjenstand', 'error');
-        
-        // Fjern gjenstanden fra lokalt inventar ved feil
-        userProfile.inventory.pop();
+        console.error('Feil ved oppdatering av inventar:', error.message);
+        throw error;
     }
+}
+
+// Funksjon for å oppdatere kreditter i databasen
+async function updateCredits(userId, credits) {
+    console.log('Oppdaterer kreditter for bruker', userId);
+    
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .update({ credits: credits })
+            .eq('id', userId);
+        
+        if (error) throw error;
+        
+        console.log('Kreditter oppdatert');
+        return true;
+    } catch (error) {
+        console.error('Feil ved oppdatering av kreditter:', error.message);
+        throw error;
+    }
+
 }
 
 // Funksjon for å oppdatere statistikk
@@ -1606,21 +2091,22 @@ function animateStatCards() {
     });
 }
 
-// Legg til lytter for tab-endringer for å oppdatere statistikk
-document.querySelectorAll('.nav-item').forEach(tab => {
-    tab.addEventListener('click', function() {
-        if (this.getAttribute('data-tab') === 'stats') {
-            updateStatsTab();
-        }
-    });
-});
-
 // Oppdater statistikk når siden lastes
 document.addEventListener('DOMContentLoaded', function() {
     // Sjekk om brukeren er på statistikk-fanen
     const activeTab = document.querySelector('.nav-item.active');
     if (activeTab && activeTab.getAttribute('data-tab') === 'stats') {
         updateStatsTab();
+    }
+    
+    // Sjekk om brukeren er på butikkfanen og legg til klassen
+    if (activeTab && activeTab.getAttribute('data-tab') === 'shop') {
+        document.querySelector('.dashboard-main').classList.add('shop-tab-active');
+    }
+    
+    // Sjekk om brukeren er på oppdragsfanen og last inn oppdrag
+    if (activeTab && activeTab.getAttribute('data-tab') === 'quests') {
+        loadQuests();
     }
 });
 

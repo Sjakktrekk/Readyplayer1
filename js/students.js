@@ -1,6 +1,6 @@
 // Initialize students data if it doesn't exist yet
 if (typeof students === 'undefined') {
-    let students = JSON.parse(localStorage.getItem('students')) || [{
+    var students = JSON.parse(localStorage.getItem('students')) || [{
         name: "Ny student",
         Intelligens: 0,
         Teknologi: 0,
@@ -13,6 +13,9 @@ if (typeof students === 'undefined') {
         achievements: []
     }];
 }
+
+// Gjør students tilgjengelig globalt
+window.students = students;
 
 // Funksjon for å endre skill-verdi
 function changeSkill(index, skill, amount) {

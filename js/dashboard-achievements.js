@@ -5,316 +5,353 @@
 // Merk: achievements-array må være tilgjengelig globalt
 
 // Globale variabler
-let showOnlyUnlocked = true; // Standard: vis bare opplåste prestasjoner
+let achievementsContainer;
+let showOnlyUnlocked = false;
+let toggleButton;
 
-// Funksjon for å laste inn prestasjoner i dashbordet
-function loadDashboardAchievements(profile) {
-    console.log('Laster inn prestasjoner i dashbordet...');
+// Funksjon for å laste inn prestasjoner
+async function loadAchievements() {
+    console.log('Laster inn prestasjoner...');
     
-    // Hent container for prestasjoner
-    const achievementsContainer = document.getElementById('achievements-list');
+    // Hent DOM-elementer
+    achievementsContainer = document.getElementById('achievements-container');
+    
     if (!achievementsContainer) {
         console.error('Fant ikke achievements-container');
         return;
     }
     
+    try {
+        // Hent alle prestasjoner
+        const { success, data: allAchievements, error } = await window.databaseService.achievement.getAllAchievements();
+        
+        if (!success || !allAchievements) {
+            throw new Error(error || 'Kunne ikke hente prestasjoner');
+        }
+        
+        console.log('Hentet prestasjoner:', allAchievements);
+        
+        // Opprett toggle-knapp hvis den ikke finnes
+        createToggleButton();
+        
+        // Vis prestasjoner
+        displayAchievements(allAchievements);
+    } catch (error) {
+        console.error('Feil ved lasting av prestasjoner:', error);
+        window.dashboardBase.showNotification('Feil ved lasting av prestasjoner. Prøv igjen senere.', 'error');
+        
+        // Vis feilmelding i container
+        if (achievementsContainer) {
+            achievementsContainer.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Kunne ikke laste inn prestasjoner. Prøv igjen senere.</p>
+                </div>
+            `;
+        }
+    }
+}
+
+// Funksjon for å opprette toggle-knapp
+function createToggleButton() {
+    // Sjekk om knappen allerede finnes
+    const existingButton = document.getElementById('toggle-achievements-button');
+    if (existingButton) {
+        toggleButton = existingButton;
+        return;
+    }
+    
+    // Opprett knapp
+    toggleButton = document.createElement('button');
+    toggleButton.id = 'toggle-achievements-button';
+    toggleButton.className = 'toggle-button';
+    toggleButton.innerHTML = `
+        <i class="fas fa-filter"></i>
+        <span>Vis kun låst opp</span>
+    `;
+    
+    // Legg til event listener
+    toggleButton.addEventListener('click', () => {
+        showOnlyUnlocked = !showOnlyUnlocked;
+        toggleButton.querySelector('span').textContent = showOnlyUnlocked ? 'Vis alle' : 'Vis kun låst opp';
+        
+        // Last inn prestasjoner på nytt
+        loadAchievements();
+    });
+    
+    // Legg til knappen i DOM
+    const achievementsTab = document.getElementById('achievements-tab');
+    if (achievementsTab) {
+        const tabHeader = achievementsTab.querySelector('.tab-header');
+        if (tabHeader) {
+            tabHeader.appendChild(toggleButton);
+        }
+    }
+}
+
+// Funksjon for å vise prestasjoner
+function displayAchievements(achievements) {
+    if (!achievementsContainer || !achievements) return;
+    
     // Tøm container
     achievementsContainer.innerHTML = '';
     
-    // Sjekk om achievements-array er tilgjengelig
-    if (typeof achievements === 'undefined') {
-        console.error('achievements-array er ikke tilgjengelig');
-        achievementsContainer.innerHTML = '<div class="empty-message">Kunne ikke laste prestasjoner. Vennligst prøv igjen senere.</div>';
+    // Hent brukerens låste opp prestasjoner
+    const unlockedAchievements = window.userProfile?.achievements || [];
+    
+    // Filtrer prestasjoner basert på toggle-status
+    let filteredAchievements = achievements;
+    if (showOnlyUnlocked) {
+        filteredAchievements = achievements.filter(achievement => 
+            unlockedAchievements.includes(achievement.id)
+        );
+    }
+    
+    // Sjekk om det er noen prestasjoner å vise
+    if (filteredAchievements.length === 0) {
+        achievementsContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-trophy"></i>
+                <p>${showOnlyUnlocked ? 'Du har ikke låst opp noen prestasjoner ennå.' : 'Ingen prestasjoner funnet.'}</p>
+            </div>
+        `;
         return;
     }
     
-    // Bruk den mottatte profilen eller prøv å hente den globalt
-    const userProfile = profile || window.userProfile;
+    // Grupper prestasjoner etter ferdighet
+    const achievementsBySkill = {};
     
-    // Sjekk om userProfile er tilgjengelig
-    if (!userProfile) {
-        console.error('userProfile er ikke tilgjengelig');
-        achievementsContainer.innerHTML = '<div class="empty-message">Kunne ikke laste brukerdata. Vennligst prøv igjen senere.</div>';
-        return;
-    }
-    
-    // Hent gjeldende bruker
-    const currentUser = getCurrentUser(userProfile);
-    if (!currentUser) {
-        console.error('Ingen bruker er logget inn');
-        achievementsContainer.innerHTML = '<div class="empty-message">Logg inn for å se dine prestasjoner.</div>';
-        return;
-    }
-    
-    // Finn den eksisterende overskriften og legg til toggle-knappen
-    const achievementsTab = document.getElementById('achievements-tab');
-    if (achievementsTab) {
-        const existingHeader = achievementsTab.querySelector('h2');
-        if (existingHeader) {
-            // Sett position: relative på header-containeren for å posisjonere knappen
-            existingHeader.style.position = 'relative';
-            
-            // Fjern eksisterende toggle-knapp hvis den finnes
-            const existingButton = existingHeader.querySelector('.toggle-achievements-button');
-            if (existingButton) {
-                existingHeader.removeChild(existingButton);
-            }
-            
-            // Legg til toggle-knapp
-            const toggleButton = document.createElement('button');
-            toggleButton.className = 'toggle-achievements-button';
-            toggleButton.innerHTML = `<i class="fas ${showOnlyUnlocked ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
-            toggleButton.title = showOnlyUnlocked ? 'Vis alle prestasjoner' : 'Vis bare opplåste';
-            toggleButton.style.cssText = `
-                background: rgba(0, 0, 0, 0.7);
-                border: 1px solid #0ff;
-                color: #0ff;
-                padding: 3px 6px;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 10px;
-                transition: all 0.3s ease;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                margin-left: 10px;
-                vertical-align: middle;
-            `;
-            
-            toggleButton.addEventListener('mouseover', function() {
-                this.style.background = 'rgba(0, 255, 255, 0.1)';
-                this.style.transform = 'translateY(-1px)';
-            });
-            
-            toggleButton.addEventListener('mouseout', function() {
-                this.style.background = 'rgba(0, 0, 0, 0.7)';
-                this.style.transform = 'translateY(0)';
-            });
-            
-            toggleButton.addEventListener('click', function() {
-                showOnlyUnlocked = !showOnlyUnlocked;
-                this.innerHTML = `<i class="fas ${showOnlyUnlocked ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
-                this.title = showOnlyUnlocked ? 'Vis alle prestasjoner' : 'Vis bare opplåste';
-                loadDashboardAchievements(userProfile);
-            });
-            
-            // Legg til knappen etter teksten i overskriften
-            existingHeader.appendChild(toggleButton);
+    filteredAchievements.forEach(achievement => {
+        const skill = achievement.skill || 'general';
+        
+        if (!achievementsBySkill[skill]) {
+            achievementsBySkill[skill] = [];
         }
-    }
-    
-    // Grupper achievements etter ferdighet
-    const skillGroups = {};
-    const skills = ['Intelligens', 'Teknologi', 'Stamina', 'Karisma', 'Kreativitet', 'Flaks'];
-    
-    skills.forEach(skill => {
-        // Filtrer achievements basert på innstillingen
-        if (showOnlyUnlocked) {
-            // Vis bare opplåste prestasjoner
-            skillGroups[skill] = achievements
-                .filter(a => a.skill === skill)
-                .filter(a => a.check(currentUser));
-        } else {
-            // Vis alle prestasjoner
-            skillGroups[skill] = achievements.filter(a => a.skill === skill);
-        }
+        
+        achievementsBySkill[skill].push(achievement);
     });
     
-    // Opprett HTML for hver ferdighetsgruppe
-    let hasAchievements = false;
-    
-    skills.forEach(skill => {
-        const skillAchievements = skillGroups[skill];
-        if (skillAchievements.length === 0) return; // Hopp over ferdigheter uten prestasjoner
+    // Opprett seksjoner for hver ferdighet
+    for (const [skill, skillAchievements] of Object.entries(achievementsBySkill)) {
+        // Opprett seksjon
+        const section = document.createElement('div');
+        section.className = 'achievements-section';
         
-        hasAchievements = true;
+        // Opprett overskrift
+        const header = document.createElement('h3');
+        header.className = 'section-header';
+        header.textContent = capitalizeFirstLetter(skill);
+        section.appendChild(header);
         
-        // Opprett container for denne ferdigheten
-        const skillContainer = document.createElement('div');
-        skillContainer.className = 'achievement-category';
+        // Opprett container for prestasjoner
+        const achievementsGrid = document.createElement('div');
+        achievementsGrid.className = 'achievements-grid';
         
-        // Legg til overskrift
-        const skillHeader = document.createElement('h3');
-        skillHeader.textContent = skill;
-        skillHeader.style.color = getSkillColor(skill);
-        skillHeader.style.textShadow = `0 0 10px ${getSkillColor(skill, 0.5)}`;
-        skillContainer.appendChild(skillHeader);
-        
-        // Legg til achievements for denne ferdigheten
+        // Legg til prestasjoner
         skillAchievements.forEach(achievement => {
-            const isUnlocked = achievement.check(currentUser);
-            const achievementElement = createAchievementElement(achievement, isUnlocked, skill);
-            skillContainer.appendChild(achievementElement);
+            const isUnlocked = unlockedAchievements.includes(achievement.id);
+            const achievementElement = createAchievementElement(achievement, isUnlocked);
+            achievementsGrid.appendChild(achievementElement);
         });
         
-        // Legg til i hovedcontainer
-        achievementsContainer.appendChild(skillContainer);
-    });
-    
-    // Vis melding hvis ingen prestasjoner er funnet
-    if (!hasAchievements) {
-        const emptyMessage = document.createElement('div');
-        emptyMessage.className = 'empty-message';
+        // Legg til grid i seksjon
+        section.appendChild(achievementsGrid);
         
-        if (showOnlyUnlocked) {
-            emptyMessage.textContent = 'Du har ikke låst opp noen prestasjoner ennå. Fortsett å øke ferdighetene dine for å låse opp prestasjoner!';
-        } else {
-            emptyMessage.textContent = 'Ingen prestasjoner funnet.';
-        }
-        
-        achievementsContainer.appendChild(emptyMessage);
+        // Legg til seksjon i container
+        achievementsContainer.appendChild(section);
     }
 }
 
-// Funksjon for å opprette et achievement-element
-function createAchievementElement(achievement, isUnlocked, skill) {
-    const achievementElement = document.createElement('div');
-    achievementElement.className = `achievement-item ${isUnlocked ? 'achievement-unlocked' : 'achievement-locked'}`;
+// Funksjon for å opprette prestasjonselement
+function createAchievementElement(achievement, isUnlocked) {
+    const element = document.createElement('div');
+    element.className = `achievement ${isUnlocked ? 'unlocked' : 'locked'}`;
+    element.setAttribute('data-id', achievement.id);
     
-    // Legg til ekstra styling for opplåste prestasjoner
-    if (isUnlocked) {
-        achievementElement.style.boxShadow = `0 0 15px ${getSkillColor(skill, 0.3)}`;
-        achievementElement.style.borderColor = getSkillColor(skill);
+    // Bestem ikon basert på type
+    let icon = 'fas fa-trophy';
+    if (achievement.type === 'skill') {
+        icon = 'fas fa-graduation-cap';
+    } else if (achievement.type === 'exploration') {
+        icon = 'fas fa-map-marked-alt';
+    } else if (achievement.type === 'collection') {
+        icon = 'fas fa-gem';
+    } else if (achievement.type === 'social') {
+        icon = 'fas fa-users';
     }
     
-    // Opprett ikon
-    const iconElement = document.createElement('div');
-    iconElement.className = 'achievement-icon';
-    
-    // Bestem ikon basert på achievement-navn
-    let iconClass = 'fas fa-award';
-    let iconColor = getSkillColor(skill);
-    
-    if (achievement.name.toLowerCase().includes('newbie')) {
-        iconClass = 'fas fa-star';
-    } else if (achievement.name.toLowerCase().includes('explorer')) {
-        iconClass = 'fas fa-compass';
-    } else if (achievement.name.toLowerCase().includes('master')) {
-        iconClass = 'fas fa-crown';
-    } else if (achievement.name.toLowerCase().includes('legend')) {
-        iconClass = 'fas fa-trophy';
-    } else if (achievement.name.toLowerCase().includes('champion')) {
-        iconClass = 'fas fa-medal';
+    // Bestem farge basert på sjeldenhetsgrad
+    let rarityClass = '';
+    if (achievement.rarity === 'common') {
+        rarityClass = 'common';
+    } else if (achievement.rarity === 'uncommon') {
+        rarityClass = 'uncommon';
+    } else if (achievement.rarity === 'rare') {
+        rarityClass = 'rare';
+    } else if (achievement.rarity === 'epic') {
+        rarityClass = 'epic';
+    } else if (achievement.rarity === 'legendary') {
+        rarityClass = 'legendary';
     }
     
-    // Opprett ikon med Font Awesome
-    const icon = document.createElement('i');
-    icon.className = iconClass;
-    icon.style.fontSize = '40px';
-    icon.style.color = iconColor;
-    
-    // Legg til glødende effekt for opplåste prestasjoner
-    if (isUnlocked) {
-        icon.style.textShadow = `0 0 15px ${getSkillColor(skill, 0.5)}`;
-    }
-    
-    // Legg til bakgrunn for ikonet
-    const iconBackground = document.createElement('div');
-    iconBackground.style.cssText = `
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: rgba(0, 0, 0, 0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px solid ${isUnlocked ? getSkillColor(skill) : '#666'};
-        box-shadow: ${isUnlocked ? `0 0 10px ${getSkillColor(skill, 0.3)}` : 'none'};
+    // Sett innhold
+    element.innerHTML = `
+        <div class="achievement-icon ${rarityClass}">
+            <i class="${icon}"></i>
+        </div>
+        <div class="achievement-info">
+            <h4 class="achievement-name">${achievement.name}</h4>
+            <p class="achievement-description">${achievement.description}</p>
+            <div class="achievement-reward">
+                <span class="reward-label">Belønning:</span>
+                <span class="reward-value">${achievement.reward_type === 'exp' ? `${achievement.reward_value} EXP` : `${achievement.reward_value} kreditter`}</span>
+            </div>
+        </div>
+        <div class="achievement-status">
+            <span class="status-indicator ${isUnlocked ? 'unlocked' : 'locked'}">
+                <i class="${isUnlocked ? 'fas fa-check-circle' : 'fas fa-lock'}"></i>
+                <span>${isUnlocked ? 'Låst opp' : 'Låst'}</span>
+            </span>
+        </div>
     `;
     
-    iconBackground.appendChild(icon);
-    iconElement.appendChild(iconBackground);
+    // Legg til event listener for å vise detaljer
+    element.addEventListener('click', () => {
+        showAchievementDetails(achievement, isUnlocked);
+    });
     
-    // Opprett tekstinnhold
-    const textElement = document.createElement('div');
-    textElement.className = 'achievement-text';
-    
-    // Opprett tittel
-    const titleElement = document.createElement('div');
-    titleElement.className = 'achievement-title';
-    titleElement.textContent = achievement.name;
-    titleElement.style.color = getSkillColor(skill);
-    
-    // Legg til glødende tekst for opplåste prestasjoner
-    if (isUnlocked) {
-        titleElement.style.textShadow = `0 0 5px ${getSkillColor(skill, 0.5)}`;
-        titleElement.style.fontWeight = 'bold';
-    }
-    
-    textElement.appendChild(titleElement);
-    
-    // Opprett beskrivelse
-    const descElement = document.createElement('div');
-    descElement.className = 'achievement-description';
-    descElement.textContent = achievement.description;
-    textElement.appendChild(descElement);
-    
-    // Opprett belønning (vises kun hvis låst opp)
-    if (isUnlocked) {
-        const rewardElement = document.createElement('div');
-        rewardElement.className = 'achievement-reward';
-        rewardElement.textContent = achievement.reward || 'Ingen belønning spesifisert';
-        rewardElement.style.color = getSkillColor(skill);
-        rewardElement.style.textShadow = `0 0 5px ${getSkillColor(skill, 0.3)}`;
-        textElement.appendChild(rewardElement);
-    } else {
-        const lockedElement = document.createElement('div');
-        lockedElement.className = 'achievement-mystery';
-        lockedElement.textContent = 'Lås opp for å se belønning';
-        textElement.appendChild(lockedElement);
-    }
-    
-    // Legg til elementer i achievement-element
-    achievementElement.appendChild(iconElement);
-    achievementElement.appendChild(textElement);
-    
-    return achievementElement;
+    return element;
 }
 
-// Hjelpefunksjon for å hente farge for en ferdighet
-function getSkillColor(skill, alpha = 1) {
-    switch (skill) {
-        case 'Intelligens':
-            return alpha < 1 ? `rgba(0, 191, 255, ${alpha})` : '#00bfff';
-        case 'Teknologi':
-            return alpha < 1 ? `rgba(46, 204, 113, ${alpha})` : '#2ecc71';
-        case 'Stamina':
-            return alpha < 1 ? `rgba(255, 64, 64, ${alpha})` : '#ff4040';
-        case 'Karisma':
-            return alpha < 1 ? `rgba(255, 215, 0, ${alpha})` : '#ffd700';
-        case 'Kreativitet':
-            return alpha < 1 ? `rgba(255, 20, 147, ${alpha})` : '#ff1493';
-        case 'Flaks':
-            return alpha < 1 ? `rgba(0, 255, 255, ${alpha})` : '#00ffff';
-        default:
-            return alpha < 1 ? `rgba(255, 255, 255, ${alpha})` : '#ffffff';
-    }
-}
-
-// Hjelpefunksjon for å hente gjeldende bruker
-function getCurrentUser(userProfile) {
-    // Sjekk om vi har fått userProfile som parameter
-    if (userProfile) {
-        console.log('Bruker mottatt profil:', userProfile.username);
-        
-        // Konverter userProfile til et format som achievements.check-funksjonen forventer
-        // achievements.check forventer et objekt med direkte tilgang til ferdighetene
-        const user = {
-            ...userProfile,
-            Intelligens: userProfile.skills.Intelligens || 0,
-            Teknologi: userProfile.skills.Teknologi || 0,
-            Stamina: userProfile.skills.Stamina || 0,
-            Karisma: userProfile.skills.Karisma || 0,
-            Kreativitet: userProfile.skills.Kreativitet || 0,
-            Flaks: userProfile.skills.Flaks || 0
-        };
-        
-        return user;
+// Funksjon for å vise prestasjonsdetaljer
+function showAchievementDetails(achievement, isUnlocked) {
+    // Opprett modal
+    const modal = document.createElement('div');
+    modal.className = 'modal achievement-modal';
+    modal.id = 'achievement-modal';
+    
+    // Bestem ikon basert på type
+    let icon = 'fas fa-trophy';
+    if (achievement.type === 'skill') {
+        icon = 'fas fa-graduation-cap';
+    } else if (achievement.type === 'exploration') {
+        icon = 'fas fa-map-marked-alt';
+    } else if (achievement.type === 'collection') {
+        icon = 'fas fa-gem';
+    } else if (achievement.type === 'social') {
+        icon = 'fas fa-users';
     }
     
-    console.error('Ingen brukerprofil tilgjengelig');
-    return null;
+    // Bestem farge basert på sjeldenhetsgrad
+    let rarityClass = '';
+    let rarityText = 'Vanlig';
+    
+    if (achievement.rarity === 'common') {
+        rarityClass = 'common';
+        rarityText = 'Vanlig';
+    } else if (achievement.rarity === 'uncommon') {
+        rarityClass = 'uncommon';
+        rarityText = 'Uvanlig';
+    } else if (achievement.rarity === 'rare') {
+        rarityClass = 'rare';
+        rarityText = 'Sjelden';
+    } else if (achievement.rarity === 'epic') {
+        rarityClass = 'epic';
+        rarityText = 'Episk';
+    } else if (achievement.rarity === 'legendary') {
+        rarityClass = 'legendary';
+        rarityText = 'Legendarisk';
+    }
+    
+    // Sett innhold
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>${achievement.name}</h2>
+                <button class="close-button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="achievement-details">
+                    <div class="achievement-icon-large ${rarityClass}">
+                        <i class="${icon}"></i>
+                    </div>
+                    <div class="achievement-info-detailed">
+                        <p class="achievement-description-detailed">${achievement.description}</p>
+                        <div class="achievement-metadata">
+                            <div class="metadata-item">
+                                <span class="metadata-label">Type:</span>
+                                <span class="metadata-value">${capitalizeFirstLetter(achievement.type || 'Generell')}</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Sjeldenhetsgrad:</span>
+                                <span class="metadata-value ${rarityClass}">${rarityText}</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Ferdighet:</span>
+                                <span class="metadata-value">${capitalizeFirstLetter(achievement.skill || 'Generell')}</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Status:</span>
+                                <span class="metadata-value status-${isUnlocked ? 'unlocked' : 'locked'}">
+                                    <i class="${isUnlocked ? 'fas fa-check-circle' : 'fas fa-lock'}"></i>
+                                    ${isUnlocked ? 'Låst opp' : 'Låst'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="achievement-reward-detailed">
+                            <h4>Belønning</h4>
+                            <div class="reward-item">
+                                <i class="${achievement.reward_type === 'exp' ? 'fas fa-star' : 'fas fa-coins'}"></i>
+                                <span>${achievement.reward_type === 'exp' ? `${achievement.reward_value} EXP` : `${achievement.reward_value} kreditter`}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ${!isUnlocked ? `
+                <div class="achievement-criteria">
+                    <h4>Kriterier for å låse opp</h4>
+                    <p>${achievement.criteria || 'Fullføre spesifikke oppgaver i OASIS.'}</p>
+                </div>
+                ` : ''}
+            </div>
+            <div class="modal-footer">
+                <button class="close-modal-button">Lukk</button>
+            </div>
+        </div>
+    `;
+    
+    // Legg til modal i DOM
+    document.body.appendChild(modal);
+    
+    // Legg til event listeners for å lukke modal
+    const closeButton = modal.querySelector('.close-button');
+    const closeModalButton = modal.querySelector('.close-modal-button');
+    
+    closeButton.addEventListener('click', () => {
+        modal.remove();
+    });
+    
+    closeModalButton.addEventListener('click', () => {
+        modal.remove();
+    });
+    
+    // Lukk modal når man klikker utenfor
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+// Hjelpefunksjon for å gjøre første bokstav stor
+function capitalizeFirstLetter(string) {
+    if (!string) return '';
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 // Eksporter funksjoner
-window.loadDashboardAchievements = loadDashboardAchievements; 
+window.achievementsModule = {
+    loadAchievements,
+    displayAchievements,
+    showAchievementDetails
+}; 

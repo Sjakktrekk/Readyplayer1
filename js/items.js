@@ -368,6 +368,15 @@ const items = [
 // Gjør items-arrayen tilgjengelig globalt
 window.items = items;
 
+// Legg til denne funksjonen øverst i filen
+function safeUpdateTable() {
+    if (typeof updateTable === 'function') {
+        updateTable();
+    } else {
+        console.warn('updateTable-funksjonen er ikke tilgjengelig');
+    }
+}
+
 // Funksjon for å åpne itembag-modalen
 function openItemBagModal(studentIndex) {
     const student = students[studentIndex];
@@ -893,7 +902,7 @@ function buyItem() {
     
     // Oppdater visning
     updateItemsDisplay(studentIndex);
-    updateTable();
+    safeUpdateTable();
 }
 
 // Funksjon for å vise animasjon når en gjenstand er anskaffet
@@ -1364,7 +1373,7 @@ function removeItemFromBackpack(studentIndex, itemId) {
             
             // Oppdater visningen
             updateItemsDisplay(studentIndex);
-            updateTable(); // Oppdater tabellen for å vise ny XP
+            safeUpdateTable(); // Oppdater tabellen for å vise ny XP
             
             // Fjern dialogen
             dialog.remove();

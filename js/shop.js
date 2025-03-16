@@ -6,7 +6,9 @@ const shopItems = [
         description: '20 % mer XP på matteoppgaver!',
         icon: '🧮',
         price: 5000,
-        effect: 'math_xp_boost'
+        effect: 'math_xp_boost',
+        category: 'boost',
+        tags: ['popular']
     },
     {
         id: 'stairway_heaven',
@@ -14,7 +16,9 @@ const shopItems = [
         description: 'Åpner muligheten for trappeløp. 250 XP fra bunn til topp!',
         icon: '🪜',
         price: 3000,
-        effect: 'stair_climb'
+        effect: 'stair_climb',
+        category: 'special',
+        tags: []
     },
     {
         id: 'double_or_nothing',
@@ -22,7 +26,9 @@ const shopItems = [
         description: 'Når du leverer en norsk/matte/engelsk oppgave kan du ta en sjanse. Kast en terning. 1-3 gir INGEN XP, 4-6 gir dobbel XP',
         icon: '🎲',
         price: 3000,
-        effect: 'double_xp_chance'
+        effect: 'double_xp_chance',
+        category: 'special',
+        tags: ['popular']
     },
     {
         id: 'try_your_luck',
@@ -30,7 +36,9 @@ const shopItems = [
         description: 'Du får en tilfeldig gjenstand fra butikkens lager',
         icon: '🎁',
         price: 3000,
-        effect: 'random_item'
+        effect: 'random_item',
+        category: 'special',
+        tags: []
     },
     {
         id: 'rebirth',
@@ -38,7 +46,9 @@ const shopItems = [
         description: 'Du får fordele nivåpoengene dine på nytt',
         icon: '🔄',
         price: 10000,
-        effect: 'respec_points'
+        effect: 'respec_points',
+        category: 'special',
+        tags: []
     },
     {
         id: 'audiobook',
@@ -46,7 +56,9 @@ const shopItems = [
         description: 'Egenvalgt lesing kan gjøres med lydbok og headset!',
         icon: '🎧',
         price: 3000,
-        effect: 'audiobook_reading'
+        effect: 'audiobook_reading',
+        category: 'equipment',
+        tags: ['new']
     },
     {
         id: 'headset',

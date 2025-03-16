@@ -1,222 +1,141 @@
 // Prestasjonsdata
-const achievements = [
-    // Intelligens-prestasjoner
-    {
-        name: "Newbie Intelligens",
-        description: "Nå nivå 10 i Intelligens",
-        skill: "Intelligens",
-        reward: "Du får trekke et tilfeldig item.",
-        check: (student) => student.Intelligens >= 10
-    },
-    {
-        name: "Explorer Intelligens",
-        description: "Nå nivå 15 i Intelligens",
-        skill: "Intelligens",
-        reward: "Du får dobbel XP på alle matematikk-oppgaver",
-        check: (student) => student.Intelligens >= 15
-    },
-    {
-        name: "Master Intelligens",
-        description: "Nå nivå 20 i Intelligens",
-        skill: "Intelligens",
-        reward: "Du får dobbel XP for egenlesings- oppgaver",
-        check: (student) => student.Intelligens >= 20
-    },
-    {
-        name: "Legend Intelligens",
-        description: "Nå nivå 25 i Intelligens",
-        skill: "Intelligens",
-        reward: "Du kan gjøre engelskoppgaver på norsk. ",
-        check: (student) => student.Intelligens >= 25
-    },
-    {
-        name: "Champion Intelligens",
-        description: "Nå nivå 30 i Intelligens",
-        skill: "Intelligens",
-        reward: "Du får gjøre leksene på skolen. ",
-        check: (student) => student.Intelligens >= 30
-    },
-    // Teknologi-prestasjoner
-    {
-        name: "Newbie Teknologi",
-        description: "Nå nivå 10 i Teknologi",
-        skill: "Teknologi",
-        reward: "Du får trekke et tilfeldig item. ",
-        check: (student) => student.Teknologi >= 10
-    },
-    {
-        name: "Explorer Teknologi",
-        description: "Nå nivå 15 i Teknologi",
-        skill: "Teknologi",
-        reward: "Du får tilbake pcen, og kan bruke den på stasjoner merket PC. ",
-        check: (student) => student.Teknologi >= 15
-    },
-    {
-        name: "Master Teknologi",
-        description: "Nå nivå 20 i Teknologi",
-        skill: "Teknologi",
-        reward: "Du får dobbel XP på alle Micro:bit oppgaver",
-        check: (student) => student.Teknologi >= 20
-    },
-    {
-        name: "Legend Teknologi",
-        description: "Nå nivå 25 i Teknologi",
-        skill: "Teknologi",
-        reward: "Du får tilgang til headset. ",
-        check: (student) => student.Teknologi >= 25
-    },
-    {
-        name: "Champion Teknologi",
-        description: "Nå nivå 30 i Teknologi",
-        skill: "Teknologi",
-        reward: "Du kan lese på pc i lesestunder.",
-        check: (student) => student.Teknologi >= 30
-    },
-    // Stamina-prestasjoner
-    {
-        name: "Newbie Stamina",
-        description: "Nå nivå 10 i Stamina",
-        skill: "Stamina",
-        reward: "Då får tilgang til «Push-up for XP».Du får 10 XP per Push-up.",
-        check: (student) => student.Stamina >= 10
-    },
-    {
-        name: "Explorer Stamina",
-        description: "Nå nivå 15 i Stamina",
-        skill: "Stamina",
-        reward: "Du får dobbel XP for egenlesings- oppgaver",
-        check: (student) => student.Stamina >= 15
-    },
-    {
-        name: "Master Stamina",
-        description: "Nå nivå 20 i Stamina",
-        skill: "Stamina",
-        reward: "Du får trekke et tilfeldig item.",
-        check: (student) => student.Stamina >= 20
-    },
-    {
-        name: "Legend Stamina",
-        description: "Nå nivå 25 i Stamina",
-        skill: "Stamina",
-        reward: "Du får 10 minutter lengre friminutt",
-        check: (student) => student.Stamina >= 25
-    },
-    {
-        name: "Champion Stamina",
-        description: "Nå nivå 30 i Stamina",
-        skill: "Stamina",
-        reward: "Alle fysiske oppgaver gir dobbel XP.",
-        check: (student) => student.Stamina >= 30
-    },
-    // Karisma-prestasjoner
-    {
-        name: "Newbie Karisma",
-        description: "Nå nivå 10 i Karisma",
-        skill: "Karisma",
-        reward: "Du får lov til å sitte og tegne når vi har lesestund. ",
-        check: (student) => student.Karisma >= 10
-    },
-    {
-        name: "Explorer Karisma",
-        description: "Nå nivå 15 i Karisma",
-        skill: "Karisma",
-        reward: "Du får trekke et tilfeldig item.",
-        check: (student) => student.Karisma >= 15
-    },
-    {
-        name: "Master Karisma",
-        description: "Nå nivå 20 i Karisma",
-        skill: "Karisma",
-        reward: "Du får ½ av XPen til en valgfri person under «Level up» i tillegg til egen XP. ",
-        check: (student) => student.Karisma >= 20
-    },
-    {
-        name: "Legend Karisma",
-        description: "Nå nivå 25 i Karisma",
-        skill: "Karisma",
-        reward: "Du trenger bare å få halvparten av matteoppgaver riktig for å få full XP",
-        check: (student) => student.Karisma >= 25
-    },
-    {
-        name: "Champion Karisma",
-        description: "Nå nivå 30 i Karisma",
-        skill: "Karisma",
-        reward: "Du får lov til å gå hjem 15 minutter før. ",
-        check: (student) => student.Karisma >= 30
-    },
-    // Kreativitet-prestasjoner
-    {
-        name: "Newbie Kreativitet",
-        description: "Nå nivå 10 i Kreativitet",
-        skill: "Kreativitet",
-        reward: "Du får dobbel XP på alle oppgaver merket «K»",
-        check: (student) => student.Kreativitet >= 10
-    },
-    {
-        name: "Explorer Kreativitet",
-        description: "Nå nivå 15 i Kreativitet",
-        skill: "Kreativitet",
-        reward: "Du får lov til å sitte og tegne når vi har lesestund.",
-        check: (student) => student.Kreativitet >= 15
-    },
-    {
-        name: "Master Kreativitet",
-        description: "Nå nivå 20 i Kreativitet",
-        skill: "Kreativitet",
-        reward: "Du får trekke et tilfeldig item.",
-        check: (student) => student.Kreativitet >= 20
-    },
-    {
-        name: "Legend Kreativitet",
-        description: "Nå nivå 25 i Kreativitet",
-        skill: "Kreativitet",
-        reward: "En gang per økt kan du kopiere et item du har i sekken.",
-        check: (student) => student.Kreativitet >= 25
-    },
-    {
-        name: "Champion Kreativitet",
-        description: "Nå nivå 30 i Kreativitet",
-        skill: "Kreativitet",
-        reward: "Du får 1000 XP for hver økt du husker å ta av deg utesko",
-        check: (student) => student.Kreativitet >= 30
-    },
-    // Flaks-prestasjoner
-    {
-        name: "Newbie Flaks",
-        description: "Nå nivå 10 i Flaks",
-        skill: "Flaks",
-        reward: "Dobbel XP hvis du leverer en oppgave og kaster 6 på 1 forsøk med terning. ",
-        check: (student) => student.Flaks >= 10
-    },
-    {
-        name: "Explorer Flaks",
-        description: "Nå nivå 15 i Flaks",
-        skill: "Flaks",
-        reward: "Dobbel XP hvis du leverer en oppgave og kaster 6 på 2 forsøk med terning.",
-        check: (student) => student.Flaks >= 15
-    },
-    {
-        name: "Master Flaks",
-        description: "Nå nivå 20 i Flaks",
-        skill: "Flaks",
-        reward: "Dobbel XP hvis du leverer en oppgave og kaster 6 på 3 forsøk med terning.",
-        check: (student) => student.Flaks >= 20
-    },
-    {
-        name: "Legend Flaks",
-        description: "Nå nivå 25 i Flaks",
-        skill: "Flaks",
-        reward: "Du får trekke et tilfeldig item.",
-        check: (student) => student.Flaks >= 25
-    },
-    {
-        name: "Champion Flaks",
-        description: "Nå nivå 30 i Flaks",
-        skill: "Flaks",
-        reward: "Starte hver økt med å trekke en item. ",
-        check: (student) => student.Flaks >= 30
+let achievements = [];
+
+// Funksjon for å laste inn prestasjoner fra databasen
+async function loadAchievementsFromDatabase() {
+    try {
+        const { success, data, error } = await window.databaseService.achievement.getAllAchievements();
+        
+        if (!success || !data) {
+            console.error('Feil ved lasting av prestasjoner:', error);
+            return false;
+        }
+        
+        achievements = data;
+        console.log('Prestasjoner lastet fra databasen:', achievements);
+        return true;
+    } catch (error) {
+        console.error('Feil ved lasting av prestasjoner:', error);
+        return false;
     }
-];
+}
+
+// Funksjon for å sjekke om en prestasjon er låst opp
+function isAchievementUnlocked(achievementId, userProfile) {
+    if (!userProfile || !userProfile.achievements) return false;
+    return userProfile.achievements.includes(achievementId);
+}
+
+// Funksjon for å låse opp en prestasjon
+async function unlockAchievement(achievementId, userId) {
+    try {
+        // Hent brukerprofil
+        const userProfile = await window.databaseService.user.getUserProfile(userId);
+        
+        if (!userProfile) {
+            console.error('Kunne ikke hente brukerprofil');
+            return false;
+        }
+        
+        // Sjekk om prestasjonen allerede er låst opp
+        if (isAchievementUnlocked(achievementId, userProfile)) {
+            console.log('Prestasjon allerede låst opp:', achievementId);
+            return true;
+        }
+        
+        // Hent prestasjonsinformasjon
+        const { success, data: achievement, error } = await window.databaseService.achievement.getAchievementById(achievementId);
+        
+        if (!success || !achievement) {
+            console.error('Kunne ikke hente prestasjonsinformasjon:', error);
+            return false;
+        }
+        
+        // Oppdater brukerens prestasjoner
+        const updatedAchievements = [...(userProfile.achievements || []), achievementId];
+        
+        const { success: updateSuccess, error: updateError } = await window.databaseService.user.updateAchievements(userId, updatedAchievements);
+        
+        if (!updateSuccess) {
+            console.error('Feil ved oppdatering av prestasjoner:', updateError);
+            return false;
+        }
+        
+        // Gi belønning til brukeren
+        if (achievement.reward_type === 'exp') {
+            // Oppdater brukerens EXP
+            const newExp = (userProfile.exp || 0) + achievement.reward_value;
+            await window.databaseService.user.updateExp(userId, newExp);
+        } else if (achievement.reward_type === 'credits') {
+            // Oppdater brukerens kreditter
+            const newCredits = (userProfile.credits || 0) + achievement.reward_value;
+            await window.databaseService.user.updateCredits(userId, newCredits);
+        }
+        
+        // Vis popup
+        showAchievementPopup(achievement);
+        
+        console.log('Prestasjon låst opp:', achievementId);
+        return true;
+    } catch (error) {
+        console.error('Feil ved opplåsing av prestasjon:', error);
+        return false;
+    }
+}
+
+// Funksjon for å sjekke alle prestasjoner for en bruker
+async function checkAllAchievements(userId) {
+    try {
+        // Hent brukerprofil
+        const userProfile = await window.databaseService.user.getUserProfile(userId);
+        
+        if (!userProfile) {
+            console.error('Kunne ikke hente brukerprofil');
+            return false;
+        }
+        
+        // Last inn prestasjoner hvis de ikke er lastet inn
+        if (achievements.length === 0) {
+            const loaded = await loadAchievementsFromDatabase();
+            if (!loaded) return false;
+        }
+        
+        // Sjekk hver prestasjon
+        for (const achievement of achievements) {
+            // Sjekk om prestasjonen allerede er låst opp
+            if (isAchievementUnlocked(achievement.id, userProfile)) {
+                continue;
+            }
+            
+            // Sjekk om prestasjonen kan låses opp
+            let canUnlock = false;
+            
+            // Sjekk basert på type prestasjon
+            if (achievement.type === 'skill') {
+                const skillLevel = userProfile.skills?.[achievement.skill] || 0;
+                canUnlock = skillLevel >= achievement.requirement_value;
+            } else if (achievement.type === 'collection') {
+                // Sjekk om brukeren har samlet nok gjenstander
+                const itemCount = userProfile.inventory?.length || 0;
+                canUnlock = itemCount >= achievement.requirement_value;
+            } else if (achievement.type === 'exploration') {
+                // Sjekk om brukeren har fullført nok oppdrag
+                const completedQuests = userProfile.completed_quests?.length || 0;
+                canUnlock = completedQuests >= achievement.requirement_value;
+            }
+            
+            // Lås opp prestasjonen hvis kriteriene er oppfylt
+            if (canUnlock) {
+                await unlockAchievement(achievement.id, userId);
+            }
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Feil ved sjekking av prestasjoner:', error);
+        return false;
+    }
+}
 
 // Funksjon for å åpne achievements-modal
 function openAchievementsModal(studentIndex) {
@@ -248,250 +167,246 @@ function openAchievementsModal(studentIndex) {
     const modalHtml = `
         <div id="achievementsModal" class="modal" data-student-index="${studentIndex}">
             <div style="position: relative; margin-bottom: 20px; text-align: center;">
-                <h2 id="achievementsTitle" style="margin: 0; display: inline-block;">
-                    <span style="color: #ffffff; text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);">Achievements - </span><span style="color: #e74c3c; text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);">${student.name}</span>
-                </h2>
-                <button class="item-bag-button" style="position: absolute; right: 100px; top: -25px; transform: translateY(0); 
-                    background: linear-gradient(180deg, rgba(0, 20, 0, 0.8), rgba(0, 40, 0, 0.9)); 
-                    border: 2px solid #2ecc71; 
-                    color: #2ecc71; 
-                    padding: 8px 15px; 
-                    border-radius: 8px; 
-                    font-family: 'Courier New', monospace;
-                    text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
-                    box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
-                    cursor: pointer;
-                    transition: all 0.3s ease;" 
-                    onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(46, 204, 113, 0.4)';"
-                    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(46, 204, 113, 0.2)';"
-                    onclick="openItemBagModal(${studentIndex})">
-                    <img src="backpack.png" alt="Backpack" style="width: 48px; height: 48px; margin-right: 8px; filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.6));">
-                    Åpne ryggsekk
-                </button>
+                <h2 style="margin-bottom: 10px;">Prestasjoner for ${student.name}</h2>
+                <div class="skill-tabs">
+                    ${skills.map(skill => `<button class="skill-tab" onclick="showSkillAchievements('${skill}')">${skill}</button>`).join('')}
             </div>
-            <button class="close-button" onclick="closeAchievementModal()">X</button>
-            
-            <div class="skills-row">
-                ${skills.map(skill => {
-                    const level = student[skill];
-                    const maxLevel = 30;
-                    const progress = (level / maxLevel) * 100;
-                    return `
-                        <div class="skill-tab" data-skill="${skill}" onclick="showSkillAchievements('${skill}')">
-                            <h3>${skill}</h3>
-                            <div class="level">Nivå ${level}</div>
-                            <div class="progress-bar" style="width: 100%;">
-                                <div class="progress-fill" style="width: ${progress}%"></div>
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
+                <button class="close-button" onclick="closeAchievementModal()">&times;</button>
             </div>
-            
-            <div class="achievements-container">
-                ${skills.map(skill => `<div class="skill-achievements" data-skill="${skill}"></div>`).join('')}
+            <div id="achievements-container" class="achievements-container">
+                <!-- Prestasjoner vil bli lagt til her -->
             </div>
         </div>
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     
-    // Vis modal
-    const newModal = document.getElementById('achievementsModal');
-    newModal.classList.add('show');
-    
-    // Legg til klikk-hendelse for å lukke modal ved klikk på backdrop
-    backdrop.addEventListener('click', function() {
-        closeAchievementModal();
-    });
-    
     // Vis prestasjoner for første ferdighet som standard
     showSkillAchievements(skills[0]);
-}
-
-// Funksjon for å vise skill-achievements
-function showSkillAchievements(skill) {
-    // Fjern active class fra alle skill tabs
-    document.querySelectorAll('.skill-tab').forEach(tab => tab.classList.remove('active'));
     
-    // Legg til active class på valgt skill tab
-    document.querySelector(`.skill-tab[data-skill="${skill}"]`).classList.add('active');
-    
-    // Finn container for achievements for denne ferdigheten
-    const container = document.querySelector(`.skill-achievements[data-skill="${skill}"]`);
-    if (!container) return;
-    
-    // Skjul alle skill-achievements containere
-    document.querySelectorAll('.skill-achievements').forEach(section => {
-        section.style.display = 'none';
+    // Legg til event listener for å lukke modal når man klikker utenfor
+    backdrop.addEventListener('click', (event) => {
+        if (event.target === backdrop) {
+            closeAchievementModal();
+        }
     });
     
-    // Vis valgt container
-    container.style.display = 'block';
+    // Legg til event listener for å lukke modal med Escape-tasten
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeAchievementModal();
+        }
+    });
     
-    // Sjekk om containeren allerede har innhold
-    if (container.innerHTML.trim() === '') {
-        // Hent student-indeks fra modal
+    // Vis modal med en liten forsinkelse for å aktivere overgangseffekten
+    setTimeout(() => {
         const modal = document.getElementById('achievementsModal');
-        const studentIndex = parseInt(modal.getAttribute('data-student-index'));
-        const student = students[studentIndex];
-        
-        // Generer achievements for denne ferdigheten
-        const skillAchievements = achievements.filter(a => a.skill === skill);
-        
-        // Opprett HTML for achievements
-        const achievementsHTML = skillAchievements.map(achievement => {
-            const isUnlocked = achievement.check(student);
+        if (modal) {
+            modal.classList.add('show');
+        }
+    }, 10);
+}
+
+// Funksjon for å vise prestasjoner for en bestemt ferdighet
+function showSkillAchievements(skill) {
+    const modal = document.getElementById('achievementsModal');
+    if (!modal) return;
+    
+    const studentIndex = modal.getAttribute('data-student-index');
+    const student = students[studentIndex];
+    
+    // Marker aktiv ferdighet
+    const skillTabs = document.querySelectorAll('.skill-tab');
+    skillTabs.forEach(tab => {
+        if (tab.textContent === skill) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    
+    // Filtrer prestasjoner for den valgte ferdigheten
+    const skillAchievements = achievements.filter(achievement => achievement.skill === skill);
+    
+    // Sorter prestasjoner etter nivåkrav
+    skillAchievements.sort((a, b) => {
+        const aLevel = a.requirement_value || 0;
+        const bLevel = b.requirement_value || 0;
+        return aLevel - bLevel;
+    });
+    
+    // Generer HTML for prestasjoner
+    let achievementsHtml = '';
+    
+    if (skillAchievements.length === 0) {
+        achievementsHtml = `<p class="no-achievements">Ingen prestasjoner funnet for ${skill}.</p>`;
+    } else {
+        achievementsHtml = skillAchievements.map(achievement => {
+            const isUnlocked = student[skill] >= achievement.requirement_value;
+            const statusClass = isUnlocked ? 'unlocked' : 'locked';
+            const statusIcon = isUnlocked ? 'fas fa-check-circle' : 'fas fa-lock';
+            const statusText = isUnlocked ? 'Låst opp' : 'Låst';
+            
             return `
-                <div class="achievement ${isUnlocked ? 'unlocked' : 'locked'}" data-skill="${skill}">
-                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                <div class="achievement ${statusClass}">
                         <div class="achievement-icon">
-                            <img src="${achievement.name.toLowerCase().includes('newbie') ? 'newbie.jpeg' :
-                                      achievement.name.toLowerCase().includes('explorer') ? 'explorer.jpeg' :
-                                      achievement.name.toLowerCase().includes('master') ? 'master.jpeg' :
-                                      achievement.name.toLowerCase().includes('legend') ? 'legend.jpeg' :
-                                      achievement.name.toLowerCase().includes('champion') ? 'champion.jpeg' :
-                                      'newbie.jpeg'}" 
-                                 alt="Achievement rank">
+                        <i class="fas fa-trophy"></i>
                         </div>
                         <div class="achievement-info">
-                            <h4 style="color: ${skill === 'Intelligens' ? '#00bfff' : 
-                                          skill === 'Teknologi' ? '#2ecc71' : 
-                                          skill === 'Stamina' ? '#ff4040' : 
-                                          skill === 'Karisma' ? '#ffd700' : 
-                                          skill === 'Kreativitet' ? '#ff1493' : 
-                                          skill === 'Flaks' ? '#00ffff' : '#ffffff'}">${achievement.name}</h4>
+                        <h3>${achievement.name}</h3>
                             <p>${achievement.description}</p>
+                        <p class="achievement-reward">Belønning: ${achievement.reward}</p>
                         </div>
+                    <div class="achievement-status">
+                        <i class="${statusIcon}"></i>
+                        <span>${statusText}</span>
                     </div>
-                    <div class="achievement-reward" style="color: ${skill === 'Intelligens' ? '#00bfff' : 
-                                                      skill === 'Teknologi' ? '#2ecc71' : 
-                                                      skill === 'Stamina' ? '#ff4040' : 
-                                                      skill === 'Karisma' ? '#ffd700' : 
-                                                      skill === 'Kreativitet' ? '#ff1493' : 
-                                                      skill === 'Flaks' ? '#00ffff' : '#ffffff'};
-                             text-shadow: 0 0 10px currentColor;">${isUnlocked ? (achievement.reward || 'Ingen belønning spesifisert') : '                   '}</div>
                 </div>
             `;
         }).join('');
-        
-        // Legg til achievements i containeren
-        container.innerHTML = achievementsHTML;
-    }
-}
-
-// Funksjon for å lukke achievement-modal
-function closeAchievementModal() {
-    const modal = document.getElementById('achievementsModal');
-    if (modal) {
-        // Legg til en fade-out animasjon
-        modal.classList.remove('show');
-        setTimeout(() => {
-            modal.remove();
-        }, 300);
     }
     
-    // Fjern backdrop med fade-out effekt
-    const backdrop = document.getElementById('modal-backdrop');
-    if (backdrop) {
-        backdrop.classList.remove('show');
-        setTimeout(() => {
-            backdrop.remove();
-        }, 300);
+    // Oppdater container
+    const container = document.getElementById('achievements-container');
+    if (container) {
+        container.innerHTML = achievementsHtml;
     }
 }
 
-// Funksjon for å vise achievement-popup
+// Funksjon for å lukke achievements-modal
+function closeAchievementModal() {
+    const modal = document.getElementById('achievementsModal');
+    const backdrop = document.getElementById('modal-backdrop');
+    
+    if (modal) {
+        modal.classList.remove('show');
+    }
+    
+    if (backdrop) {
+        backdrop.classList.remove('show');
+    }
+    
+    // Fjern modal og backdrop etter overgangseffekten
+        setTimeout(() => {
+        if (modal) {
+            modal.remove();
+        }
+        
+        if (backdrop) {
+            backdrop.remove();
+        }
+        }, 300);
+    
+    // Fjern event listener for Escape-tasten
+    document.removeEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeAchievementModal();
+    }
+    });
+}
+
+// Funksjon for å vise popup når en prestasjon låses opp
 function showAchievementPopup(achievement) {
-    // Fjern eksisterende popup
-    const existingPopup = document.querySelector('.achievement-popup');
+    // Fjern eksisterende popup hvis den finnes
+    const existingPopup = document.getElementById('achievement-popup');
     if (existingPopup) {
         existingPopup.remove();
     }
 
     // Opprett popup
     const popup = document.createElement('div');
+    popup.id = 'achievement-popup';
     popup.className = 'achievement-popup';
-    popup.setAttribute('data-skill', achievement.skill);
     
+    // Bestem ikon basert på type
+    let icon = 'fas fa-trophy';
+    if (achievement.type === 'skill') {
+        icon = 'fas fa-graduation-cap';
+    } else if (achievement.type === 'exploration') {
+        icon = 'fas fa-map-marked-alt';
+    } else if (achievement.type === 'collection') {
+        icon = 'fas fa-gem';
+    } else if (achievement.type === 'social') {
+        icon = 'fas fa-users';
+    }
+    
+    // Bestem farge basert på sjeldenhetsgrad
+    let rarityClass = '';
+    if (achievement.rarity === 'common') {
+        rarityClass = 'common';
+    } else if (achievement.rarity === 'uncommon') {
+        rarityClass = 'uncommon';
+    } else if (achievement.rarity === 'rare') {
+        rarityClass = 'rare';
+    } else if (achievement.rarity === 'epic') {
+        rarityClass = 'epic';
+    } else if (achievement.rarity === 'legendary') {
+        rarityClass = 'legendary';
+    }
+    
+    // Sett innhold
     popup.innerHTML = `
-        <div style="background: rgba(0, 0, 0, 0.8); padding: 30px; border-radius: 20px; border: 3px solid ${
-            achievement.skill === 'Intelligens' ? '#00bfff' : 
-            achievement.skill === 'Teknologi' ? '#2ecc71' : 
-            achievement.skill === 'Stamina' ? '#ff4040' : 
-            achievement.skill === 'Karisma' ? '#ffd700' : 
-            achievement.skill === 'Kreativitet' ? '#ff1493' : 
-            achievement.skill === 'Flaks' ? '#00ffff' : '#ffffff'}; box-shadow: 0 0 30px ${
-            achievement.skill === 'Intelligens' ? 'rgba(0, 191, 255, 0.5)' : 
-            achievement.skill === 'Teknologi' ? 'rgba(46, 204, 113, 0.5)' : 
-            achievement.skill === 'Stamina' ? 'rgba(255, 64, 64, 0.5)' : 
-            achievement.skill === 'Karisma' ? 'rgba(255, 215, 0, 0.5)' : 
-            achievement.skill === 'Kreativitet' ? 'rgba(255, 20, 147, 0.5)' : 
-            achievement.skill === 'Flaks' ? 'rgba(0, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.5)'}">
-            <img src="${achievement.name.toLowerCase().includes('newbie') ? 'newbie.jpeg' :
-                      achievement.name.toLowerCase().includes('explorer') ? 'explorer.jpeg' :
-                      achievement.name.toLowerCase().includes('master') ? 'master.jpeg' :
-                      achievement.name.toLowerCase().includes('legend') ? 'legend.jpeg' :
-                      achievement.name.toLowerCase().includes('champion') ? 'champion.jpeg' :
-                      'newbie.jpeg'}" 
-                 alt="Achievement rank" style="width: 192px; height: 192px; margin-bottom: 20px; border-radius: 20px; border: 2px solid ${
-                 achievement.skill === 'Intelligens' ? '#00bfff' : 
-                 achievement.skill === 'Teknologi' ? '#2ecc71' : 
-                 achievement.skill === 'Stamina' ? '#ff4040' : 
-                 achievement.skill === 'Karisma' ? '#ffd700' : 
-                 achievement.skill === 'Kreativitet' ? '#ff1493' : 
-                 achievement.skill === 'Flaks' ? '#00ffff' : '#ffffff'}">
-            <p style="font-size: 36px; margin-bottom: 20px; color: ${achievement.skill === 'Intelligens' ? '#00bfff' : 
-                                               achievement.skill === 'Teknologi' ? '#2ecc71' : 
-                                               achievement.skill === 'Stamina' ? '#ff4040' : 
-                                               achievement.skill === 'Karisma' ? '#ffd700' : 
-                                               achievement.skill === 'Kreativitet' ? '#ff1493' : 
-                                               achievement.skill === 'Flaks' ? '#00ffff' : '#ffffff'};
-                     text-shadow: 0 0 10px currentColor, 0 0 20px rgba(0,0,0,0.8); 
-                     font-weight: bold;">Belønning låst opp</p>
-            <p style="font-size: 32px; margin: 15px 0; color: ${achievement.skill === 'Intelligens' ? '#00bfff' : 
-                                                                 achievement.skill === 'Teknologi' ? '#2ecc71' : 
-                                                                 achievement.skill === 'Stamina' ? '#ff4040' : 
-                                                                 achievement.skill === 'Karisma' ? '#ffd700' : 
-                                                                 achievement.skill === 'Kreativitet' ? '#ff1493' : 
-                                                                 achievement.skill === 'Flaks' ? '#00ffff' : '#ffffff'};
-                     text-shadow: 0 0 10px currentColor, 0 0 20px rgba(0,0,0,0.8);
-                     font-weight: bold;">${achievement.name}</p>
-            <p style="font-size: 24px; margin-bottom: 20px; color: ${achievement.skill === 'Intelligens' ? '#00bfff' : 
-                                                                    achievement.skill === 'Teknologi' ? '#2ecc71' : 
-                                                                    achievement.skill === 'Stamina' ? '#ff4040' : 
-                                                                    achievement.skill === 'Karisma' ? '#ffd700' : 
-                                                                    achievement.skill === 'Kreativitet' ? '#ff1493' : 
-                                                                    achievement.skill === 'Flaks' ? '#00ffff' : '#ffffff'};
-                     text-shadow: 0 0 10px currentColor, 0 0 20px rgba(0,0,0,0.8);">${achievement.description}</p>
-            <p style="font-size: 28px; color: ${achievement.skill === 'Intelligens' ? '#00bfff' : 
-                                               achievement.skill === 'Teknologi' ? '#2ecc71' : 
-                                               achievement.skill === 'Stamina' ? '#ff4040' : 
-                                               achievement.skill === 'Karisma' ? '#ffd700' : 
-                                               achievement.skill === 'Kreativitet' ? '#ff1493' : 
-                                               achievement.skill === 'Flaks' ? '#00ffff' : '#ffffff'};
-                     text-shadow: 0 0 10px currentColor, 0 0 20px rgba(0,0,0,0.8);
-                     padding: 15px;
-                     background: rgba(0, 0, 0, 0.3);
-                     border-radius: 10px;
-                     margin-top: 10px;">${achievement.reward || 'Ingen belønning spesifisert'}</p>
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3>Prestasjon låst opp!</h3>
+                <button class="close-popup">&times;</button>
+            </div>
+            <div class="popup-body">
+                <div class="achievement-icon ${rarityClass}">
+                    <i class="${icon}"></i>
+                </div>
+                <div class="achievement-info">
+                    <h4>${achievement.name}</h4>
+                    <p>${achievement.description}</p>
+                    <div class="achievement-reward">
+                        <span>Belønning:</span>
+                        <span>${achievement.reward_type === 'exp' ? `${achievement.reward_value} EXP` : `${achievement.reward_value} kreditter`}</span>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
     
-    // Legg til i dokumentet
+    // Legg til popup i DOM
     document.body.appendChild(popup);
 
-    // Trigger animasjon
-    requestAnimationFrame(() => {
-        popup.classList.add('show');
-    });
-
-    // Spill achievement-lyd
-    playAchievementSound();
-
-    // Fjern etter forsinkelse (økt fra 3000ms til 5000ms)
+    // Vis popup med en liten forsinkelse for å aktivere overgangseffekten
     setTimeout(() => {
+        popup.classList.add('show');
+    }, 10);
+    
+    // Legg til event listener for å lukke popup
+    const closeButton = popup.querySelector('.close-popup');
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            popup.classList.remove('show');
+            setTimeout(() => {
+                popup.remove();
+            }, 300);
+        });
+    }
+    
+    // Lukk popup automatisk etter 5 sekunder
+    setTimeout(() => {
+        if (popup.parentNode) {
         popup.classList.remove('show');
-        setTimeout(() => popup.remove(), 600);
+            setTimeout(() => {
+                if (popup.parentNode) {
+                    popup.remove();
+                }
+            }, 300);
+        }
     }, 5000);
 } 
+
+// Eksporter funksjoner
+window.achievementsModule = {
+    loadAchievementsFromDatabase,
+    isAchievementUnlocked,
+    unlockAchievement,
+    checkAllAchievements,
+    openAchievementsModal,
+    showSkillAchievements,
+    closeAchievementModal,
+    showAchievementPopup
+}; 

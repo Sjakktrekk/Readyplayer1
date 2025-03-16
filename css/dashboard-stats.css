@@ -1,0 +1,441 @@
+/* Dashboard Stats CSS */
+
+/* Stats Container */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Stats Card */
+.stats-card {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 5px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+}
+
+/* Stats Card Header */
+.stats-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.stats-card-icon {
+    font-size: 24px;
+    margin-right: 15px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.stats-card-icon::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.stats-card:hover .stats-card-icon::after {
+    opacity: 1;
+}
+
+.stats-card-icon i {
+    color: #0ff;
+}
+
+.stats-card-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+}
+
+/* Stats Card Value */
+.stats-card-value {
+    font-size: 36px;
+    font-weight: bold;
+    color: #0ff;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+}
+
+/* Stats Card Description */
+.stats-card-description {
+    color: #ccc;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+/* Stats Card Progress */
+.stats-card-progress {
+    margin-top: auto;
+}
+
+.stats-card-progress-bar {
+    height: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.stats-card-progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, #0ff, #00f);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.stats-card-progress-text {
+    display: flex;
+    justify-content: space-between;
+    color: #0ff;
+    font-size: 14px;
+}
+
+/* Stats Graph Card */
+.stats-graph-card {
+    grid-column: 1 / -1;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 5px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-graph-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.stats-graph-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+}
+
+.stats-graph-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.stats-graph-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+}
+
+.stats-graph-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.stats-graph-control {
+    padding: 5px 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 3px;
+    color: #0ff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stats-graph-control:hover {
+    background: rgba(0, 255, 255, 0.2);
+}
+
+.stats-graph-control.active {
+    background: rgba(0, 255, 255, 0.3);
+    border-color: #0ff;
+}
+
+.stats-graph-container {
+    height: 300px;
+    position: relative;
+}
+
+/* Skills Graph */
+.skills-graph {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 300px;
+    position: relative;
+}
+
+.skills-graph-axis {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    border-left: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.skills-graph-bar {
+    width: 40px;
+    background: linear-gradient(to top, rgba(0, 255, 255, 0.7), rgba(0, 0, 255, 0.7));
+    border-radius: 5px 5px 0 0;
+    position: relative;
+    transition: height 0.5s ease;
+}
+
+.skills-graph-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.skills-graph-label {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #0ff;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.skills-graph-value {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Activity Graph */
+.activity-graph {
+    height: 300px;
+    position: relative;
+}
+
+.activity-graph-line {
+    fill: none;
+    stroke: #0ff;
+    stroke-width: 2;
+}
+
+.activity-graph-area {
+    fill: url(#activity-gradient);
+    opacity: 0.3;
+}
+
+.activity-graph-point {
+    fill: #0ff;
+    stroke: #000;
+    stroke-width: 1;
+    cursor: pointer;
+    transition: r 0.3s ease;
+}
+
+.activity-graph-point:hover {
+    r: 6;
+}
+
+.activity-graph-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #0ff;
+    border-radius: 5px;
+    padding: 10px;
+    color: #fff;
+    font-size: 14px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.activity-graph-tooltip-title {
+    font-weight: bold;
+    color: #0ff;
+    margin-bottom: 5px;
+}
+
+.activity-graph-tooltip-value {
+    color: #fff;
+}
+
+.activity-graph-axis {
+    stroke: rgba(0, 255, 255, 0.3);
+    stroke-width: 1;
+}
+
+.activity-graph-axis-label {
+    fill: #ccc;
+    font-size: 12px;
+}
+
+/* Stats Summary */
+.stats-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stats-summary-item {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 5px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.stats-summary-icon {
+    font-size: 24px;
+    color: #0ff;
+    margin-bottom: 10px;
+}
+
+.stats-summary-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+.stats-summary-label {
+    color: #ccc;
+    font-size: 14px;
+}
+
+/* Stats Tabs */
+.stats-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.stats-tab {
+    padding: 8px 15px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 20px;
+    color: #0ff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stats-tab:hover {
+    background: rgba(0, 255, 255, 0.2);
+}
+
+.stats-tab.active {
+    background: rgba(0, 255, 255, 0.3);
+    border-color: #0ff;
+}
+
+/* Stats Animation */
+@keyframes statsCardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stats-card-animation {
+    animation: statsCardFadeIn 0.5s ease forwards;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .stats-container {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    
+    .stats-summary {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    .skills-graph-bar {
+        width: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-graph-container {
+        height: 250px;
+    }
+    
+    .skills-graph-bar {
+        width: 25px;
+    }
+    
+    .skills-graph-label {
+        font-size: 10px;
+    }
+} 

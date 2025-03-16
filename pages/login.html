@@ -231,13 +231,13 @@
     <!-- Importer Supabase JavaScript bibliotek -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
+    <!-- Importer vår felles Supabase-klient -->
+    <script src="../js/supabase/supabase-client.js"></script>
+    
     <!-- Importer våre egne JavaScript-filer -->
-    <script type="module">
-        // Opprett Supabase-klienten direkte i login-skriptet
-        const SUPABASE_URL = 'https://agjxwktmzcfvepdmiaeq.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnanh3a3RtemNmdmVwZG1pYWVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE4NjEwMDMsImV4cCI6MjA1NzQzNzAwM30.WB69HGvHJXzpYN56Z9lrOcLcwau7hQOLmZkEz8BI61M';
-        // Bruk det globale Supabase-objektet som blir lastet inn fra CDN
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <script>
+        // Bruk den felles Supabase-klienten
+        const supabase = window.supabaseHelper.getSupabase();
         
         document.addEventListener('DOMContentLoaded', function() {
             // Elementer

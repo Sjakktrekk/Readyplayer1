@@ -9,7 +9,15 @@
     <!-- CSS-filer -->
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/animations.css">
-    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/dashboard-base.css">
+    <link rel="stylesheet" href="../css/dashboard-skills.css">
+    <link rel="stylesheet" href="../css/dashboard-inventory.css">
+    <link rel="stylesheet" href="../css/dashboard-shop.css">
+    <link rel="stylesheet" href="../css/dashboard-quests.css">
+    <link rel="stylesheet" href="../css/dashboard-achievements.css">
+    <link rel="stylesheet" href="../css/dashboard-stats.css">
+    <link rel="stylesheet" href="../css/dashboard-status.css">
+    <link rel="stylesheet" href="../css/dashboard-chat.css">
 </head>
 <body>
     <div class="dashboard-container">
@@ -105,7 +113,6 @@
                             <div class="skill-name">Intelligens</div>
                             <div class="skill-level">0</div>
                             <div class="skill-controls">
-                                <button class="skill-button decrease"><i class="fas fa-minus"></i></button>
                                 <button class="skill-button increase"><i class="fas fa-plus"></i></button>
                             </div>
                         </div>
@@ -115,7 +122,6 @@
                             <div class="skill-name">Teknologi</div>
                             <div class="skill-level">0</div>
                             <div class="skill-controls">
-                                <button class="skill-button decrease"><i class="fas fa-minus"></i></button>
                                 <button class="skill-button increase"><i class="fas fa-plus"></i></button>
                             </div>
                         </div>
@@ -125,7 +131,6 @@
                             <div class="skill-name">Stamina</div>
                             <div class="skill-level">0</div>
                             <div class="skill-controls">
-                                <button class="skill-button decrease"><i class="fas fa-minus"></i></button>
                                 <button class="skill-button increase"><i class="fas fa-plus"></i></button>
                             </div>
                         </div>
@@ -135,7 +140,6 @@
                             <div class="skill-name">Karisma</div>
                             <div class="skill-level">0</div>
                             <div class="skill-controls">
-                                <button class="skill-button decrease"><i class="fas fa-minus"></i></button>
                                 <button class="skill-button increase"><i class="fas fa-plus"></i></button>
                             </div>
                         </div>
@@ -145,7 +149,6 @@
                             <div class="skill-name">Kreativitet</div>
                             <div class="skill-level">0</div>
                             <div class="skill-controls">
-                                <button class="skill-button decrease"><i class="fas fa-minus"></i></button>
                                 <button class="skill-button increase"><i class="fas fa-plus"></i></button>
                             </div>
                         </div>
@@ -155,7 +158,6 @@
                             <div class="skill-name">Flaks</div>
                             <div class="skill-level">0</div>
                             <div class="skill-controls">
-                                <button class="skill-button decrease"><i class="fas fa-minus"></i></button>
                                 <button class="skill-button increase"><i class="fas fa-plus"></i></button>
                             </div>
                         </div>
@@ -174,32 +176,77 @@
                 </div>
                 
                 <!-- Shop Tab -->
-                <div class="tab-content" id="shop-tab">
-                    <h2><i class="fas fa-store"></i> Butikk</h2>
+                <div class="tab-content" id="shop-tab" style="background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important;">
                     <div class="shop-container">
-                        <div id="shop-items" class="items-grid">
-                            <!-- Shop items will be loaded here -->
-                            <div class="empty-message">Laster butikkvarer...</div>
+                        <div class="shop-header">
+                            <div class="shop-title">
+                                <i class="fas fa-store"></i>
+                                <span>OASIS Handelssenter</span>
+                            </div>
+                            <div class="shop-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="shop-search-input" placeholder="Søk etter varer...">
+                            </div>
+                        </div>
+                        
+                        <div class="shop-categories">
+                            <div class="shop-category active" data-category="all">Alle varer</div>
+                            <div class="shop-category" data-category="boost">Boosts</div>
+                            <div class="shop-category" data-category="equipment">Utstyr</div>
+                            <div class="shop-category" data-category="consumable">Forbruksvarer</div>
+                            <div class="shop-category" data-category="special">Spesialvarer</div>
+                        </div>
+                        
+                        <div class="shop-section">
+                            <div class="shop-section-title">
+                                <i class="fas fa-star"></i>
+                                <span>Anbefalt for deg</span>
+                            </div>
+                            <div class="shop-items" id="shop-recommended">
+                                <!-- Anbefalte varer vil bli lastet her -->
+                            </div>
+                        </div>
+                        
+                        <div class="shop-section">
+                            <div class="shop-section-title">
+                                <i class="fas fa-tags"></i>
+                                <span>Alle varer</span>
+                            </div>
+                            <div class="shop-items" id="shop-items">
+                                <!-- Butikkvarer vil bli lastet her -->
+                                <div class="shop-empty">
+                                    <i class="fas fa-store-slash"></i>
+                                    <p>Laster butikkvarer...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Quests Tab -->
                 <div class="tab-content" id="quests-tab">
-                    <h2><i class="fas fa-scroll"></i> Oppdrag</h2>
+                    <h2><i class="fas fa-scroll"></i> OASIS Oppdragssenter</h2>
+                    
+                    <!-- Flyttet filterknappene over quests-container -->
+                    <div class="quests-filter" style="display: flex; gap: 10px; position: relative; z-index: 1000; background: rgba(0, 0, 0, 0.8); padding: 10px 0; margin-bottom: 20px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); overflow-x: auto;">
+                        <div class="filter-button active" data-filter="all" style="position: relative; z-index: 1001;">Alle oppdrag</div>
+                        <div class="filter-button" data-filter="active" style="position: relative; z-index: 1001;">Aktive</div>
+                        <div class="filter-button" data-filter="completed" style="position: relative; z-index: 1001;">Fullførte</div>
+                        <div class="filter-button" data-filter="available" style="position: relative; z-index: 1001;">Tilgjengelige</div>
+                    </div>
+                    
                     <div class="quests-container">
-                        <div id="active-quests">
-                            <h3>Aktive Oppdrag</h3>
-                            <div class="quests-list">
-                                <!-- Active quests will be loaded here -->
-                                <div class="empty-message">Ingen aktive oppdrag.</div>
-                            </div>
+                        <div class="quests-header">
+                            <div class="quests-header-line"></div>
+                            <div class="quests-header-text">NPC OPPDRAG</div>
+                            <div class="quests-header-line"></div>
                         </div>
-                        <div id="available-quests">
-                            <h3>Tilgjengelige Oppdrag</h3>
-                            <div class="quests-list">
-                                <!-- Available quests will be loaded here -->
-                                <div class="empty-message">Ingen tilgjengelige oppdrag.</div>
+                        
+                        <div class="npcs-container" id="npcs-container">
+                            <!-- NPCs will be loaded here -->
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <p>Laster inn NPCer og oppdrag...</p>
                             </div>
                         </div>
                     </div>
@@ -480,7 +527,31 @@
         <div class="modal-content">
             <span class="close-modal">&times;</span>
             <div class="item-details">
-                <!-- Item details will be loaded here -->
+                <div class="item-detail-header">
+                    <div class="item-detail-icon"><i class="fas fa-cube"></i></div>
+                    <div class="item-detail-title">
+                        <h3>Gjenstandsnavn</h3>
+                        <div class="item-detail-rarity">Sjeldenhet</div>
+                    </div>
+                </div>
+                <div class="item-detail-description">Beskrivelse av gjenstanden vil vises her.</div>
+                <div class="item-stats">
+                    <div class="stat-row">
+                        <span>Type:</span>
+                        <span class="item-detail-type">Ukjent</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Pris:</span>
+                        <span class="item-detail-price">0 <i class="fas fa-coins"></i></span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Effekt:</span>
+                        <span class="item-detail-effect">Ingen effekt</span>
+                    </div>
+                </div>
+                <button id="detail-buy-button" class="buy-button">
+                    Kjøp for <span class="item-detail-price-button">0</span> <i class="fas fa-coins"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -488,11 +559,58 @@
     <!-- Importer Supabase JavaScript bibliotek -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
+    <!-- Importer vår felles Supabase-klient -->
+    <script src="../js/supabase/supabase-client.js"></script>
+    
+    <!-- Importer vår database-tjeneste -->
+    <script src="../js/services/database-service.js"></script>
+    
     <!-- Importer våre egne JavaScript-filer -->
     <script src="../js/achievements.js"></script>
+    <script src="../js/dashboard-base.js"></script>
+    <script src="../js/dashboard-skills.js"></script>
+    <script src="../js/dashboard-inventory.js"></script>
+    <script src="../js/dashboard-shop.js"></script>
+    <script src="../js/dashboard-quests.js"></script>
     <script src="../js/dashboard-achievements.js"></script>
+    <script src="../js/dashboard-stats.js"></script>
     <script src="../js/dashboard-status.js"></script>
     <script src="../js/chat.js"></script>
-    <script type="module" src="../js/dashboard.js"></script>
+    
+    <!-- Initialiseringsskript -->
+    <script>
+        // Vent til DOM er lastet og alle skript er klare
+        document.addEventListener('DOMContentLoaded', function() {
+            // Vent litt ekstra for å sikre at alle tjenester er initialisert
+            setTimeout(function() {
+                // Sjekk om databaseService er tilgjengelig
+                if (window.databaseService) {
+                    console.log('Initialiserer dashboard...');
+                    // Initialiser dashboard
+                    if (typeof initDashboard === 'function') {
+                        initDashboard().then(() => {
+                            console.log('Dashboard initialisert, laster inn fanedata...');
+                            // Når dashbordet er initialisert, last inn data for aktiv fane
+                            const activeTab = document.querySelector('.nav-item.active');
+                            if (activeTab) {
+                                const tabName = activeTab.getAttribute('data-tab');
+                                if (typeof loadTabData === 'function') {
+                                    loadTabData(tabName);
+                                }
+                            }
+                        }).catch(error => {
+                            console.error('Feil ved initialisering av dashboard:', error);
+                        });
+                    } else {
+                        console.error('initDashboard-funksjonen er ikke tilgjengelig');
+                        alert('Feil ved lasting av applikasjonen. Vennligst last siden på nytt.');
+                    }
+                } else {
+                    console.error('Database-tjenesten er ikke tilgjengelig');
+                    alert('Feil ved lasting av applikasjonen. Vennligst last siden på nytt.');
+                }
+            }, 300); // Økt ventetid for å sikre at alle skript er lastet
+        });
+    </script>
 </body>
 </html> 

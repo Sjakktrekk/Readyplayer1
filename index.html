@@ -56,23 +56,29 @@
         </a>
     </div>
 
-    <!-- Importer Supabase JavaScript bibliotek -->
+    <!-- Importer Supabase JavaScript bibliotek først -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- JavaScript-filer -->
-    <script src="js/supabase/supabase-main.js"></script>
+    <!-- Importer vår felles Supabase-klient -->
+    <script src="js/supabase/supabase-client.js"></script>
+    
+    <!-- Importer vår database-tjeneste -->
+    <script src="js/services/database-service.js"></script>
+    
+    <!-- Importer våre egne JavaScript-filer -->
     <script src="js/students.js"></script>
     <script src="js/achievements.js"></script>
     <script src="js/items.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/shop.js"></script>
     <script src="js/quests.js"></script>
+    <script src="js/npc.js"></script>
     <script src="js/bossfights.js"></script>
     <script src="js/events.js"></script>
-    <script src="js/shop.js"></script>
+    <script src="js/inventory-buttons.js"></script>
     <script src="js/marketplace.js"></script>
     <script src="js/combined-shop.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/npc.js"></script>
-    <script src="js/inventory-buttons.js"></script>
+
     <script>
         // Feilsøking
         window.onload = function() {
