@@ -33,39 +33,34 @@ function initShopTab() {
 
 // Funksjon for å laste inn butikkvarer
 async function loadShopItems() {
-    try {
-        // Bruk databaseService for å hente alle gjenstander
-        const { success, data, error } = await window.databaseService.item.getAllItems();
-        
-        if (!success) {
-            throw new Error(error || 'Feil ved henting av butikkvarer');
-        }
-        
-        // Lagre gjenstander globalt
-        window.shopItems = data;
-        
-        // Oppsett av kategorier og søk
-        setupShopCategories(data);
-        setupShopSearch(data);
-        
-        // Vis anbefalte gjenstander
-        const recommendedItems = data.filter(item => item.featured || item.popular || item.new);
-        displayRecommendedItems(recommendedItems, shopRecommendedContainer);
-        
-        // Vis alle gjenstander
-        displayShopItems(data, shopItemsContainer);
-    } catch (error) {
-        console.error('Feil ved lasting av butikkvarer:', error);
-        if (shopItemsContainer) {
-            shopItemsContainer.innerHTML = `
-                <div class="shop-empty">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p>Kunne ikke laste butikkvarer. Vennligst prøv igjen senere.</p>
-                    <button onclick="loadShopItems()" class="retry-button">Prøv igjen</button>
-                </div>
-            `;
-        }
+    if (!window.dashboardBase || !window.dashboardBase.userProfile) {
+        console.error('dashboardBase eller userProfile ikke tilgjengelig');
+        return;
     }
+    
+    const { userProfile } = window.dashboardBase;
+    
+    const shopItemsContainer = document.getElementById('shop-items');
+    if (!shopItemsContainer) {
+        console.error('Shop container ikke funnet');
+        return;
+    }
+    
+    // Tøm container
+    shopItemsContainer.innerHTML = '';
+    
+    // Sjekk om shopItems er tilgjengelig
+    if (!window.shopItems || !Array.isArray(window.shopItems) || window.shopItems.length === 0) {
+        console.error('shopItems ikke tilgjengelig eller tom');
+        shopItemsContainer.innerHTML = '<div class="empty-message">Ingen gjenstander tilgjengelig i butikken.</div>';
+        return;
+    }
+    
+    // Vis gjenstander i butikken
+    window.shopItems.forEach(item => {
+        const itemElement = createShopItemElement(item);
+        shopItemsContainer.appendChild(itemElement);
+    });
 }
 
 // Funksjon for å sette opp kategorier

@@ -68,8 +68,8 @@
     <!-- Importer våre egne JavaScript-filer -->
     <script src="js/students.js"></script>
     <script src="js/achievements.js"></script>
-    <script src="js/items.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/items.js"></script>
     <script src="js/shop.js"></script>
     <script src="js/quests.js"></script>
     <script src="js/npc.js"></script>
@@ -80,6 +80,19 @@
     <script src="js/combined-shop.js"></script>
 
     <script>
+        // Global feilhåndtering
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error('Global feil fanget:', message, 'på linje', lineno, 'i', source);
+            console.error('Feilobjekt:', error);
+            
+            // Vis en feilmelding til brukeren
+            if (typeof showStylizedAlert === 'function') {
+                showStylizedAlert('Det oppstod en feil: ' + message, 'error');
+            }
+            
+            return false; // La nettleseren håndtere feilen videre
+        };
+        
         // Feilsøking
         window.onload = function() {
             console.log('Side lastet');
@@ -92,6 +105,20 @@
             // Manuelt legg til knapper hvis de ikke allerede er lagt til
             if (typeof manuallyAddButtons === 'function') {
                 setTimeout(manuallyAddButtons, 1500);
+            }
+            
+            // Sjekk om updateTable er definert
+            if (typeof updateTable === 'function') {
+                console.log('updateTable funksjonen er tilgjengelig');
+            } else {
+                console.error('updateTable funksjonen er ikke tilgjengelig');
+            }
+            
+            // Sjekk om students-arrayen er definert
+            if (typeof students !== 'undefined' && Array.isArray(students)) {
+                console.log('students-arrayen er tilgjengelig med', students.length, 'studenter');
+            } else {
+                console.error('students-arrayen er ikke tilgjengelig eller er ikke et array');
             }
         };
     </script>
@@ -270,7 +297,25 @@
             margin-top: 20px;
             flex-wrap: wrap;
         ">
-            <button id="addStudentButton" class="action-button" onclick="addPredefinedStudents()" style="
+            <button id="refreshButton" class="action-button" onclick="forceRefreshFromSupabase()" style="
+                background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
+                border: 2px solid #3498db; 
+                color: #3498db; 
+                padding: 12px 25px; 
+                border-radius: 8px; 
+                font-family: 'Courier New', monospace;
+                text-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+                box-shadow: 0 0 10px rgba(52, 152, 219, 0.2);
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 16px;
+                text-transform: uppercase;
+                letter-spacing: 1px;"
+                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(52, 152, 219, 0.4)';"
+                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(52, 152, 219, 0.2)';">
+                <i class="fas fa-sync-alt" style="margin-right: 8px;"></i> Oppdater fra database
+            </button>
+            <button id="addPlayersButton" class="action-button" onclick="openAddPlayersModal()" style="
                 background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
                 border: 2px solid #27ae60; 
                 color: #27ae60; 
@@ -288,45 +333,6 @@
                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(39, 174, 96, 0.2)';">
                 <i class="fas fa-user-plus" style="margin-right: 8px;"></i> Legg til spillere
             </button>
-            
-            <button id="lockButton" class="action-button" onclick="toggleLock()" style="
-                background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
-                border: 2px solid #2ecc71; 
-                color: #2ecc71; 
-                padding: 12px 25px; 
-                border-radius: 8px; 
-                font-family: 'Courier New', monospace;
-                text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
-                box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
-                cursor: pointer;
-                transition: all 0.3s ease;
-                font-size: 16px;
-                text-transform: uppercase;
-                letter-spacing: 1px;"
-                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(46, 204, 113, 0.4)';"
-                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(46, 204, 113, 0.2)';">
-                <i class="fas fa-unlock"></i> Lås opp
-            </button>
-            
-            <button id="deleteProtectionButton" class="action-button" onclick="toggleDeleteProtection()" style="
-                background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
-                border: 2px solid #e74c3c; 
-                color: #e74c3c; 
-                padding: 12px 25px; 
-                border-radius: 8px; 
-                font-family: 'Courier New', monospace;
-                text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
-                box-shadow: 0 0 10px rgba(231, 76, 60, 0.2);
-                cursor: pointer;
-                transition: all 0.3s ease;
-                font-size: 16px;
-                text-transform: uppercase;
-                letter-spacing: 1px;"
-                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(231, 76, 60, 0.4)';"
-                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(231, 76, 60, 0.2)';">
-                <i class="fas fa-trash-alt"></i> Lås sletting av elever
-            </button>
-            
             <button id="exportButton" class="action-button" onclick="exportData()" style="
                 background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
                 border: 2px solid #3498db; 
@@ -343,9 +349,8 @@
                 letter-spacing: 1px;"
                 onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(52, 152, 219, 0.4)';"
                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(52, 152, 219, 0.2)';">
-                <i class="fas fa-download" style="margin-right: 8px;"></i> Eksporter data
+                <i class="fas fa-file-export" style="margin-right: 8px;"></i> Eksporter data
             </button>
-            
             <button id="importButton" class="action-button" onclick="importData()" style="
                 background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
                 border: 2px solid #9b59b6; 
@@ -362,7 +367,61 @@
                 letter-spacing: 1px;"
                 onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(155, 89, 182, 0.4)';"
                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(155, 89, 182, 0.2)';">
-                <i class="fas fa-upload" style="margin-right: 8px;"></i> Importer data
+                <i class="fas fa-file-import" style="margin-right: 8px;"></i> Importer data
+            </button>
+            <button id="resetButton" class="action-button" onclick="showPinDialog('resetAllExp')" style="
+                background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
+                border: 2px solid #e74c3c; 
+                color: #e74c3c; 
+                padding: 12px 25px; 
+                border-radius: 8px; 
+                font-family: 'Courier New', monospace;
+                text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
+                box-shadow: 0 0 10px rgba(231, 76, 60, 0.2);
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 16px;
+                text-transform: uppercase;
+                letter-spacing: 1px;"
+                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(231, 76, 60, 0.4)';"
+                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(231, 76, 60, 0.2)';">
+                <i class="fas fa-trash-alt" style="margin-right: 8px;"></i> Nullstill XP
+            </button>
+            <button id="toggleLockButton" class="action-button" onclick="toggleLock()" style="
+                background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
+                border: 2px solid #2ecc71; 
+                color: #2ecc71; 
+                padding: 12px 25px; 
+                border-radius: 8px; 
+                font-family: 'Courier New', monospace;
+                text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+                box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 16px;
+                text-transform: uppercase;
+                letter-spacing: 1px;"
+                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(46, 204, 113, 0.4)';"
+                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(46, 204, 113, 0.2)';">
+                <i class="fas fa-lock" style="margin-right: 8px;"></i> <span id="lockButtonText">Lås redigering</span>
+            </button>
+            <button id="toggleDeleteProtectionButton" class="action-button" onclick="toggleDeleteProtection()" style="
+                background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)); 
+                border: 2px solid #f39c12; 
+                color: #f39c12; 
+                padding: 12px 25px; 
+                border-radius: 8px; 
+                font-family: 'Courier New', monospace;
+                text-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
+                box-shadow: 0 0 10px rgba(243, 156, 18, 0.2);
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 16px;
+                text-transform: uppercase;
+                letter-spacing: 1px;"
+                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 0 15px rgba(243, 156, 18, 0.4)';"
+                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 10px rgba(243, 156, 18, 0.2)';">
+                <i class="fas fa-shield-alt" style="margin-right: 8px;"></i> <span id="deleteProtectionText">Slå på slettebeskyttelse</span>
             </button>
         </div>
     </div>

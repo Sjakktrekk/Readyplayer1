@@ -1,90 +1,92 @@
 // Definisjon av spesielle butikk-items
-const shopItems = [
-    {
-        id: 'math_calculator',
-        name: 'Mattemagi-kalkulator',
-        description: '20 % mer XP på matteoppgaver!',
-        icon: '🧮',
-        price: 5000,
-        effect: 'math_xp_boost',
-        category: 'boost',
-        tags: ['popular']
-    },
-    {
-        id: 'stairway_heaven',
-        name: 'Stairway to heaven',
-        description: 'Åpner muligheten for trappeløp. 250 XP fra bunn til topp!',
-        icon: '🪜',
-        price: 3000,
-        effect: 'stair_climb',
-        category: 'special',
-        tags: []
-    },
-    {
-        id: 'double_or_nothing',
-        name: 'Kvitt eller dobbelt',
-        description: 'Når du leverer en norsk/matte/engelsk oppgave kan du ta en sjanse. Kast en terning. 1-3 gir INGEN XP, 4-6 gir dobbel XP',
-        icon: '🎲',
-        price: 3000,
-        effect: 'double_xp_chance',
-        category: 'special',
-        tags: ['popular']
-    },
-    {
-        id: 'try_your_luck',
-        name: 'Prøv lykken',
-        description: 'Du får en tilfeldig gjenstand fra butikkens lager',
-        icon: '🎁',
-        price: 3000,
-        effect: 'random_item',
-        category: 'special',
-        tags: []
-    },
-    {
-        id: 'rebirth',
-        name: 'Rebirth',
-        description: 'Du får fordele nivåpoengene dine på nytt',
-        icon: '🔄',
-        price: 10000,
-        effect: 'respec_points',
-        category: 'special',
-        tags: []
-    },
-    {
-        id: 'audiobook',
-        name: 'Lydbok',
-        description: 'Egenvalgt lesing kan gjøres med lydbok og headset!',
-        icon: '🎧',
-        price: 3000,
-        effect: 'audiobook_reading',
-        category: 'equipment',
-        tags: ['new']
-    },
-    {
-        id: 'headset',
-        name: 'Headset',
-        description: 'Du kan høre på musikk mens du jobber med oppgaver',
-        icon: '🎧',
-        price: 3000,
-        effect: 'music_while_working'
-    },
-    {
-        id: 'mortens_favoritter',
-        name: 'Mortens favoritter',
-        description: 'Morten velger en bok du skal lese. +50% XP når du leser denne boka',
-        icon: '📚',
-        price: 3000,
-        effect: 'mortens_book_boost'
-    },
-    {
-        id: 'odd_book',
-        name: 'The Odd book',
-        description: 'Odd-Henry velger en bok du skal lese. +50% XP når du leser denne boka',
-        icon: '📖',
-        price: 3000,
-        effect: 'odd_book_boost'
-    }
-];
+if (typeof window.shopItems === 'undefined') {
+    window.shopItems = [
+        {
+            id: 'math_calculator',
+            name: 'Mattemagi-kalkulator',
+            description: '20 % mer XP på matteoppgaver!',
+            icon: '🧮',
+            price: 5000,
+            effect: 'math_xp_boost',
+            category: 'boost',
+            tags: ['popular']
+        },
+        {
+            id: 'stairway_heaven',
+            name: 'Stairway to heaven',
+            description: 'Åpner muligheten for trappeløp. 250 XP fra bunn til topp!',
+            icon: '🪜',
+            price: 3000,
+            effect: 'stair_climb',
+            category: 'special',
+            tags: []
+        },
+        {
+            id: 'double_or_nothing',
+            name: 'Kvitt eller dobbelt',
+            description: 'Når du leverer en norsk/matte/engelsk oppgave kan du ta en sjanse. Kast en terning. 1-3 gir INGEN XP, 4-6 gir dobbel XP',
+            icon: '🎲',
+            price: 3000,
+            effect: 'double_xp_chance',
+            category: 'special',
+            tags: ['popular']
+        },
+        {
+            id: 'try_your_luck',
+            name: 'Prøv lykken',
+            description: 'Du får en tilfeldig gjenstand fra butikkens lager',
+            icon: '🎁',
+            price: 3000,
+            effect: 'random_item',
+            category: 'special',
+            tags: []
+        },
+        {
+            id: 'rebirth',
+            name: 'Rebirth',
+            description: 'Du får fordele nivåpoengene dine på nytt',
+            icon: '🔄',
+            price: 10000,
+            effect: 'respec_points',
+            category: 'special',
+            tags: []
+        },
+        {
+            id: 'audiobook',
+            name: 'Lydbok',
+            description: 'Egenvalgt lesing kan gjøres med lydbok og headset!',
+            icon: '🎧',
+            price: 3000,
+            effect: 'audiobook_reading',
+            category: 'equipment',
+            tags: ['new']
+        },
+        {
+            id: 'headset',
+            name: 'Headset',
+            description: 'Du kan høre på musikk mens du jobber med oppgaver',
+            icon: '🎧',
+            price: 3000,
+            effect: 'music_while_working'
+        },
+        {
+            id: 'mortens_favoritter',
+            name: 'Mortens favoritter',
+            description: 'Morten velger en bok du skal lese. +50% XP når du leser denne boka',
+            icon: '📚',
+            price: 3000,
+            effect: 'mortens_book_boost'
+        },
+        {
+            id: 'odd_book',
+            name: 'The Odd book',
+            description: 'Odd-Henry velger en bok du skal lese. +50% XP når du leser denne boka',
+            icon: '📖',
+            price: 3000,
+            effect: 'odd_book_boost'
+        }
+    ];
+}
 
 // Funksjon for å åpne shop-modalen
 function openShopModal() {
@@ -202,160 +204,147 @@ function displayShopItems() {
     const container = document.getElementById('shopItemsContainer');
     container.innerHTML = '';
     
-    shopItems.forEach(item => {
+    window.shopItems.forEach(item => {
         const itemElement = createShopItemElement(item);
         container.appendChild(itemElement);
     });
 }
 
-// Funksjon for å lage et item-element i butikken
+// Funksjon for å opprette et shop-element
 function createShopItemElement(item) {
     const itemElement = document.createElement('div');
-    itemElement.className = 'item-card';
+    itemElement.className = `shop-item ${item.category || 'unknown'} ${item.rarity || 'common'}`;
+    itemElement.setAttribute('data-item-id', item.id);
     
-    // Legendarisk stil for alle items
-    itemElement.style.cssText = `
-        background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9));
-        border: 2px solid #f1c40f;
-        box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
-        padding: 15px;
-        border-radius: 10px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        animation: pulse-glow 2s infinite alternate;
-    `;
-    
-    // Legg til hover-effekter
-    itemElement.addEventListener('mouseover', function() {
-        this.style.transform = 'translateY(-5px)';
-        this.style.boxShadow = '0 0 20px rgba(241, 196, 15, 0.8)';
-    });
-    
-    itemElement.addEventListener('mouseout', function() {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = '0 0 15px rgba(241, 196, 15, 0.5)';
-    });
-    
-    // Legg til klikk-hendelse for å kjøpe
-    itemElement.addEventListener('click', function() {
-        let studentIndex;
-        const shopSelect = document.getElementById('shopStudentSelect');
-        const combinedSelect = document.getElementById('combinedStudentSelect');
-        
-        if (shopSelect) {
-            studentIndex = shopSelect.value;
-        } else if (combinedSelect) {
-            studentIndex = combinedSelect.value;
-        } else {
-            alert('Feil: Kunne ikke finne studentvelgeren!');
-            return;
+    // Bestem ikonet basert på om det er et emoji eller om vi skal bruke Font Awesome
+    let iconContent = '';
+    if (item.icon && (item.icon.length <= 2 || /\p{Emoji}/u.test(item.icon))) {
+        // Det er et emoji eller kort tegn, bruk det direkte
+        iconContent = item.icon;
+    } else {
+        // Ellers, bruk Font Awesome-ikon basert på kategori
+        let iconClass = 'fas fa-question';
+        switch (item.category) {
+            case 'boost':
+                iconClass = 'fas fa-bolt';
+                break;
+            case 'equipment':
+                iconClass = 'fas fa-shield-alt';
+                break;
+            case 'consumable':
+                iconClass = 'fas fa-flask';
+                break;
+            case 'special':
+                iconClass = 'fas fa-star';
+                break;
         }
-        
-        if (studentIndex === '') {
-            alert('Vennligst velg en elev først!');
-            return;
-        }
-        buyShopItem(parseInt(studentIndex), item);
-    });
+        iconContent = `<i class="${iconClass}"></i>`;
+    }
     
-    // Opprett innhold
-    const contentDiv = document.createElement('div');
-    contentDiv.style.cssText = `
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
+    // Sjekk om brukeren har råd til gjenstanden
+    const canAfford = userProfile && userProfile.credits >= item.price;
+    
+    // Sjekk om brukeren allerede har gjenstanden (for spesielle gjenstander)
+    const hasItem = userProfile && userProfile.inventory && 
+                   userProfile.inventory.some(i => {
+                       if (typeof i === 'object') {
+                           return i.id === item.id;
+                       } else {
+                           return i === item.id;
+                       }
+                   });
+    
+    // Bestem knappetekst og tilstand
+    let buttonText = 'Kjøp';
+    let buttonClass = 'buy-button';
+    let buttonDisabled = false;
+    
+    if (hasItem && item.category === 'special') {
+        buttonText = 'Kjøpt';
+        buttonClass = 'bought-button';
+        buttonDisabled = true;
+    } else if (!canAfford) {
+        buttonClass = 'buy-button disabled';
+        buttonDisabled = true;
+    }
+    
+    itemElement.innerHTML = `
+        <div class="shop-item-icon">
+            ${iconContent}
+        </div>
+        <div class="shop-item-details">
+            <div class="shop-item-name">${item.name}</div>
+            <div class="shop-item-description">${item.description}</div>
+            <div class="shop-item-price">
+                <i class="fas fa-coins"></i> ${item.price}
+            </div>
+        </div>
+        <button class="${buttonClass}" ${buttonDisabled ? 'disabled' : ''}>
+            ${buttonText}
+        </button>
     `;
     
-    // Legg til ikon
-    const iconDiv = document.createElement('div');
-    iconDiv.className = 'item-icon';
-    iconDiv.style.cssText = `
-        font-size: 48px;
-        margin-bottom: 10px;
-        text-shadow: 0 0 15px #f1c40f;
-    `;
-    iconDiv.textContent = item.icon;
-    contentDiv.appendChild(iconDiv);
-    
-    // Legg til navn
-    const nameDiv = document.createElement('div');
-    nameDiv.className = 'item-name';
-    nameDiv.style.cssText = `
-        color: #f1c40f;
-        font-size: 16px;
-        font-weight: bold;
-        margin-bottom: 5px;
-        text-align: center;
-        text-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
-    `;
-    nameDiv.textContent = item.name;
-    contentDiv.appendChild(nameDiv);
-    
-    // Legg til pris
-    const priceDiv = document.createElement('div');
-    priceDiv.className = 'shop-item-price';
-    priceDiv.innerHTML = `
-        <i class="fas fa-coins" style="color: #f1c40f; margin-right: 5px;"></i>
-        <span>${item.price} kreditter</span>
-    `;
-    contentDiv.appendChild(priceDiv);
-    
-    // Legg til beskrivelse
-    const descDiv = document.createElement('div');
-    descDiv.className = 'item-description';
-    descDiv.style.cssText = `
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 13px;
-        margin-bottom: 10px;
-        flex-grow: 1;
-        text-align: center;
-    `;
-    descDiv.textContent = item.description;
-    contentDiv.appendChild(descDiv);
-    
-    // Legg til kjøp-knapp
-    const buyButton = document.createElement('button');
-    buyButton.style.cssText = `
-        background: linear-gradient(180deg, rgba(241, 196, 15, 0.3), rgba(241, 196, 15, 0.1));
-        color: #f1c40f;
-        border: 2px solid #f1c40f;
-        border-radius: 4px;
-        padding: 8px 15px;
-        font-size: 12px;
-        cursor: pointer;
-        margin-top: 5px;
-        transition: all 0.3s ease;
-        font-family: 'Courier New', monospace;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        width: 100%;
-        opacity: 0.7;
-    `;
-    buyButton.innerHTML = '<i class="fas fa-shopping-cart" style="margin-right: 5px;"></i> Kjøp';
-    
-    // Legg til hover-effekter for kjøp-knappen
-    buyButton.addEventListener('mouseover', function() {
-        this.style.background = 'linear-gradient(180deg, rgba(241, 196, 15, 0.5), rgba(241, 196, 15, 0.2))';
-        this.style.color = '#f1c40f';
-        this.style.opacity = '1';
-        this.style.boxShadow = '0 0 8px rgba(241, 196, 15, 0.5)';
-    });
-    
-    buyButton.addEventListener('mouseout', function() {
-        this.style.background = 'linear-gradient(180deg, rgba(241, 196, 15, 0.3), rgba(241, 196, 15, 0.1))';
-        this.style.color = '#f1c40f';
-        this.style.opacity = '0.7';
-        this.style.boxShadow = 'none';
-    });
-    
-    contentDiv.appendChild(buyButton);
-    itemElement.appendChild(contentDiv);
+    // Legg til event listener for kjøp-knappen
+    const buyButton = itemElement.querySelector('button');
+    if (buyButton && !buttonDisabled) {
+        buyButton.addEventListener('click', () => {
+            buyItem(item);
+        });
+    }
     
     return itemElement;
+}
+
+// Funksjon for å filtrere butikk-elementer
+function filterShopItems(filter) {
+    const shopContainer = document.getElementById('shop-items');
+    if (!shopContainer) return;
+    
+    // Tøm container
+    shopContainer.innerHTML = '';
+    
+    // Filtrer gjenstander
+    let filteredItems = [];
+    
+    if (filter === 'all') {
+        filteredItems = window.shopItems;
+    } else if (filter === 'affordable') {
+        filteredItems = window.shopItems.filter(item => userProfile && userProfile.credits >= item.price);
+    } else {
+        filteredItems = window.shopItems.filter(item => item.category === filter);
+    }
+    
+    // Vis filtrerte gjenstander
+    filteredItems.forEach(item => {
+        const itemElement = createShopItemElement(item);
+        shopContainer.appendChild(itemElement);
+    });
+}
+
+// Funksjon for å søke i butikk-elementer
+function searchShopItems(searchTerm) {
+    const shopContainer = document.getElementById('shop-items');
+    if (!shopContainer) return;
+    
+    // Tøm container
+    shopContainer.innerHTML = '';
+    
+    // Søk etter gjenstander
+    const filteredItems = window.shopItems.filter(item => {
+        const name = item.name.toLowerCase();
+        const description = item.description.toLowerCase();
+        const category = item.category.toLowerCase();
+        
+        return name.includes(searchTerm) || 
+               description.includes(searchTerm) || 
+               category.includes(searchTerm);
+    });
+    
+    // Vis filtrerte gjenstander
+    filteredItems.forEach(item => {
+        const itemElement = createShopItemElement(item);
+        shopContainer.appendChild(itemElement);
+    });
 }
 
 // Funksjon for å kjøpe en gjenstand

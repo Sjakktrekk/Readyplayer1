@@ -201,13 +201,45 @@ const userService = {
         try {
             console.log('Henter alle brukerprofiler fra Supabase...');
             
+            // Sjekk om brukeren er logget inn
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError) {
+                console.error('Feil ved henting av gjeldende bruker:', userError);
+                console.log('Fortsetter med henting av profiler som anonym bruker');
+            } else {
+                console.log('Bruker er logget inn som:', user?.email || user?.id);
+            }
+            
+            // Bruk en mer direkte spørring uten filtrering
             const { data, error } = await supabase
                 .from('profiles')
-                .select('*')
-                .order('username', { ascending: true });
+                .select('*');
             
             if (error) {
                 console.error('Feil ved henting av brukerprofiler:', error);
+                
+                // Prøv en alternativ metode hvis den første feiler
+                console.log('Prøver alternativ metode for å hente profiler...');
+                try {
+                    // Prøv å hente profiler med en annen spørring
+                    const { data: altData, error: altError } = await supabase
+                        .from('profiles')
+                        .select('id, username, skills, exp, credits, achievements, inventory')
+                        .limit(100);
+                    
+                    if (altError) {
+                        console.error('Alternativ metode feilet også:', altError);
+                        return { success: false, error: error.message, data: [] };
+                    }
+                    
+                    if (altData && altData.length > 0) {
+                        console.log('Alternativ metode hentet', altData.length, 'profiler');
+                        return { success: true, data: altData };
+                    }
+                } catch (altCatchError) {
+                    console.error('Feil i alternativ metode:', altCatchError);
+                }
+                
                 return { success: false, error: error.message, data: [] };
             }
             
@@ -218,16 +250,58 @@ const userService = {
             
             console.log(`Hentet ${data.length} brukerprofiler fra databasen:`, data.map(p => p.username || p.id));
             
-            // Filtrer ut ugyldige profiler
-            const validProfiles = data.filter(profile => profile && profile.id);
+            // Logg alle profiler for feilsøking
+            console.log('Alle profiler fra databasen:', JSON.stringify(data));
             
-            if (validProfiles.length !== data.length) {
-                console.warn(`Filtrerte bort ${data.length - validProfiles.length} ugyldige profiler`);
-            }
-            
-            return { success: true, data: validProfiles };
+            return { success: true, data: data };
         } catch (error) {
             console.error('Feil ved henting av brukerprofiler:', error);
+            return { success: false, error: error.message, data: [] };
+        }
+    },
+    
+    /**
+     * Henter alle brukerprofiler med en alternativ metode
+     */
+    getAllProfilesAlternative: async function() {
+        try {
+            console.log('Henter alle brukerprofiler med alternativ metode...');
+            
+            // Prøv å hente alle profiler med SQL-funksjonen get_all_profiles
+            const { data, error } = await supabase.rpc('get_all_profiles');
+            
+            if (error) {
+                console.error('Feil ved henting av brukerprofiler med alternativ metode:', error);
+                
+                // Prøv en annen metode
+                console.log('Prøver å hente profiler direkte fra tabellen...');
+                const { data: directData, error: directError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .limit(100);
+                    
+                if (directError) {
+                    console.error('Direkte henting feilet også:', directError);
+                    return { success: false, error: error.message, data: [] };
+                }
+                
+                if (directData && directData.length > 0) {
+                    console.log('Direkte henting ga', directData.length, 'profiler');
+                    return { success: true, data: directData };
+                }
+                
+                return { success: false, error: error.message, data: [] };
+            }
+            
+            if (!data || data.length === 0) {
+                console.warn('Ingen brukerprofiler funnet med alternativ metode');
+                return { success: true, data: [] };
+            }
+            
+            console.log(`Hentet ${data.length} brukerprofiler med alternativ metode`);
+            return { success: true, data: data };
+        } catch (error) {
+            console.error('Feil ved henting av brukerprofiler med alternativ metode:', error);
             return { success: false, error: error.message, data: [] };
         }
     },
@@ -263,6 +337,29 @@ const userService = {
                 callback(payload);
             })
             .subscribe();
+    },
+
+    /**
+     * Henter alle brukere fra auth-tabellen (krever admin-tilgang)
+     */
+    getAllUsers: async function() {
+        try {
+            console.log('Prøver å hente alle brukere fra auth-tabellen...');
+            
+            // Dette vil sannsynligvis feile med mindre brukeren har admin-tilgang
+            const { data, error } = await supabase.auth.admin.listUsers();
+            
+            if (error) {
+                console.error('Feil ved henting av brukere fra auth:', error);
+                return { success: false, error: error.message, data: [] };
+            }
+            
+            console.log(`Hentet ${data?.users?.length || 0} brukere fra auth-tabellen`);
+            return { success: true, data: data?.users || [] };
+        } catch (error) {
+            console.error('Feil ved henting av brukere fra auth:', error);
+            return { success: false, error: error.message, data: [] };
+        }
     }
 };
 

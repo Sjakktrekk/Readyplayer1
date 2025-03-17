@@ -167,11 +167,19 @@
                 <!-- Inventory Tab -->
                 <div class="tab-content" id="inventory-tab">
                     <h2><i class="fas fa-cube"></i> OASIS INVENTORY</h2>
-                    <div class="inventory-container">
-                        <div id="inventory-items" class="items-grid">
-                            <!-- Inventory items will be loaded here -->
-                            <div class="empty-message">Inventaret ditt er tomt.</div>
-                        </div>
+                    <div class="inventory-filters">
+                        <div class="inventory-filter active" data-filter="all">Alle gjenstander</div>
+                        <div class="inventory-filter" data-filter="equipment">Utstyr</div>
+                        <div class="inventory-filter" data-filter="consumable">Forbruksvarer</div>
+                        <div class="inventory-filter" data-filter="boost">Boosts</div>
+                        <div class="inventory-filter" data-filter="special">Spesial</div>
+                    </div>
+                    <div class="inventory-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Søk i inventaret...">
+                    </div>
+                    <div id="inventory-items" class="inventory-container">
+                        <!-- Inventory items will be loaded here -->
                     </div>
                 </div>
                 
@@ -523,35 +531,25 @@
     </button>
 
     <!-- Item Detail Modal -->
-    <div id="item-modal" class="modal">
-        <div class="modal-content">
+    <div id="item-modal" class="item-modal">
+        <div class="item-modal-content">
             <span class="close-modal">&times;</span>
-            <div class="item-details">
-                <div class="item-detail-header">
-                    <div class="item-detail-icon"><i class="fas fa-cube"></i></div>
-                    <div class="item-detail-title">
-                        <h3>Gjenstandsnavn</h3>
-                        <div class="item-detail-rarity">Sjeldenhet</div>
+            <div class="item-modal-details">
+                <div class="item-modal-header">
+                    <div class="item-detail-icon"></div>
+                    <div class="item-detail-info">
+                        <div class="item-detail-name">Gjenstandsnavn</div>
+                        <div class="item-detail-meta">
+                            <span class="item-detail-rarity">Sjeldenhet</span>
+                            <span class="item-detail-type">Type</span>
+                            <span class="item-detail-quantity">x1</span>
+                        </div>
                     </div>
                 </div>
                 <div class="item-detail-description">Beskrivelse av gjenstanden vil vises her.</div>
-                <div class="item-stats">
-                    <div class="stat-row">
-                        <span>Type:</span>
-                        <span class="item-detail-type">Ukjent</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Pris:</span>
-                        <span class="item-detail-price">0 <i class="fas fa-coins"></i></span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Effekt:</span>
-                        <span class="item-detail-effect">Ingen effekt</span>
-                    </div>
+                <div class="item-actions">
+                    <!-- Knapper for bruk og salg vil bli lagt til her via JavaScript -->
                 </div>
-                <button id="detail-buy-button" class="buy-button">
-                    Kjøp for <span class="item-detail-price-button">0</span> <i class="fas fa-coins"></i>
-                </button>
             </div>
         </div>
     </div>
@@ -567,6 +565,8 @@
     
     <!-- Importer våre egne JavaScript-filer -->
     <script src="../js/achievements.js"></script>
+    <script src="../js/items.js"></script>
+    <script src="../js/shop.js"></script>
     <script src="../js/dashboard-base.js"></script>
     <script src="../js/dashboard-skills.js"></script>
     <script src="../js/dashboard-inventory.js"></script>

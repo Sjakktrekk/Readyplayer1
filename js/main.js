@@ -1,6 +1,15 @@
 // Globale variabler
 const MAX_SKILL_LEVEL = 30;
 let isLocked = false;
+let isInitialLoad = true; // Ny variabel for å spore om dette er første lasting
+
+// Initialiser students-arrayen
+// Merk: Vi initialiserer med en tom array i stedet for å laste fra localStorage
+// Dette for å unngå at lokale data overskriver Supabase-data
+if (typeof students === 'undefined') {
+    var students = [];
+    console.log('Initialiserte students som tom array');
+}
 
 // Funksjon for å laste inn brukerdata fra Supabase
 async function loadSupabaseData() {
@@ -8,108 +17,243 @@ async function loadSupabaseData() {
     
     // Sjekk om databaseService er tilgjengelig
     if (typeof window.databaseService === 'undefined') {
-        console.warn('Database-tjenesten er ikke tilgjengelig');
+        console.error('Kan ikke laste data uten databasetjenesten');
+        showStylizedAlert('Feil: Database-tjenesten er ikke tilgjengelig', 'error');
         return;
     }
     
     try {
-        // Hent alle profiler fra databasen først
+        // Tøm students-arrayen helt - vi vil kun bruke data fra Supabase
+        students = [];
+        console.log('Tømte students-arrayen for å kun bruke data fra Supabase');
+        
+        // Sjekk om Supabase-klienten er initialisert
+        const supabase = window.supabaseHelper?.getSupabase();
+        if (!supabase) {
+            console.error('Supabase-klienten er ikke initialisert');
+            showStylizedAlert('Feil: Supabase-klienten er ikke initialisert', 'error');
+            return;
+        }
+        
+        // Hent alle profiler direkte fra Supabase for feilsøking
+        try {
+            const { data: directProfiles, error: directError } = await supabase
+                .from('profiles')
+                .select('*');
+                
+            if (directError) {
+                console.error('Feil ved direkte henting av profiler:', directError);
+            } else {
+                console.log('Direkte henting fra Supabase ga', directProfiles?.length || 0, 'profiler:', directProfiles);
+                
+                // Hvis vi fikk profiler direkte, bruk disse
+                if (directProfiles && directProfiles.length > 0) {
+                    console.log('Bruker profiler fra direkte henting');
+                    processProfiles(directProfiles);
+                    return;
+                }
+            }
+        } catch (directError) {
+            console.error('Feil ved direkte henting fra Supabase:', directError);
+        }
+        
+        // Prøv den alternative metoden
+        try {
+            const { success: altSuccess, data: altProfiles } = await window.databaseService.user.getAllProfilesAlternative();
+            if (altSuccess && altProfiles && altProfiles.length > 0) {
+                console.log('Alternativ metode ga', altProfiles.length, 'profiler');
+                processProfiles(altProfiles);
+                return;
+            }
+        } catch (altError) {
+            console.error('Feil ved alternativ henting av profiler:', altError);
+        }
+        
+        // Hent alle profiler fra databasen via databaseService
         const { success, data: allProfiles, error: profilesError } = await window.databaseService.user.getAllProfiles();
         
         if (!success || profilesError) {
             console.error('Feil ved henting av alle profiler:', profilesError);
-        } else {
-            console.log('Hentet', allProfiles.length, 'profiler fra databasen');
-            
-            // Lagre lokale studenter (de som ikke har en ID)
-            const localStudents = students.filter(student => !student.id);
-            console.log('Beholder', localStudents.length, 'lokale studenter');
-            
-            // Tøm students-arrayen og legg til lokale studenter først
-            students = [...localStudents];
-            
-            // Konverter profiler til students-format
-            allProfiles.forEach(profile => {
-                // Sjekk om profilen har gyldig data
-                if (profile && profile.id) {
-                    // Legg til ny student basert på profilen
-                    const newStudent = {
-                        id: profile.id,
-                        name: profile.username || 'Ukjent spiller',
-                        Intelligens: profile.skills?.Intelligens || 0,
-                        Teknologi: profile.skills?.Teknologi || 0,
-                        Stamina: profile.skills?.Stamina || 0,
-                        Karisma: profile.skills?.Karisma || 0,
-                        Kreativitet: profile.skills?.Kreativitet || 0,
-                        Flaks: profile.skills?.Flaks || 0,
-                        exp: profile.exp || 0,
-                        credits: profile.credits || 0,
-                        achievements: profile.achievements || [],
-                        items: profile.inventory ? profile.inventory.map(item => item.id) : []
-                    };
-                    
-                    students.push(newStudent);
-                    console.log('La til student fra database:', newStudent.name, 'med ID:', newStudent.id);
-                } else {
-                    console.warn('Ugyldig profil funnet i databasen:', profile);
-                }
-            });
-            
-            // Logg alle studenter for feilsøking
-            console.log('Alle studenter etter oppdatering:', students.map(s => ({ name: s.name, id: s.id })));
-            
-            // Oppdater tabellen med alle studenter fra databasen
-            updateTable();
-        }
-        
-        // Sjekk om brukeren er logget inn
-        const user = await window.databaseService.user.getCurrentUser();
-        if (!user) {
-            console.log('Ingen bruker er logget inn');
+            showStylizedAlert('Feil ved henting av profiler: ' + (profilesError?.message || 'Ukjent feil'), 'error');
             return;
         }
         
-        console.log('Bruker funnet:', user.email);
+        console.log('Hentet', allProfiles?.length || 0, 'profiler fra databasen via databaseService:', allProfiles);
         
-        // Hent brukerprofil fra Supabase
-        const profile = await window.databaseService.user.getUserProfile(user.id);
-        
-        if (!profile) {
-            console.error('Feil ved henting av brukerprofil');
+        if (!allProfiles || allProfiles.length === 0) {
+            console.warn('Ingen profiler funnet i databasen');
+            showStylizedAlert('Ingen profiler funnet i databasen', 'warning');
             return;
         }
         
-        console.log('Brukerprofil hentet:', profile);
-        
-        // Finn studenten som tilsvarer denne brukeren
-        const studentIndex = students.findIndex(s => s.id === user.id);
-        if (studentIndex !== -1) {
-            console.log('Innlogget student funnet på indeks', studentIndex);
-            
-            // Oppdater studentens items hvis profilen har inventory
-            if (profile.inventory && Array.isArray(profile.inventory)) {
-                console.log('Inventory funnet i profil:', profile.inventory.length, 'gjenstander');
-                
-                // Konverter inventory (array av objekter) til items (array av IDs)
-                const itemIds = profile.inventory.map(item => item.id);
-                console.log('Konvertert til item IDs:', itemIds);
-                
-                // Oppdater studentens items
-                students[studentIndex].items = itemIds;
-            }
-            
-            // Oppdater inventaret hvis funksjonen finnes
-            if (typeof updateItemsDisplay === 'function') {
-                updateItemsDisplay(studentIndex);
-            }
-            
-            console.log('Student oppdatert med data fra Supabase');
-        } else {
-            console.error('Merkelig feil: Innlogget bruker finnes ikke i students-arrayen etter at alle profiler er hentet');
-        }
+        // Behandle profilene
+        processProfiles(allProfiles);
     } catch (error) {
         console.error('Feil ved lasting av data fra Supabase:', error);
+        showStylizedAlert('Feil ved lasting av data: ' + error.message, 'error');
     }
+    
+    // Hjelpefunksjon for å behandle profiler
+    function processProfiles(profiles) {
+        // Konverter profiler til students-format
+        let addedCount = 0;
+        profiles.forEach(profile => {
+            // Sjekk om profilen har gyldig data
+            if (profile && profile.id) {
+                // Legg til ny student basert på profilen
+                const newStudent = {
+                    id: profile.id,
+                    name: profile.username || 'Ukjent spiller',
+                    Intelligens: profile.skills?.Intelligens || 0,
+                    Teknologi: profile.skills?.Teknologi || 0,
+                    Stamina: profile.skills?.Stamina || 0,
+                    Karisma: profile.skills?.Karisma || 0,
+                    Kreativitet: profile.skills?.Kreativitet || 0,
+                    Flaks: profile.skills?.Flaks || 0,
+                    exp: profile.exp || 0,
+                    credits: profile.credits || 0,
+                    achievements: profile.achievements || [],
+                    items: profile.inventory ? profile.inventory.map(item => item.id) : []
+                };
+                
+                students.push(newStudent);
+                addedCount++;
+                console.log('La til student fra database:', newStudent.name, 'med ID:', newStudent.id);
+            } else {
+                console.warn('Ugyldig profil funnet i databasen:', profile);
+            }
+        });
+        
+        console.log(`La til ${addedCount} studenter fra databasen`);
+        
+        // Oppdater tabellen med alle studenter fra databasen
+        // Legg til en liten forsinkelse for å sikre at data er klar
+        setTimeout(() => {
+            console.log('Oppdaterer tabell med', students.length, 'studenter');
+            updateTable();
+            console.log('Tabell oppdatert');
+        }, 100);
+        
+        // Sjekk om brukeren er logget inn
+        window.databaseService.user.getCurrentUser().then(user => {
+            if (!user) {
+                console.log('Ingen bruker er logget inn');
+                return;
+            }
+            
+            console.log('Bruker funnet:', user.email);
+            
+            // Hent brukerprofil fra Supabase
+            window.databaseService.user.getUserProfile(user.id).then(profile => {
+                if (!profile) {
+                    console.error('Feil ved henting av brukerprofil');
+                    return;
+                }
+                
+                console.log('Brukerprofil hentet:', profile);
+                
+                // Finn studenten som tilsvarer denne brukeren
+                const studentIndex = students.findIndex(s => s.id === user.id);
+                if (studentIndex !== -1) {
+                    console.log('Innlogget student funnet på indeks', studentIndex);
+                    
+                    // Oppdater studentens items hvis profilen har inventory
+                    if (profile.inventory && Array.isArray(profile.inventory)) {
+                        console.log('Inventory funnet i profil:', profile.inventory.length, 'gjenstander');
+                        
+                        // Konverter inventory (array av objekter) til items (array av IDs)
+                        // Ta hensyn til quantity-feltet og dupliser ID-er basert på quantity
+                        const itemIds = [];
+                        profile.inventory.forEach(item => {
+                            const quantity = item.quantity || 1;
+                            for (let i = 0; i < quantity; i++) {
+                                itemIds.push(item.id);
+                            }
+                        });
+                        
+                        console.log('Konvertert til item IDs:', itemIds.length, 'totale gjenstander');
+                        
+                        // Oppdater studentens items
+                        students[studentIndex].items = itemIds;
+                    }
+                    
+                    // Oppdater inventaret hvis funksjonen finnes
+                    if (typeof updateItemsDisplay === 'function') {
+                        updateItemsDisplay(studentIndex);
+                    }
+                    
+                    console.log('Student oppdatert med data fra Supabase');
+                    
+                    // Oppdater tabellen igjen for å sikre at alle endringer vises
+                    console.log('Oppdaterer tabell igjen etter brukeroppdatering');
+                    updateTable();
+                } else {
+                    console.error('Merkelig feil: Innlogget bruker finnes ikke i students-arrayen etter at alle profiler er hentet');
+                }
+            });
+        });
+    }
+}
+
+// Funksjon for å laste data fra localStorage som fallback - FJERNET, bruker kun Supabase
+function loadFromLocalStorage() {
+    console.log('Laster data fra localStorage som fallback...');
+    const storedStudents = localStorage.getItem('students');
+    if (storedStudents) {
+        try {
+            const parsedStudents = JSON.parse(storedStudents);
+            if (Array.isArray(parsedStudents) && parsedStudents.length > 0) {
+                console.log('Fant', parsedStudents.length, 'studenter i localStorage');
+                
+                // Filtrer ut studenter som har en ID (de kommer fra Supabase)
+                // Dette er for å unngå å laste inn utdaterte Supabase-data fra localStorage
+                const localOnlyStudents = parsedStudents.filter(student => !student.id);
+                console.log('Beholder', localOnlyStudents.length, 'lokale studenter fra localStorage');
+                
+                // Legg til lokale studenter i students-arrayen
+                students = [...students, ...localOnlyStudents];
+                
+                // Oppdater tabellen
+                updateTable();
+            } else {
+                console.log('Ingen gyldige studenter funnet i localStorage');
+            }
+        } catch (error) {
+            console.error('Feil ved parsing av studenter fra localStorage:', error);
+        }
+    } else {
+        console.log('Ingen studenter funnet i localStorage');
+    }
+}
+
+// Funksjon for å sjekke om students-arrayen er initialisert korrekt
+function checkStudentsArray() {
+    console.log('Sjekker students-arrayen...');
+    
+    if (typeof students === 'undefined') {
+        console.error('students-arrayen er ikke definert!');
+        // Initialiser students-arrayen
+        window.students = [];
+        console.log('Initialiserte students som tom array');
+        return false;
+    }
+    
+    if (!Array.isArray(students)) {
+        console.error('students er ikke et array!', students);
+        // Konverter til array hvis mulig
+        try {
+            window.students = Array.isArray(students) ? students : [];
+            console.log('Konverterte students til array');
+        } catch (error) {
+            console.error('Kunne ikke konvertere students til array:', error);
+            window.students = [];
+            console.log('Initialiserte students som tom array');
+        }
+        return false;
+    }
+    
+    console.log('students-arrayen er OK, inneholder', students.length, 'studenter');
+    return true;
 }
 
 // Initialiser når siden lastes
@@ -117,7 +261,10 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         console.log('DOMContentLoaded starter...');
         
-        // Last inn data fra Supabase først
+        // Sjekk students-arrayen
+        checkStudentsArray();
+        
+        // Last inn data fra Supabase
         loadSupabaseData().then(() => {
             console.log('Supabase-data lastet, fortsetter med initialisering...');
             
@@ -378,194 +525,214 @@ function closeOasisModal() {
 
 // Funksjon for å lagre data
 async function saveData() {
-    // Lagre lokalt som backup
-    localStorage.setItem('students', JSON.stringify(students));
-    
-    // Hvis databaseService er tilgjengelig, synkroniser med Supabase
-    if (typeof window.databaseService !== 'undefined') {
-        try {
-            // Sjekk om items-arrayen er tilgjengelig, hvis ikke, last den inn
-            if (typeof window.items === 'undefined') {
-                console.log('items-arrayen er ikke tilgjengelig, prøver å laste den inn...');
-                try {
-                    // Hent items.js-filen
-                    const response = await fetch('../js/items.js');
-                    const itemsScript = await response.text();
-                    
-                    // Bruk regex for å hente ut items-arrayen
-                    const match = itemsScript.match(/const\s+items\s*=\s*(\[[\s\S]*?\]);/);
-                    if (match && match[1]) {
-                        // Parse items-arrayen
-                        window.items = eval(match[1]);
-                        console.log('items-arrayen lastet inn med', window.items.length, 'gjenstander');
-                    } else {
-                        console.error('Kunne ikke finne items-array i items.js');
-                        window.items = []; // Initialiser som tom array for å unngå feil
-                    }
-                } catch (error) {
-                    console.error('Feil ved lasting av items.js:', error);
-                    window.items = []; // Initialiser som tom array for å unngå feil
-                }
-            }
-            
-            // Hent gjeldende bruker
-            const user = await window.databaseService.user.getCurrentUser();
-            if (!user) {
-                console.log('Ingen bruker er logget inn, kan ikke synkronisere med Supabase');
-                return;
-            }
-            
-            // For hver student, oppdater tilsvarende profil i Supabase
-            for (const student of students) {
-                // Hopp over studenter uten ID (lokale studenter)
-                if (!student.id) continue;
-                
-                // Hopp over studenter som ikke er den innloggede brukeren
-                if (student.id !== user.id) continue;
-                
-                console.log('Lagrer data for student:', student.name);
-                
-                // Hent først gjeldende profil for å få inventory
-                const profile = await window.databaseService.user.getUserProfile(student.id);
-                
-                if (!profile) {
-                    console.error('Feil ved henting av gjeldende profil');
-                    continue;
-                }
-                
-                // Behold gjeldende inventory hvis det finnes
-                let inventory = profile.inventory || [];
-                
-                // Hvis studenten har items, konverter dem til inventory-format
-                if (student.items && Array.isArray(student.items)) {
-                    console.log('Student har', student.items.length, 'gjenstander');
-                    
-                    // Konverter hver item ID til et item-objekt
-                    inventory = student.items.map(itemId => {
-                        // Sjekk om items-arrayen er tilgjengelig
-                        if (!window.items || !Array.isArray(window.items)) {
-                            console.warn('items-arrayen er ikke tilgjengelig eller er ikke et array');
-                            // Returner et enkelt objekt med ID for å unngå feil
-                            return {
-                                id: itemId,
-                                name: `Gjenstand ${itemId}`,
-                                description: 'Beskrivelse ikke tilgjengelig',
-                                icon: '📦',
-                                rarity: 'common',
-                                type: 'Ukjent',
-                                slot: null,
-                                stats: {}
-                            };
-                        }
-                        
-                        // Finn gjenstanden i items-arrayen
-                        const itemData = window.items.find(item => item.id === itemId);
-                        if (!itemData) {
-                            console.warn('Kunne ikke finne gjenstand med ID:', itemId);
-                            // Returner et enkelt objekt med ID for å unngå feil
-                            return {
-                                id: itemId,
-                                name: `Gjenstand ${itemId}`,
-                                description: 'Beskrivelse ikke tilgjengelig',
-                                icon: '📦',
-                                rarity: 'common',
-                                type: 'Ukjent',
-                                slot: null,
-                                stats: {}
-                            };
-                        }
-                        
-                        // Returner en kopi av gjenstanden
-                        return { ...itemData };
-                    });
-                }
-                
-                // Oppdater profilen med nye data
-                const profileData = {
-                    username: student.name,
-                    skills: {
-                        Intelligens: student.Intelligens,
-                        Teknologi: student.Teknologi,
-                        Stamina: student.Stamina,
-                        Karisma: student.Karisma,
-                        Kreativitet: student.Kreativitet,
-                        Flaks: student.Flaks
-                    },
-                    exp: student.exp,
-                    credits: student.credits,
-                    achievements: student.achievements || [],
-                    inventory: inventory
-                };
-                
-                // Oppdater profilen i Supabase
-                const { success, error } = await window.databaseService.user.updateUserProfile(student.id, profileData);
-                
-                if (!success) {
-                    console.error('Feil ved oppdatering av profil:', error);
-                } else {
-                    console.log('Profil oppdatert i Supabase for', student.name);
-                }
-            }
-        } catch (error) {
-            console.error('Feil ved synkronisering med Supabase:', error);
+    try {
+        console.log('Lagrer data for', students.length, 'studenter');
+        
+        // Sjekk om databaseService er tilgjengelig
+        if (typeof window.databaseService === 'undefined') {
+            console.warn('Database-tjenesten er ikke tilgjengelig, kan ikke lagre data');
+            showStylizedAlert('Advarsel: Kunne ikke lagre data til databasen', 'warning');
+            return;
         }
+        
+        // Sjekk om brukeren er logget inn
+        const user = await window.databaseService.user.getCurrentUser();
+        if (!user) {
+            console.log('Ingen bruker er logget inn, kan ikke synkronisere med Supabase');
+            return;
+        }
+        
+        // Finn studenten som tilsvarer denne brukeren
+        const studentIndex = students.findIndex(s => s.id === user.id);
+        if (studentIndex === -1) {
+            console.log('Innlogget bruker finnes ikke i students-arrayen, kan ikke synkronisere');
+            return;
+        }
+        
+        const student = students[studentIndex];
+        console.log('Synkroniserer data for student:', student.name);
+        
+        // Oppdater brukerens profil i Supabase
+        const profileData = {
+            username: student.name,
+            skills: {
+                Intelligens: student.Intelligens || 0,
+                Teknologi: student.Teknologi || 0,
+                Stamina: student.Stamina || 0,
+                Karisma: student.Karisma || 0,
+                Kreativitet: student.Kreativitet || 0,
+                Flaks: student.Flaks || 0
+            },
+            exp: student.exp || 0,
+            credits: student.credits || 0,
+            achievements: student.achievements || []
+        };
+        
+        // Sjekk om items-arrayen er tilgjengelig, hvis ikke, last den inn
+        if (typeof window.items === 'undefined') {
+            console.log('items-arrayen er ikke tilgjengelig, prøver å laste den inn...');
+            try {
+                // Hent items.js-filen
+                const response = await fetch('../js/items.js');
+                const itemsScript = await response.text();
+                
+                // Bruk regex for å hente ut items-arrayen
+                const match = itemsScript.match(/const\s+items\s*=\s*(\[[\s\S]*?\]);/);
+                if (match && match[1]) {
+                    // Parse items-arrayen
+                    window.items = eval(match[1]);
+                    console.log('items-arrayen lastet inn med', window.items.length, 'gjenstander');
+                } else {
+                    console.error('Kunne ikke finne items-array i items.js');
+                }
+            } catch (error) {
+                console.error('Feil ved lasting av items.js:', error);
+            }
+        }
+        
+        // Konverter items til inventory-format hvis det finnes
+        if (student.items && Array.isArray(student.items)) {
+            // Konverter item IDs til inventory-format (array av objekter med id og quantity)
+            const itemCounts = {};
+            student.items.forEach(itemId => {
+                if (!itemCounts[itemId]) {
+                    itemCounts[itemId] = 0;
+                }
+                itemCounts[itemId]++;
+            });
+            
+            profileData.inventory = Object.keys(itemCounts).map(itemId => ({
+                id: itemId,
+                quantity: itemCounts[itemId]
+            }));
+            
+            console.log('Konvertert', student.items.length, 'items til', profileData.inventory.length, 'inventory-objekter');
+        }
+        
+        // Oppdater profilen i Supabase
+        const { success, error } = await window.databaseService.user.updateUserProfile(user.id, profileData);
+        
+        if (!success) {
+            console.error('Feil ved oppdatering av profil i Supabase:', error);
+            showStylizedAlert('Feil ved lagring av data: ' + error, 'error');
+        } else {
+            console.log('Profil oppdatert i Supabase');
+        }
+    } catch (error) {
+        console.error('Feil ved lagring av data:', error);
+        showStylizedAlert('Feil ved lagring av data: ' + error.message, 'error');
     }
 }
 
 // Funksjon for å oppdatere tabellen
 function updateTable() {
     const tableBody = document.getElementById('skillsTableBody');
-    if (!tableBody) return;
+    if (!tableBody) {
+        console.error('Fant ikke tabellbody-elementet (skillsTableBody)');
+        return;
+    }
     
+    console.log('Oppdaterer tabell med', students.length, 'studenter:', students.map(s => s.name));
+    
+    // Tøm tabellen først
     tableBody.innerHTML = '';
+    
+    // Sjekk om students-arrayen er tom
+    if (!students || students.length === 0) {
+        console.warn('Ingen studenter å vise i tabellen');
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = '<td colspan="8" style="text-align: center; padding: 20px;">Ingen spillere funnet</td>';
+        tableBody.appendChild(emptyRow);
+        return;
+    }
+    
+    // Legg til hver student i tabellen
+    let addedCount = 0;
     students.forEach((student, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = generateTableRow(index);
-        tableBody.appendChild(row);
+        try {
+            const row = document.createElement('tr');
+            row.innerHTML = generateTableRow(index);
+            tableBody.appendChild(row);
+            addedCount++;
+        } catch (error) {
+            console.error('Feil ved generering av tabellrad for student', student.name, ':', error);
+        }
     });
+    
+    console.log(`La til ${addedCount} rader i tabellen`);
+    
+    // Lagre data
     saveData();
     
     // Oppdater boss-status hvis funksjonen finnes
     if (typeof updateBossStatus === 'function') {
         updateBossStatus();
     }
+    
+    // Legg til knapper i tabellen
+    setTimeout(function() {
+        if (typeof addButtonsToTable === 'function') {
+            console.log('Legger til knapper i tabellen etter oppdatering...');
+            addButtonsToTable();
+        }
+    }, 100);
 }
 
 // Funksjon for å generere tabellrad
 function generateTableRow(index) {
-    const student = students[index];
-    const level = calculateLevel(student);
-    return `
-         <td class="player-cell" style="padding: 8px; vertical-align: middle;">
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                  <a href="#" class="player-name" 
-                      onclick="openAchievementsModal(${index}); return false;"
-                      onmouseenter="createTooltip(event, ${index})"
-                      onmouseleave="removeTooltip()">${student.name}</a>
-                  <button class="small-button delete-student-button" 
-                      style="background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.4); color: #e74c3c; margin-right: 5px; display: ${isDeleteProtected ? 'none' : 'block'};"
-                      onclick="removeStudent(${index})" 
-                      title="Fjern student">
-                      <i class="fas fa-trash-alt"></i>
-                  </button>
-              </div>
-             <div class="level-display" style="margin-top: 3px;">
-                 <span class="level-label">Nivå</span>
-                 <span class="level-number">${level}</span>
-             </div>
-             <div class="credits-display" style="display: flex; align-items: center; margin-top: 3px; color: #f1c40f; cursor: pointer;" onclick="openCreditsDialog(${index})">
-                 <i class="fas fa-coins" style="margin-right: 5px;"></i>
-                 <span>${student.credits || 0}</span>
-             </div>
-          </td>
-        ${generateSkillCell(index, 'Intelligens')}
-        ${generateSkillCell(index, 'Teknologi')}
-        ${generateSkillCell(index, 'Stamina')}
-        ${generateSkillCell(index, 'Karisma')}
-        ${generateSkillCell(index, 'Kreativitet')}
-        ${generateSkillCell(index, 'Flaks')}
-        ${generateExpCell(index)}
-    `;
+    try {
+        // Sjekk om indeksen er gyldig
+        if (index < 0 || index >= students.length) {
+            console.error('Ugyldig indeks for generateTableRow:', index, 'students.length:', students.length);
+            return '<td colspan="8">Ugyldig studentindeks</td>';
+        }
+        
+        const student = students[index];
+        
+        // Sjekk om studenten eksisterer
+        if (!student) {
+            console.error('Ingen student funnet på indeks', index);
+            return '<td colspan="8">Ingen student funnet</td>';
+        }
+        
+        console.log('Genererer tabellrad for student:', student.name, 'på indeks', index);
+        
+        const level = calculateLevel(student);
+        return `
+             <td class="player-cell" style="padding: 8px; vertical-align: middle;">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <a href="#" class="player-name" 
+                          onclick="openAchievementsModal(${index}); return false;"
+                          onmouseenter="createTooltip(event, ${index})"
+                          onmouseleave="removeTooltip()">${student.name}</a>
+                      <button class="small-button delete-student-button" 
+                          style="background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.4); color: #e74c3c; margin-right: 5px; display: ${isDeleteProtected ? 'none' : 'block'};"
+                          onclick="removeStudent(${index})" 
+                          title="Fjern student">
+                          <i class="fas fa-trash-alt"></i>
+                      </button>
+                  </div>
+                 <div class="level-display" style="margin-top: 3px;">
+                     <span class="level-label">Nivå</span>
+                     <span class="level-number">${level}</span>
+                 </div>
+                 <div class="credits-display" style="display: flex; align-items: center; margin-top: 3px; color: #f1c40f; cursor: pointer;" onclick="openCreditsDialog(${index})">
+                     <i class="fas fa-coins" style="margin-right: 5px;"></i>
+                     <span>${student.credits || 0}</span>
+                 </div>
+              </td>
+            ${generateSkillCell(index, 'Intelligens')}
+            ${generateSkillCell(index, 'Teknologi')}
+            ${generateSkillCell(index, 'Stamina')}
+            ${generateSkillCell(index, 'Karisma')}
+            ${generateSkillCell(index, 'Kreativitet')}
+            ${generateSkillCell(index, 'Flaks')}
+            ${generateExpCell(index)}
+        `;
+    } catch (error) {
+        console.error('Feil i generateTableRow for indeks', index, ':', error);
+        return '<td colspan="8">Feil ved generering av tabellrad</td>';
+    }
 }
 
 // Funksjon for å hente skill-verdi med bonuser fra equipment
@@ -2687,16 +2854,162 @@ async function forceRefreshFromSupabase() {
         // Vent litt for å sikre at meldingen vises
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Last inn data på nytt
-        await loadSupabaseData();
+        // Tøm students-arrayen helt - vi vil kun bruke data fra Supabase
+        students = [];
+        console.log('Tømte students-arrayen for å kun bruke data fra Supabase');
         
-        // Vis en bekreftelsesmelding
-        showStylizedAlert('Data oppdatert fra Supabase!', 'success');
+        // Sjekk om databaseService er tilgjengelig
+        if (typeof window.databaseService === 'undefined') {
+            console.error('Database-tjenesten er ikke tilgjengelig');
+            showStylizedAlert('Feil: Database-tjenesten er ikke tilgjengelig', 'error');
+            return;
+        }
         
-        console.log('Tvunget oppdatering fullført');
+        // Sjekk om Supabase-klienten er initialisert
+        const supabase = window.supabaseHelper?.getSupabase();
+        if (!supabase) {
+            console.error('Supabase-klienten er ikke initialisert');
+            showStylizedAlert('Feil: Supabase-klienten er ikke initialisert', 'error');
+            return;
+        }
+        
+        console.log('Supabase-klient er tilgjengelig, fortsetter med henting av profiler');
+        
+        // Hent alle profiler direkte fra Supabase for feilsøking
+        try {
+            const { data: directProfiles, error: directError } = await supabase
+                .from('profiles')
+                .select('*');
+                
+            if (directError) {
+                console.error('Feil ved direkte henting av profiler:', directError);
+            } else {
+                console.log('Direkte henting fra Supabase ga', directProfiles?.length || 0, 'profiler:', directProfiles);
+                
+                // Hvis vi fikk profiler direkte, bruk disse
+                if (directProfiles && directProfiles.length > 0) {
+                    console.log('Bruker profiler fra direkte henting');
+                    processProfiles(directProfiles);
+                    return;
+                }
+            }
+        } catch (directError) {
+            console.error('Feil ved direkte henting fra Supabase:', directError);
+        }
+        
+        // Prøv den alternative metoden
+        try {
+            const { success: altSuccess, data: altProfiles } = await window.databaseService.user.getAllProfilesAlternative();
+            if (altSuccess && altProfiles && altProfiles.length > 0) {
+                console.log('Alternativ metode ga', altProfiles.length, 'profiler');
+                processProfiles(altProfiles);
+                return;
+            }
+        } catch (altError) {
+            console.error('Feil ved alternativ henting av profiler:', altError);
+        }
+        
+        // Hent alle profiler fra databasen via databaseService
+        const { success, data: allProfiles, error: profilesError } = await window.databaseService.user.getAllProfiles();
+        
+        if (!success || profilesError) {
+            console.error('Feil ved henting av alle profiler:', profilesError);
+            showStylizedAlert('Feil ved henting av profiler: ' + (profilesError?.message || 'Ukjent feil'), 'error');
+            return;
+        }
+        
+        console.log('Hentet', allProfiles?.length || 0, 'profiler fra databasen via databaseService:', allProfiles);
+        
+        if (!allProfiles || allProfiles.length === 0) {
+            console.warn('Ingen profiler funnet i databasen');
+            showStylizedAlert('Ingen profiler funnet i databasen', 'warning');
+            return;
+        }
+        
+        // Behandle profilene
+        processProfiles(allProfiles);
     } catch (error) {
-        console.error('Feil ved tvunget oppdatering:', error);
+        console.error('Feil ved tvungen oppdatering fra Supabase:', error);
         showStylizedAlert('Feil ved oppdatering: ' + error.message, 'error');
+    }
+    
+    // Hjelpefunksjon for å behandle profiler
+    function processProfiles(profiles) {
+        // Konverter profiler til students-format
+        let addedCount = 0;
+        profiles.forEach(profile => {
+            // Sjekk om profilen har gyldig data
+            if (profile && profile.id) {
+                // Legg til ny student basert på profilen
+                const newStudent = {
+                    id: profile.id,
+                    name: profile.username || 'Ukjent spiller',
+                    Intelligens: profile.skills?.Intelligens || 0,
+                    Teknologi: profile.skills?.Teknologi || 0,
+                    Stamina: profile.skills?.Stamina || 0,
+                    Karisma: profile.skills?.Karisma || 0,
+                    Kreativitet: profile.skills?.Kreativitet || 0,
+                    Flaks: profile.skills?.Flaks || 0,
+                    exp: profile.exp || 0,
+                    credits: profile.credits || 0,
+                    achievements: profile.achievements || [],
+                    items: profile.inventory ? profile.inventory.map(item => item.id) : []
+                };
+                
+                students.push(newStudent);
+                addedCount++;
+                console.log('La til student fra database:', newStudent.name, 'med ID:', newStudent.id);
+            } else {
+                console.warn('Ugyldig profil funnet i databasen:', profile);
+            }
+        });
+        
+        console.log(`La til ${addedCount} studenter fra databasen`);
+        
+        // Oppdater tabellen
+        updateTable();
+        
+        // Vis bekreftelse
+        showStylizedAlert(`Data oppdatert fra Supabase. Fant ${addedCount} studenter.`, 'success');
+    }
+}
+
+// Funksjon for å rydde opp i localStorage
+function cleanupLocalStorage() {
+    console.log('Rydder opp i localStorage...');
+    
+    try {
+        // Hent studenter fra localStorage
+        const storedStudents = localStorage.getItem('students');
+        if (storedStudents) {
+            const parsedStudents = JSON.parse(storedStudents);
+            if (Array.isArray(parsedStudents) && parsedStudents.length > 0) {
+                console.log('Fant', parsedStudents.length, 'studenter i localStorage');
+                
+                // Filtrer ut studenter med ID (Supabase-brukere)
+                const localOnlyStudents = parsedStudents.filter(student => !student.id);
+                console.log('Beholder', localOnlyStudents.length, 'lokale studenter, fjerner', parsedStudents.length - localOnlyStudents.length, 'Supabase-studenter');
+                
+                // Lagre bare lokale studenter tilbake i localStorage
+                localStorage.setItem('students', JSON.stringify(localOnlyStudents));
+                console.log('Oppdatert localStorage med bare lokale studenter');
+            }
+        }
+    } catch (error) {
+        console.error('Feil ved opprydding i localStorage:', error);
+    }
+}
+
+// Funksjon for å manuelt legge til knapper i tabellen
+function manuallyAddButtons() {
+    console.log('Manuelt legger til knapper i tabellen...');
+    
+    // Sjekk om addButtonsToTable er definert
+    if (typeof addButtonsToTable === 'function') {
+        console.log('Kaller addButtonsToTable...');
+        addButtonsToTable();
+    } else {
+        console.error('addButtonsToTable er ikke definert, kan ikke legge til knapper');
     }
 }
   

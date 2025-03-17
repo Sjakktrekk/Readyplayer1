@@ -897,6 +897,9 @@ function buyItem() {
     // Lagre data
     saveData();
     
+    // Synkroniser med Supabase
+    syncInventoryWithSupabase(studentIndex);
+    
     // Vis melding med animasjon
     showItemAcquiredAnimation(randomItem);
     
@@ -1550,112 +1553,139 @@ function showEggPopup(unlocked, eggId) {
     });
 }
 
-// Legg til funksjon for å vise selg-dialog
+// Funksjon for å vise dialog for å selge en gjenstand
 function showSellItemDialog(studentIndex, itemId, item) {
-    // Fjern eksisterende dialog hvis den finnes
-    const existingDialog = document.getElementById('sellItemDialog');
-    if (existingDialog) {
-        existingDialog.remove();
+    // Finn studenten
+    const student = students[studentIndex];
+    if (!student) return;
+    
+    // Finn gjenstanden i studentens items
+    const itemIndex = student.items.indexOf(itemId);
+    if (itemIndex === -1) return;
+    
+    // Finn item-objektet hvis det ikke er gitt
+    if (!item) {
+        item = items.find(i => i.id === itemId);
+        if (!item) return;
     }
+    
+    // Beregn salgspris (50% av kjøpspris)
+    const sellPrice = Math.floor((item.price || 100) * 0.5);
     
     // Opprett dialog
     const dialog = document.createElement('div');
-    dialog.id = 'sellItemDialog';
+    dialog.className = 'modal-dialog';
     dialog.style.cssText = `
         position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: linear-gradient(180deg, rgba(16, 24, 48, 0.95) 0%, rgba(24, 36, 72, 0.95) 100%);
-        color: #00ff00;
-        border: 2px solid #00ff00;
-        border-radius: 8px;
-        padding: 20px;
-        text-align: center;
-        box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
-        z-index: 9999;
-        max-width: 400px;
-        font-family: 'Courier New', monospace;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
     `;
     
-    // Legg til tittel
-    const title = document.createElement('div');
+    // Opprett dialog-innhold
+    const dialogContent = document.createElement('div');
+    dialogContent.style.cssText = `
+        background: rgba(0, 0, 0, 0.9);
+        border: 2px solid #00aaff;
+        border-radius: 10px;
+        padding: 20px;
+        max-width: 400px;
+        width: 90%;
+        color: white;
+        font-family: 'Courier New', monospace;
+        box-shadow: 0 0 20px rgba(0, 170, 255, 0.5);
+    `;
+    dialog.appendChild(dialogContent);
+    
+    // Tittel
+    const title = document.createElement('h2');
     title.style.cssText = `
+        color: #00aaff;
+        text-align: center;
+        margin-top: 0;
         font-size: 20px;
-        font-weight: bold;
-        margin-bottom: 15px;
-        color: #00ff00;
         text-transform: uppercase;
         letter-spacing: 1px;
     `;
-    title.innerHTML = '<i class="fas fa-exchange-alt" style="margin-right: 10px;"></i> Selg gjenstand';
-    dialog.appendChild(title);
+    title.textContent = 'Selg gjenstand';
+    dialogContent.appendChild(title);
     
-    // Legg til gjenstandsinfo
+    // Gjenstandsinfo
     const itemInfo = document.createElement('div');
     itemInfo.style.cssText = `
         display: flex;
         align-items: center;
-        justify-content: center;
-        margin: 15px 0;
-        padding: 10px;
-        background: rgba(0, 0, 0, 0.3);
+        margin: 20px 0;
+        padding: 15px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 5px;
     `;
     
-    // Legg til ikon
-    const iconSpan = document.createElement('span');
-    iconSpan.style.cssText = `
-        font-size: 30px;
+    // Ikon
+    const itemIcon = document.createElement('div');
+    itemIcon.style.cssText = `
+        font-size: 40px;
         margin-right: 15px;
     `;
-    iconSpan.textContent = item.icon;
-    itemInfo.appendChild(iconSpan);
+    itemIcon.textContent = item.icon || '📦';
+    itemInfo.appendChild(itemIcon);
     
-    // Legg til navn
-    const nameSpan = document.createElement('span');
-    nameSpan.style.cssText = `
+    // Navn og pris
+    const itemDetails = document.createElement('div');
+    itemDetails.style.cssText = `
+        flex: 1;
+    `;
+    
+    const itemName = document.createElement('div');
+    itemName.style.cssText = `
         font-size: 18px;
-        color: #ffffff;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: ${item.rarity === 'legendary' ? '#f1c40f' : item.rarity === 'epic' ? '#9b59b6' : '#3498db'};
     `;
-    nameSpan.textContent = item.name;
-    itemInfo.appendChild(nameSpan);
+    itemName.textContent = item.name;
+    itemDetails.appendChild(itemName);
     
-    dialog.appendChild(itemInfo);
-    
-    // Legg til prisinput
-    const priceInput = document.createElement('input');
-    priceInput.type = 'number';
-    priceInput.min = '0';
-    priceInput.value = '0';
-    priceInput.style.cssText = `
-        background: rgba(0, 0, 0, 0.7);
-        border: 2px solid #00ff00;
-        color: #00ff00;
-        padding: 10px;
-        border-radius: 4px;
-        font-family: 'Courier New', monospace;
+    const itemPrice = document.createElement('div');
+    itemPrice.style.cssText = `
         font-size: 16px;
-        width: 80%;
-        max-width: 200px;
-        text-align: center;
-        margin: 15px 0;
+        color: #f1c40f;
     `;
-    dialog.appendChild(priceInput);
+    itemPrice.textContent = `Salgspris: ${sellPrice} kreditter`;
+    itemDetails.appendChild(itemPrice);
     
-    // Legg til knapper
+    itemInfo.appendChild(itemDetails);
+    dialogContent.appendChild(itemInfo);
+    
+    // Bekreftelsestekst
+    const confirmText = document.createElement('p');
+    confirmText.style.cssText = `
+        text-align: center;
+        margin: 20px 0;
+        color: rgba(255, 255, 255, 0.7);
+    `;
+    confirmText.textContent = 'Er du sikker på at du vil selge denne gjenstanden?';
+    dialogContent.appendChild(confirmText);
+    
+    // Knapper
     const buttonContainer = document.createElement('div');
     buttonContainer.style.cssText = `
         display: flex;
-        justify-content: center;
-        gap: 15px;
+        justify-content: space-between;
         margin-top: 20px;
     `;
     
     // Avbryt-knapp
     const cancelButton = document.createElement('button');
     cancelButton.style.cssText = `
-        background: rgba(0, 0, 0, 0.3);
+        background: rgba(0, 0, 0, 0.5);
         color: #ffffff;
         border: 1px solid #ffffff;
         border-radius: 4px;
@@ -1675,9 +1705,9 @@ function showSellItemDialog(studentIndex, itemId, item) {
     // Bekreft-knapp
     const confirmButton = document.createElement('button');
     confirmButton.style.cssText = `
-        background: rgba(0, 255, 0, 0.3);
-        color: #00ff00;
-        border: 1px solid #00ff00;
+        background: rgba(241, 196, 15, 0.3);
+        color: #f1c40f;
+        border: 1px solid #f1c40f;
         border-radius: 4px;
         padding: 8px 15px;
         cursor: pointer;
@@ -1688,26 +1718,31 @@ function showSellItemDialog(studentIndex, itemId, item) {
     `;
     confirmButton.textContent = 'Selg';
     confirmButton.onclick = function() {
-        const price = parseInt(priceInput.value);
-        if (price < 0) {
-            alert('Prisen kan ikke være negativ!');
-            return;
-        }
+        // Fjern gjenstanden
+        student.items.splice(itemIndex, 1);
         
-        if (addItemToMarketplace(studentIndex, itemId, price)) {
-            // Oppdater visningen
-            updateItemsDisplay(studentIndex);
-            
-            // Vis bekreftelsesmelding
-            showItemSoldMessage(item.name);
-            
-            // Fjern dialogen
-            dialog.remove();
-        }
+        // Legg til kreditter
+        student.credits = (student.credits || 0) + sellPrice;
+        
+        // Lagre endringene
+        saveData();
+        
+        // Synkroniser med Supabase
+        syncInventoryWithSupabase(studentIndex);
+        
+        // Oppdater visningen
+        updateItemsDisplay(studentIndex);
+        updateCreditsDisplay();
+        
+        // Vis melding
+        showItemUsedMessage(`Du solgte ${item.name} for ${sellPrice} kreditter!`);
+        
+        // Fjern dialogen
+        dialog.remove();
     };
     buttonContainer.appendChild(confirmButton);
     
-    dialog.appendChild(buttonContainer);
+    dialogContent.appendChild(buttonContainer);
     
     // Legg til dialog i DOM
     document.body.appendChild(dialog);
@@ -1720,63 +1755,6 @@ function showSellItemDialog(studentIndex, itemId, item) {
         }
     };
     document.addEventListener('keydown', escapeListener);
-}
-
-// Funksjon for å vise bekreftelsesmelding når en gjenstand er solgt
-function showItemSoldMessage(itemName) {
-    // Fjern eksisterende melding hvis den finnes
-    const existingMessage = document.getElementById('itemSoldMessage');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
-    
-    // Opprett melding
-    const message = document.createElement('div');
-    message.id = 'itemSoldMessage';
-    message.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: linear-gradient(180deg, rgba(16, 24, 48, 0.95) 0%, rgba(24, 36, 72, 0.95) 100%);
-        color: #00ff00;
-        border-left: 4px solid #00ff00;
-        padding: 15px 20px;
-        border-radius: 4px;
-        box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
-        font-family: 'Courier New', monospace;
-        z-index: 9999;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-    `;
-    
-    // Legg til innhold
-    message.innerHTML = `
-        <div style="display: flex; align-items: center;">
-            <i class="fas fa-exchange-alt" style="font-size: 20px; margin-right: 15px;"></i>
-            <div>
-                <div style="font-weight: bold; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">${itemName}</div>
-                <div style="font-size: 14px; color: rgba(255, 255, 255, 0.7);">er lagt ut i bruktmarkedet</div>
-            </div>
-        </div>
-    `;
-    
-    // Legg til melding i DOM
-    document.body.appendChild(message);
-    
-    // Vis melding med animasjon
-    setTimeout(() => {
-        message.style.transform = 'translateX(0)';
-    }, 10);
-    
-    // Fjern melding etter 3 sekunder
-    setTimeout(() => {
-        message.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            if (document.body.contains(message)) {
-                message.remove();
-            }
-        }, 300);
-    }, 3000);
 }
 
 // Funksjon for å equipe en gjenstand i en equipment slot
@@ -2194,295 +2172,293 @@ openItemBagModal = function(studentIndex) {
 
 // Funksjon for å legge til både achievement- og inventory-knapper i tabellen
 function addButtonsToTable() {
-    // Finn alle rader i tabellen
-    const rows = document.querySelectorAll('table.student-table tbody tr');
-    
-    // Gå gjennom hver rad
-    rows.forEach((row, index) => {
-        // Sjekk om raden allerede har knappene
-        if (!row.querySelector('.action-buttons-cell')) {
-            // Opprett en ny celle for knappene
-            const cell = document.createElement('td');
-            cell.className = 'action-buttons-cell';
-            cell.style.cssText = `
-                padding: 5px;
-                text-align: center;
-                vertical-align: middle;
-                display: flex;
-                gap: 8px;
-                justify-content: center;
-            `;
-            
-            // Opprett ryggsekk-knappen
-            const inventoryButton = document.createElement('button');
-            inventoryButton.className = 'inventory-button';
-            inventoryButton.innerHTML = '🎒';
-            inventoryButton.title = 'Åpne ryggsekk';
-            inventoryButton.style.cssText = `
-                background: linear-gradient(135deg, #1a2a3a, #0d1520);
-                border: 1px solid #00aaff;
-                color: #00aaff;
-                border-radius: 50%;
-                width: 36px;
-                height: 36px;
-                font-size: 18px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            `;
-            
-            // Legg til hover-effekt for ryggsekk-knappen
-            inventoryButton.onmouseover = function() {
-                this.style.transform = 'scale(1.1)';
-                this.style.boxShadow = '0 0 15px rgba(0, 170, 255, 0.5)';
-            };
-            
-            inventoryButton.onmouseout = function() {
-                this.style.transform = 'scale(1)';
-                this.style.boxShadow = '0 0 10px rgba(0, 170, 255, 0.3)';
-            };
-            
-            // Legg til klikk-hendelse for ryggsekk-knappen
-            inventoryButton.onclick = function(event) {
-                event.stopPropagation(); // Hindre at raden også reagerer på klikket
-                openItemBagModal(index);
-            };
-            
-            // Opprett achievement-knappen
-            const achievementButton = document.createElement('button');
-            achievementButton.className = 'achievement-button';
-            achievementButton.innerHTML = '🏆';
-            achievementButton.title = 'Åpne achievements';
-            achievementButton.style.cssText = `
-                background: linear-gradient(135deg, #3a1a2a, #200d15);
-                border: 1px solid #ff00aa;
-                color: #ff00aa;
-                border-radius: 50%;
-                width: 36px;
-                height: 36px;
-                font-size: 18px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                box-shadow: 0 0 10px rgba(255, 0, 170, 0.3);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            `;
-            
-            // Legg til hover-effekt for achievement-knappen
-            achievementButton.onmouseover = function() {
-                this.style.transform = 'scale(1.1)';
-                this.style.boxShadow = '0 0 15px rgba(255, 0, 170, 0.5)';
-            };
-            
-            achievementButton.onmouseout = function() {
-                this.style.transform = 'scale(1)';
-                this.style.boxShadow = '0 0 10px rgba(255, 0, 170, 0.3)';
-            };
-            
-            // Legg til klikk-hendelse for achievement-knappen
-            achievementButton.onclick = function(event) {
-                event.stopPropagation(); // Hindre at raden også reagerer på klikket
-                openAchievementsModal(index);
-            };
-            
-            // Legg til knappene i cellen
-            cell.appendChild(inventoryButton);
-            cell.appendChild(achievementButton);
-            
-            // Legg til cellen i raden
-            row.appendChild(cell);
+    try {
+        console.log('Legger til knapper i tabellen...');
+        
+        // Finn alle rader i tabellen
+        const rows = document.querySelectorAll('table tbody tr');
+        if (!rows || rows.length === 0) {
+            console.warn('Fant ingen rader i tabellen, kan ikke legge til knapper');
+            return;
         }
-    });
-}
-
-// Legg til en dropdown-meny for å velge elev
-function addStudentSelector() {
-    // Sjekk om selector allerede finnes
-    if (document.getElementById('student-selector-container')) {
-        return;
+        
+        console.log('Fant', rows.length, 'rader i tabellen');
+        
+        // Gå gjennom hver rad
+        rows.forEach((row, index) => {
+            try {
+                // Sjekk om raden allerede har knappene
+                if (!row.querySelector('.action-buttons-cell')) {
+                    // Opprett en ny celle for knappene
+                    const cell = document.createElement('td');
+                    cell.className = 'action-buttons-cell';
+                    cell.style.cssText = `
+                        padding: 5px;
+                        text-align: center;
+                        vertical-align: middle;
+                    `;
+                    
+                    // Opprett en container for knappene
+                    const buttonContainer = document.createElement('div');
+                    buttonContainer.style.cssText = `
+                        display: flex;
+                        flex-direction: column;
+                        gap: 5px;
+                        align-items: center;
+                    `;
+                    
+                    // Opprett inventory-knappen
+                    const inventoryButton = document.createElement('button');
+                    inventoryButton.className = 'inventory-button';
+                    inventoryButton.innerHTML = '<i class="fas fa-briefcase"></i>';
+                    inventoryButton.title = 'Åpne inventar';
+                    inventoryButton.style.cssText = `
+                        background: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9));
+                        border: 2px solid #2ecc71;
+                        color: #2ecc71;
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        font-size: 14px;
+                    `;
+                    
+                    // Legg til hover-effekt
+                    inventoryButton.onmouseover = function() {
+                        this.style.transform = 'scale(1.1)';
+                        this.style.boxShadow = '0 0 10px rgba(46, 204, 113, 0.5)';
+                    };
+                    inventoryButton.onmouseout = function() {
+                        this.style.transform = 'scale(1)';
+                        this.style.boxShadow = 'none';
+                    };
+                    
+                    // Legg til onclick-handler
+                    inventoryButton.onclick = function() {
+                        openItemBagModal(index);
+                    };
+                    
+                    // Legg til knappen i containeren
+                    buttonContainer.appendChild(inventoryButton);
+                    
+                    // Legg til containeren i cellen
+                    cell.appendChild(buttonContainer);
+                    
+                    // Legg til cellen i raden
+                    row.appendChild(cell);
+                    
+                    console.log('La til knapper for rad', index);
+                }
+            } catch (error) {
+                console.error('Feil ved legging til av knapper for rad', index, ':', error);
+            }
+        });
+        
+        console.log('Ferdig med å legge til knapper i tabellen');
+    } catch (error) {
+        console.error('Feil ved legging til av knapper i tabellen:', error);
     }
-    
-    // Opprett container for selector
-    const container = document.createElement('div');
-    container.id = 'student-selector-container';
-    container.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1000;
-        background: linear-gradient(135deg, rgba(10, 20, 30, 0.9), rgba(5, 10, 15, 0.9));
-        border: 2px solid #00aaff;
-        border-radius: 10px;
-        padding: 10px;
-        box-shadow: 0 0 20px rgba(0, 170, 255, 0.3);
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    `;
-    
-    // Opprett tittel
-    const title = document.createElement('div');
-    title.style.cssText = `
-        font-size: 14px;
-        color: #00aaff;
-        text-align: center;
-        font-weight: bold;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    `;
-    title.textContent = 'Velg elev';
-    container.appendChild(title);
-    
-    // Opprett select-element
-    const select = document.createElement('select');
-    select.id = 'student-selector';
-    select.style.cssText = `
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
-        border: 1px solid #00aaff;
-        border-radius: 5px;
-        padding: 8px;
-        width: 200px;
-        font-family: 'Courier New', monospace;
-        cursor: pointer;
-    `;
-    
-    // Legg til options for hver elev
-    students.forEach((student, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = student.name;
-        select.appendChild(option);
-    });
-    
-    container.appendChild(select);
-    
-    // Opprett knapper
-    const buttonsContainer = document.createElement('div');
-    buttonsContainer.style.cssText = `
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-    `;
-    
-    // Ryggsekk-knapp
-    const inventoryButton = document.createElement('button');
-    inventoryButton.innerHTML = '🎒 Ryggsekk';
-    inventoryButton.style.cssText = `
-        flex: 1;
-        background: linear-gradient(135deg, #1a2a3a, #0d1520);
-        border: 1px solid #00aaff;
-        color: #00aaff;
-        border-radius: 5px;
-        padding: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-family: 'Courier New', monospace;
-        font-size: 14px;
-    `;
-    
-    inventoryButton.onmouseover = function() {
-        this.style.background = 'linear-gradient(135deg, #2a3a4a, #1a2a3a)';
-        this.style.transform = 'translateY(-2px)';
-    };
-    
-    inventoryButton.onmouseout = function() {
-        this.style.background = 'linear-gradient(135deg, #1a2a3a, #0d1520)';
-        this.style.transform = 'translateY(0)';
-    };
-    
-    inventoryButton.onclick = function() {
-        const selectedIndex = parseInt(select.value);
-        openItemBagModal(selectedIndex);
-    };
-    
-    buttonsContainer.appendChild(inventoryButton);
-    
-    // Achievement-knapp
-    const achievementButton = document.createElement('button');
-    achievementButton.innerHTML = '🏆 Achievements';
-    achievementButton.style.cssText = `
-        flex: 1;
-        background: linear-gradient(135deg, #3a1a2a, #200d15);
-        border: 1px solid #ff00aa;
-        color: #ff00aa;
-        border-radius: 5px;
-        padding: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-family: 'Courier New', monospace;
-        font-size: 14px;
-    `;
-    
-    achievementButton.onmouseover = function() {
-        this.style.background = 'linear-gradient(135deg, #4a2a3a, #3a1a2a)';
-        this.style.transform = 'translateY(-2px)';
-    };
-    
-    achievementButton.onmouseout = function() {
-        this.style.background = 'linear-gradient(135deg, #3a1a2a, #200d15)';
-        this.style.transform = 'translateY(0)';
-    };
-    
-    achievementButton.onclick = function() {
-        const selectedIndex = parseInt(select.value);
-        openAchievementsModal(selectedIndex);
-    };
-    
-    buttonsContainer.appendChild(achievementButton);
-    container.appendChild(buttonsContainer);
-    
-    // Legg til container i DOM
-    document.body.appendChild(container);
 }
 
 // Oppdater updateTable-funksjonen for å legge til knapper
-// Sjekk om vi allerede har overskrevet updateTable
-if (!window.originalUpdateTable) {
+// Sjekk om updateTable er definert og om vi allerede har overskrevet den
+if (typeof updateTable === 'function' && !window.originalUpdateTable) {
+    console.log('Overskriver updateTable-funksjonen for å legge til item-knapper');
     window.originalUpdateTable = updateTable;
     
     // Overskriver updateTable med vår egen versjon
     window.updateTable = function() {
         // Kall den originale funksjonen først
-        window.originalUpdateTable();
+        window.originalUpdateTable.apply(this, arguments);
         
-        // Legg til knapper i tabellen
+        // Legg til våre egne knapper
         addButtonsToTable();
-        
-        // Oppdater student-selector hvis den finnes
-        const selector = document.getElementById('student-selector');
-        if (selector) {
-            // Tøm selector
-            selector.innerHTML = '';
-            
-            // Legg til options for hver elev
-            students.forEach((student, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = student.name;
-                selector.appendChild(option);
-            });
+    };
+} else if (!window.originalUpdateTable) {
+    console.warn('updateTable er ikke definert ennå, vil prøve å overskrive senere');
+    
+    // Definer en sikker versjon av updateTable som kan kalles selv om den originale ikke er definert
+    window.safeUpdateTable = function() {
+        if (typeof updateTable === 'function') {
+            updateTable();
+        } else {
+            console.warn('updateTable er fortsatt ikke definert, kan ikke oppdatere tabellen');
         }
     };
+    
+    // Prøv å overskrive updateTable når siden er ferdig lastet
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof updateTable === 'function' && !window.originalUpdateTable) {
+            console.log('Overskriver updateTable-funksjonen for å legge til item-knapper (forsinket)');
+            window.originalUpdateTable = updateTable;
+            
+            // Overskriver updateTable med vår egen versjon
+            window.updateTable = function() {
+                // Kall den originale funksjonen først
+                window.originalUpdateTable.apply(this, arguments);
+                
+                // Legg til våre egne knapper
+                addButtonsToTable();
+            };
+        } else {
+            console.error('Kunne ikke overskrive updateTable-funksjonen, knapper vil ikke bli lagt til automatisk');
+        }
+    });
 }
 
 // Kjør når siden lastes
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
+        // Fjern student-selector hvis den finnes
+        removeStudentSelector();
+        
         // Vent litt for å sikre at tabellen er lastet
         setTimeout(() => {
             addButtonsToTable();
-            addStudentSelector();
         }, 1000);
     });
 } else {
     // Dokumentet er allerede lastet
+    // Fjern student-selector hvis den finnes
+    removeStudentSelector();
+    
     setTimeout(() => {
         addButtonsToTable();
-        addStudentSelector();
     }, 1000);
 } 
+
+// Funksjon for å fjerne student-selector hvis den finnes
+function removeStudentSelector() {
+    const selector = document.getElementById('student-selector-container');
+    if (selector) {
+        console.log('Fjerner student-selector-container');
+        selector.remove();
+    }
+}
+
+// Legg til en MutationObserver for å kontinuerlig sjekke om student-selector-container blir lagt til igjen
+function setupStudentSelectorObserver() {
+    // Opprett en observer som overvåker endringer i DOM
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            // Sjekk om noen nye noder er lagt til
+            if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                // Sjekk om student-selector-container er lagt til
+                const selector = document.getElementById('student-selector-container');
+                if (selector) {
+                    console.log('Oppdaget at student-selector-container ble lagt til, fjerner den');
+                    selector.remove();
+                }
+            }
+        });
+    });
+    
+    // Start observasjon av hele body med alle underliggende elementer
+    observer.observe(document.body, { childList: true, subtree: true });
+    console.log('MutationObserver for student-selector-container er satt opp');
+}
+
+// Kjør observer-oppsett når siden er lastet
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        setupStudentSelectorObserver();
+    });
+} else {
+    setupStudentSelectorObserver();
+} 
+
+// Funksjon for å synkronisere inventory med Supabase
+async function syncInventoryWithSupabase(studentIndex) {
+    console.log('Synkroniserer inventory med Supabase for student', studentIndex);
+    
+    // Sjekk om databaseService er tilgjengelig
+    if (typeof window.databaseService === 'undefined') {
+        console.warn('Database-tjenesten er ikke tilgjengelig, kan ikke synkronisere inventory');
+        return;
+    }
+    
+    // Sjekk om brukeren er logget inn
+    const user = await window.databaseService.user.getCurrentUser();
+    if (!user) {
+        console.log('Ingen bruker er logget inn, kan ikke synkronisere med Supabase');
+        return;
+    }
+    
+    // Sjekk om studentIndex er gyldig
+    if (studentIndex === null || studentIndex === undefined || !students[studentIndex]) {
+        console.error('Ugyldig studentIndex:', studentIndex);
+        return;
+    }
+    
+    const student = students[studentIndex];
+    
+    // Sjekk om student.id matcher user.id
+    if (student.id !== user.id) {
+        console.log('Student ID matcher ikke bruker ID, kan ikke synkronisere');
+        return;
+    }
+    
+    // Konverter items til inventory-format
+    const itemCounts = {};
+    if (student.items && Array.isArray(student.items)) {
+        student.items.forEach(itemId => {
+            if (!itemCounts[itemId]) {
+                itemCounts[itemId] = 0;
+            }
+            itemCounts[itemId]++;
+        });
+    }
+    
+    const inventory = Object.keys(itemCounts).map(itemId => ({
+        id: itemId,
+        quantity: itemCounts[itemId]
+    }));
+    
+    console.log('Konvertert', student.items ? student.items.length : 0, 'items til', inventory.length, 'inventory-objekter');
+    
+    // Oppdater inventory i Supabase
+    const { success, error } = await window.databaseService.user.updateInventory(user.id, inventory);
+    
+    if (!success) {
+        console.error('Feil ved oppdatering av inventory i Supabase:', error);
+    } else {
+        console.log('Inventory oppdatert i Supabase');
+    }
+}
+
+// Oppdater removeItemFromBackpack-funksjonen for å synkronisere med Supabase
+const originalRemoveItemFromBackpack = removeItemFromBackpack;
+removeItemFromBackpack = function(studentIndex, itemId) {
+    const result = originalRemoveItemFromBackpack(studentIndex, itemId);
+    if (result) {
+        // Synkroniser med Supabase
+        syncInventoryWithSupabase(studentIndex);
+    }
+    return result;
+};
+
+// Oppdater equipItem-funksjonen for å synkronisere med Supabase
+const originalEquipItem = equipItem;
+equipItem = function(studentIndex, itemId, slotType) {
+    const result = originalEquipItem(studentIndex, itemId, slotType);
+    if (result) {
+        // Synkroniser med Supabase
+        syncInventoryWithSupabase(studentIndex);
+    }
+    return result;
+};
+
+// Oppdater unequipItem-funksjonen for å synkronisere med Supabase
+const originalUnequipItem = unequipItem;
+unequipItem = function(studentIndex, slotType) {
+    const result = originalUnequipItem(studentIndex, slotType);
+    if (result) {
+        // Synkroniser med Supabase
+        syncInventoryWithSupabase(studentIndex);
+    }
+    return result;
+};

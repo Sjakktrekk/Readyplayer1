@@ -136,6 +136,9 @@ async function initDashboard() {
         console.log('Bruker logget inn:', user.email);
         currentUser = user;
         
+        // Last inn items.js for å få tilgang til alle gjenstandsdetaljer
+        await loadItemsDefinitions();
+        
         // Hent brukerprofil fra Supabase
         const { data: profile, error } = await supabase
             .from('profiles')
@@ -1779,12 +1782,42 @@ function loadInventoryItems() {
     
     console.log(`Viser ${userProfile.inventory.length} gjenstander i inventaret`);
     
+    // Berik inventory-objektene med data fra items.js hvis tilgjengelig
+    const enrichedInventory = userProfile.inventory.map(inventoryItem => {
+        // Sjekk om vi har items.js-data tilgjengelig
+        if (typeof window.items !== 'undefined' && Array.isArray(window.items)) {
+            const itemId = typeof inventoryItem === 'object' ? inventoryItem.id : inventoryItem;
+            const quantity = typeof inventoryItem === 'object' ? (inventoryItem.quantity || 1) : 1;
+            
+            // Finn gjenstanden i items.js
+            const itemData = window.items.find(item => item.id == itemId);
+            
+            if (itemData) {
+                // Berik inventory-objektet med data fra items.js
+                return {
+                    ...inventoryItem,
+                    name: itemData.name,
+                    description: itemData.description,
+                    icon: itemData.icon,
+                    rarity: itemData.rarity,
+                    type: itemData.type || 'unknown'
+                };
+            }
+        }
+        
+        // Returner originalt objekt hvis vi ikke fant noe i items.js
+        return inventoryItem;
+    });
+    
+    // Oppdater userProfile med beriket inventory
+    userProfile.inventory = enrichedInventory;
+    
     // Vis hver gjenstand i inventaret
     userProfile.inventory.forEach(item => {
         console.log('Behandler gjenstand:', item);
         
         // Sjekk at gjenstanden har nødvendige felter
-        if (!item || !item.name) {
+        if (!item || !item.id) {
             console.warn('Ugyldig gjenstand funnet:', item);
             return;
         }
@@ -2221,4 +2254,36 @@ document.addEventListener('DOMContentLoaded', () => {
             addTestItem();
         });
     }
-}); 
+});
+
+// Funksjon for å laste inn items.js
+async function loadItemsDefinitions() {
+    // Sjekk om items allerede er lastet inn
+    if (typeof window.items !== 'undefined' && Array.isArray(window.items)) {
+        console.log('items.js er allerede lastet inn med', window.items.length, 'gjenstander');
+        return;
+    }
+    
+    try {
+        console.log('Laster inn items.js...');
+        // Hent items.js-filen
+        const response = await fetch('../js/items.js');
+        if (!response.ok) {
+            throw new Error(`Kunne ikke laste items.js: ${response.status} ${response.statusText}`);
+        }
+        
+        const itemsScript = await response.text();
+        
+        // Bruk regex for å hente ut items-arrayen
+        const match = itemsScript.match(/const\s+items\s*=\s*(\[[\s\S]*?\]);/);
+        if (!match || !match[1]) {
+            throw new Error('Kunne ikke finne items-array i items.js');
+        }
+        
+        // Parse items-arrayen
+        window.items = eval(match[1]);
+        console.log('items.js lastet inn med', window.items.length, 'gjenstander');
+    } catch (error) {
+        console.error('Feil ved lasting av items.js:', error);
+    }
+} 

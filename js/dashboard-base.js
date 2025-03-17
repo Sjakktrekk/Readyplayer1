@@ -10,7 +10,6 @@ let skillsData = {};
 let inventoryItems = [];
 let userAchievements = [];
 let quests = [];
-let shopItems = [];
 
 // DOM-elementer
 let usernameElement;
